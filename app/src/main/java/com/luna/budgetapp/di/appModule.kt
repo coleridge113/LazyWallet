@@ -97,6 +97,7 @@ val databaseModule = module {
     }
     single { get<AppDatabase>().expenseDao() }
     single { get<AppDatabase>().expensePresetDao() }
+    single { get<AppDatabase>().categoryFilterDao() }
     single { androidContext().dataStore }
 }
 
