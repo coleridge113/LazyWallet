@@ -11,6 +11,10 @@ import com.luna.budgetapp.domain.usecase.expense.GetExpensesByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetCategoryTotalsByDateRange
 import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUseCase
+import com.luna.budgetapp.domain.usecase.expense.GetCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.expense.GetCategoryProfilesUseCase
+import com.luna.budgetapp.domain.usecase.expense.DeleteCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.expense.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
@@ -30,4 +34,8 @@ data class UseCases(
     val getAllExpensePresets: GetAllExpensePresetsUseCase,
     val addExpensePreset: AddExpensePresetUseCase,
     val deleteExpensePreset: DeleteExpensePresetUseCase,
+    val getCategoryProfile: GetCategoryProfileUseCase,
+    val getCategoryProfiles: GetCategoryProfilesUseCase,
+    val saveCategoryProfile: SaveCategoryProfileUseCase,
+    val deleteCategoryProfile: DeleteCategoryProfileUseCase
 )
