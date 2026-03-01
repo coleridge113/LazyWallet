@@ -69,7 +69,7 @@ fun ExpensePresetDialog(
         val amountState = rememberTextFieldState("")
         val isLocked = selectedPreset != null
 
-        LaunchedEffect(selectedPreset) {
+        LaunchedEffect(Unit) {
             selectedPreset?.let {
                 selectedOption = options.firstOrNull { option ->
                     option.displayName.equals(it.category, ignoreCase = true)
