@@ -149,7 +149,8 @@ fun MainContent(
                     onDismiss = { onEvent(Event.DismissDialog) },
                     onConfirm = { filters ->
                         onEvent(Event.SelectCategoryFilter(filters))
-                    }
+                    },
+                    onSelectedChange = {}
                 )
             }
 
