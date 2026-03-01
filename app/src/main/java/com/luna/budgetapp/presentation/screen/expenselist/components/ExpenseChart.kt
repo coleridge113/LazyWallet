@@ -96,6 +96,7 @@ fun ExpenseDonutChart(
             modifier = Modifier.fillMaxSize()
         ) {
             var startAngle = -90f
+            val gapAngle = 2f
 
             if (totalAmount == 0.0) {
                 val sweepAngle =
@@ -111,18 +112,20 @@ fun ExpenseDonutChart(
             }
 
             chartDataList.forEach { slice ->
-                val sweepAngle =
+                val rawSweep =
                     ((slice.subtotal / totalAmount) * 360f * animationProgress.value).toFloat()
+
+                val sweepAngle = (rawSweep - gapAngle).coerceAtLeast(0f)
 
                 drawArc(
                     color = slice.color,
-                    startAngle = startAngle,
+                    startAngle = startAngle + gapAngle / 2f,
                     sweepAngle = sweepAngle,
                     useCenter = false,
                     style = Stroke(width = 80f)
                 )
 
-                startAngle += sweepAngle
+                startAngle += rawSweep
             }
         }
 
