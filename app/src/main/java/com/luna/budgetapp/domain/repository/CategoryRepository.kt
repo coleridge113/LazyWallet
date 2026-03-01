@@ -1,8 +1,15 @@
 package com.luna.budgetapp.domain.repository
 
-import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.CategoryFilter
+import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {
 
-    fun getDefaultCategories(): Map<Category, Boolean>
+    fun getProfiles(): Flow<List<String>>
+
+    fun getProfile(profileName: String): Flow<List<CategoryFilter>>
+
+    suspend fun saveProfile(items: List<CategoryFilter>)
+
+    suspend fun deleteProfile(profileName: String)
 }

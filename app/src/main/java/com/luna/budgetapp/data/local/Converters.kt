@@ -5,6 +5,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import com.luna.budgetapp.domain.model.Category
 
 object Converters {
 
@@ -24,4 +25,10 @@ object Converters {
             .toLocalDateTime()
         }
     }
+
+    @TypeConverter
+    fun fromCategory(category: Category): String = category.name
+
+    @TypeConverter
+    fun toCategory(name: String): Category = Category.valueOf(name)
 }

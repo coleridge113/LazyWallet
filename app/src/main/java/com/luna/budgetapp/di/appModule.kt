@@ -5,6 +5,7 @@ import com.luna.budgetapp.data.datastore.AuthLocalDataSource
 import com.luna.budgetapp.data.datastore.dataStore
 import com.luna.budgetapp.data.local.AppDatabase
 import com.luna.budgetapp.data.local.repository.AuthRepositoryImpl
+import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
@@ -12,6 +13,7 @@ import com.luna.budgetapp.data.utils.PusherManager
 import com.luna.budgetapp.domain.repository.AuthRepository
 import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.domain.repository.ExpenseRepository
+import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
@@ -98,6 +100,7 @@ val appModule = module {
     singleOf(::ExpenseRepositoryImpl) { bind<ExpenseRepository>() }
     singleOf(::ExpensePresetRepositoryImpl) { bind<ExpensePresetRepository>() }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
+    singleOf(::CategoryFilterRepositoryImpl) { bind<CategoryRepository>() }
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
 
