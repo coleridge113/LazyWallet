@@ -1,8 +1,16 @@
 package com.luna.budgetapp.presentation.model
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Coffee
+import androidx.compose.material.icons.filled.Commute
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Flatware
+import androidx.compose.material.icons.filled.House
+import androidx.compose.material.icons.filled.LocalGroceryStore
 import androidx.compose.material.icons.filled.Money
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.Color
 import com.luna.budgetapp.ui.icons.BillsIcon
@@ -21,19 +29,20 @@ import com.luna.budgetapp.ui.theme.GroceryChartColor
 import com.luna.budgetapp.ui.theme.HouseChartColor
 import com.luna.budgetapp.ui.theme.OthersChartColor
 import com.luna.budgetapp.ui.theme.FitnessChartColor
+import com.luna.budgetapp.ui.theme.PersonalChartColor
 
 enum class CategoryOptions(
-    val displayName: String,
     val icon: ImageVector,
     val chartColor: Color
 ) {
-    FOOD("Food", FoodIcon, FoodChartColor),
-    DATE("Date", HeartIcon, DateChartColor),
-    BEVERAGE("Beverage", CoffeeIcon, BeverageChartColor),
-    HOUSE("House", HouseIcon, HouseChartColor),
-    COMMUTE("Commute", MotorcycleIcon, CommuteChartColor),
-    BILLS("Bills", BillsIcon, BillsChartColor),
-    GROCERY("Grocery", GroceryIcon, GroceryChartColor),
-    FITNESS("Fitness", Icons.Default.FitnessCenter, FitnessChartColor),
-    OTHERS("Others", Icons.Default.Money, OthersChartColor)
+    FOOD(Icons.Default.Fastfood, FoodChartColor),
+    DATE(Icons.Default.FavoriteBorder, DateChartColor),
+    BEVERAGE(Icons.Default.Coffee, BeverageChartColor),
+    HOUSE(Icons.Default.House, HouseChartColor),
+    COMMUTE(Icons.Default.Commute, CommuteChartColor),
+    BILLS(BillsIcon, BillsChartColor),
+    GROCERY(Icons.Default.LocalGroceryStore, GroceryChartColor),
+    FITNESS(Icons.Default.FitnessCenter, FitnessChartColor),
+    PERSONAL(Icons.Default.Person, PersonalChartColor),
+    OTHERS(Icons.Default.Money, OthersChartColor)
 }
