@@ -2,8 +2,9 @@ package com.luna.budgetapp.presentation.screen.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,8 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,7 +33,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
-import com.luna.budgetapp.presentation.model.CategoryOptions
 import com.luna.budgetapp.ui.theme.MaterialBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +60,21 @@ fun CategoryFilterDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(16.dp)
             ) {
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 12.dp, bottom = 6.dp)
+                ) {
+                    Text(
+                        text = "Default",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
 
                 CategoryFilter(
                     selectedCategoryMap = tempMap,
@@ -126,29 +143,30 @@ fun CategoryFilter(
     }
 }
 
-// @Preview(
-//     showBackground = true
-// )
-// @Composable
-// fun CategoryFilterPreview() {
-//     val selectedCategoryMap = mapOf(
-//         "Food" to true,
-//         "Beverage" to true,
-//         "Date" to false,
-//         "House" to false,
-//         "Commute" to true,
-//         "Bills" to false,
-//         "Grocery" to false,
-//         "Others" to true
-//     )
-//
-//     Surface(
-//         color = Color.White
-//     ) {
-//         CategoryFilterDialog(
-//             selectedCategoryMap = selectedCategoryMap,
-//             onDismiss = {},
-//             onConfirm = { _ -> }
-//         )
-//     }
-// }
+@Preview
+@Composable
+fun CategoryFilterPreview() {
+
+    val selectedCategoryMap = mapOf(
+        Category.FOOD to true,
+        Category.BEVERAGE to true,
+        Category.DATE to false,
+        Category.HOUSE to false,
+        Category.COMMUTE to true,
+        Category.BILLS to false,
+        Category.GROCERY to false,
+        Category.OTHERS to true,
+        Category.FITNESS to false,
+        Category.PERSONAL to true,
+    )
+
+    Surface(
+        color = Color.White
+    ) {
+        CategoryFilterDialog(
+            selectedCategoryMap = selectedCategoryMap,
+            onDismiss = {},
+            onConfirm = { _ -> }
+        )
+    }
+}
