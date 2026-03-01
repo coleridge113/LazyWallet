@@ -16,7 +16,8 @@ import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
         ExpensePresetEntity::class,
         CategoryFilterEntity::class
     ], 
-    version =  1, exportSchema = false
+    version =  2, 
+    exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

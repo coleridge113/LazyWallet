@@ -8,6 +8,7 @@ import com.luna.budgetapp.data.local.repository.AuthRepositoryImpl
 import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
+import com.luna.budgetapp.data.local.migrations.MIGRATION_1_2
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.data.utils.PusherManager
 import com.luna.budgetapp.domain.repository.AuthRepository
@@ -82,7 +83,13 @@ val networkModule = module {
 
 val databaseModule = module {
     single {
-        Room.databaseBuilder(androidContext(), AppDatabase::class.java, "budget_db").build()
+        Room.databaseBuilder(
+            androidContext(), 
+            AppDatabase::class.java, 
+            "budget_db"
+        )
+        .addMigrations(MIGRATION_1_2)
+        .build()
     }
     single { get<AppDatabase>().expenseDao() }
     single { get<AppDatabase>().expensePresetDao() }

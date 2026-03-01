@@ -12,7 +12,7 @@ import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 @Dao
 interface CategoryFilterDao {
 
-    @Query("SELECT DISTINCT profileName FROM category_filter")
+    @Query("SELECT DISTINCT profile_name FROM category_filter")
     fun getProfiles(): Flow<List<String>>
 
     @Query("SELECT * FROM category_filter WHERE profile_name = :profileName")
