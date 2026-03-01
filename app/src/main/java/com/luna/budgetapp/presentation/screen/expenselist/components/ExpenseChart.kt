@@ -72,9 +72,8 @@ fun ExpenseDonutChart(
     chartDataList: List<ChartData>,
     onClickCenter: () -> Unit
 ) {
-    val animationProgress = remember(chartDataList) {
-        Animatable(0f)
-    }
+    val animationProgress = remember(chartDataList) { Animatable(0f) }
+    val SLICE_GAP = 2f
 
     LaunchedEffect(chartDataList) {
         animationProgress.snapTo(0f)
@@ -96,7 +95,7 @@ fun ExpenseDonutChart(
             modifier = Modifier.fillMaxSize()
         ) {
             var startAngle = -90f
-            val gapAngle = 2f
+            val gapAngle = if (chartDataList.size > 1) SLICE_GAP else 0f
 
             if (totalAmount == 0.0) {
                 val sweepAngle =
@@ -119,7 +118,7 @@ fun ExpenseDonutChart(
 
                 drawArc(
                     color = slice.color,
-                    startAngle = startAngle + gapAngle / 2f,
+                    startAngle = startAngle + gapAngle / SLICE_GAP,
                     sweepAngle = sweepAngle,
                     useCenter = false,
                     style = Stroke(width = 80f)
