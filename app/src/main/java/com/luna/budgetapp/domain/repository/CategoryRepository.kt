@@ -12,4 +12,8 @@ interface CategoryRepository {
     suspend fun saveProfile(items: List<CategoryFilter>)
 
     suspend fun deleteProfile(profileName: String)
+
+    suspend fun hasAny(): Boolean
+
+    suspend fun initializeIfNeeded()
 }

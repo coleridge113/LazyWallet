@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.flatMap
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,6 +29,7 @@ class ExpenseListViewModel(
     private val useCases: UseCases
 ) : ViewModel() {
     
+    private val DEFAULT_PROFILE = "Default"
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
 
@@ -47,6 +50,8 @@ class ExpenseListViewModel(
             .cachedIn(viewModelScope)
 
     init {
+        getCategoryProfileList()
+        getCategoryProfile(DEFAULT_PROFILE)
         observeTotalAmount()
         computeChartData()
     }
@@ -221,6 +226,36 @@ class ExpenseListViewModel(
                 selectedCategoryMap =
                     Category.entries.associateWith { true }
             )
+        }
+    }
+
+    private fun getCategoryProfileList() {
+        viewModelScope.launch {
+            useCases.getCategoryProfiles().collectLatest { profileList ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        profileList = profileList
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun getCategoryProfile(profileName: String) {
+        viewModelScope.launch {
+            useCases.getCategoryProfile(profileName)
+                .collectLatest { filters ->
+
+                    val categoryMap = filters.associate { filter ->
+                        filter.category to filter.isActive
+                    }
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            selectedCategoryMap = categoryMap
+                        )
+                    }
+                }
         }
     }
 }

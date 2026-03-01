@@ -1,12 +1,11 @@
 package com.luna.budgetapp.domain.usecase.category
 
 import com.luna.budgetapp.domain.repository.CategoryRepository
-import kotlinx.coroutines.flow.Flow
 
-class GetCategoryProfilesUseCase(
+class InitializeCategoryProfileUseCase(
     private val repository: CategoryRepository
 ) {
-    operator fun invoke(): Flow<List<String>> {
-        return repository.getProfiles()
+    suspend operator fun invoke() {
+        repository.initializeIfNeeded()
     }
 }

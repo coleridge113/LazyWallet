@@ -1,8 +1,7 @@
-package com.luna.budgetapp.domain.usecase.expense
+package com.luna.budgetapp.domain.usecase.category
 
 import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.model.CategoryFilter
-import kotlinx.coroutines.flow.Flow
 
 class SaveCategoryProfileUseCase(
     private val repository: CategoryRepository

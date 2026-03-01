@@ -51,7 +51,7 @@ fun CategoryFilterDialog(
     dismissText: String = "Cancel",
     confirmText: String = "Apply",
     selectedProfile: String = "Default",
-    profileList: List<String> = listOf("Default", "Profile 1"),
+    profileList: List<String>,
     onSelectedChange: (String) -> Unit
 ) {
     var tempMap by remember(selectedCategoryMap) {
@@ -220,7 +220,8 @@ fun CategoryFilterPreview() {
             selectedCategoryMap = selectedCategoryMap,
             onDismiss = {},
             onConfirm = { _ -> },
-            onSelectedChange = {}
+            onSelectedChange = {},
+            profileList = listOf("Default", "Profile 1")
         )
     }
 }
