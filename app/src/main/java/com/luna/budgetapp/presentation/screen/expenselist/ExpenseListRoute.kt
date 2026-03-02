@@ -151,7 +151,9 @@ fun MainContent(
                     onConfirm = { filters ->
                         onEvent(Event.SelectCategoryFilter(filters))
                     },
-                    onSelectedChange = {}
+                    onSelectedChange = { profileName ->
+                        onEvent(Event.SelectCategoryProfile(profileName))
+                    }
                 )
             }
 

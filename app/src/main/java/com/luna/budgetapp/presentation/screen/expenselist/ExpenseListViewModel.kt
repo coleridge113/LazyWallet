@@ -66,6 +66,7 @@ class ExpenseListViewModel(
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.SelectCategoryFilter -> selectCategoryFilter(event.selectedCategoryMap)
+            is Event.SelectCategoryProfile -> getCategoryProfile(event.profileName)
         }
     }
 
@@ -252,7 +253,8 @@ class ExpenseListViewModel(
 
                     _uiState.update { currentState ->
                         currentState.copy(
-                            selectedCategoryMap = categoryMap
+                            selectedCategoryMap = categoryMap,
+                            dialogState = null
                         )
                     }
                 }

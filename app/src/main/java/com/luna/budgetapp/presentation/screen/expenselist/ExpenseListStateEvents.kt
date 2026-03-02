@@ -32,6 +32,7 @@ sealed interface Event {
     data class DeleteExpense(val expenseId: Long) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
     data class SelectCategoryFilter(val selectedCategoryMap: Map<Category, Boolean>) : Event
+    data class SelectCategoryProfile(val profileName: String) : Event
 }
 
 sealed interface Navigation {}
