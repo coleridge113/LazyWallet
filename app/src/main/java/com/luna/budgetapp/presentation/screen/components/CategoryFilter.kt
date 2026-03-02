@@ -54,9 +54,8 @@ fun CategoryFilterDialog(
     profileList: List<String>,
     onSelectedChange: (String) -> Unit
 ) {
-    var tempMap by remember(selectedCategoryMap) {
-        mutableStateOf(selectedCategoryMap)
-    }
+    var tempMap by remember(selectedCategoryMap) { mutableStateOf(selectedCategoryMap) }
+    var textTitle by remember { mutableStateOf(selectedProfile) }
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -71,20 +70,25 @@ fun CategoryFilterDialog(
             ) {
 
                 CategoryProfileSelectorDropdown(
-                    selectedProfile = selectedProfile,
+                    selectedProfile = textTitle,
                     profileList = profileList,
-                    onSelectedChange = onSelectedChange
+                    onSelectedChange = onSelectedChange,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
+                    modifier = Modifier.padding(
+                        horizontal = 10.dp,
+                        vertical = 10.dp
+                    ),
+                    color = MaterialTheme.colorScheme.outlineVariant,
                 )
 
                 CategoryFilter(
                     selectedCategoryMap = tempMap,
                     onCheckedChange = { category, isChecked ->
                         tempMap = tempMap + (category to isChecked)
+                        textTitle = "Custom"
                     }
                 )
 
@@ -150,6 +154,7 @@ fun CategoryFilter(
 
 @Composable
 fun CategoryProfileSelectorDropdown(
+    modifier: Modifier = Modifier,
     selectedProfile: String,
     profileList: List<String>,
     onSelectedChange: (String) -> Unit
@@ -158,8 +163,8 @@ fun CategoryProfileSelectorDropdown(
 
     Box(
         contentAlignment = Alignment.CenterStart,
-        modifier = Modifier.fillMaxWidth()
-            .padding(start = 12.dp, bottom = 6.dp)
+        modifier = modifier.fillMaxWidth()
+            .padding(start = 12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
