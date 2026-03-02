@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.components
 
+import com.luna.budgetapp.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
@@ -48,12 +50,17 @@ fun CategoryFilterDialog(
     selectedCategoryMap: Map<Category, Boolean>,
     onDismiss: () -> Unit,
     onConfirm: (Map<Category, Boolean>) -> Unit,
-    dismissText: String = "Cancel",
-    confirmText: String = "Apply",
+    onSaveConfirm: (String, Map<Category, Boolean>) -> Unit,
     selectedProfile: String = "Default",
     profileList: List<String>,
     onSelectedChange: (String) -> Unit
 ) {
+
+    val applySaveText = stringResource(R.string.btn_apply_and_save)
+    val cancelText = stringResource(R.string.btn_cancel)
+    val applyText = stringResource(R.string.btn_apply)
+
+    val customText = stringResource(R.string.title_custom)
     var tempMap by remember(selectedCategoryMap) { mutableStateOf(selectedCategoryMap) }
     var textTitle by remember { mutableStateOf(selectedProfile) }
 
@@ -88,7 +95,7 @@ fun CategoryFilterDialog(
                     selectedCategoryMap = tempMap,
                     onCheckedChange = { category, isChecked ->
                         tempMap = tempMap + (category to isChecked)
-                        textTitle = "Custom"
+                        textTitle = customText
                     }
                 )
 
@@ -99,16 +106,26 @@ fun CategoryFilterDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text(dismissText)
+                        Text(cancelText)
                     }
                     TextButton(
                         onClick = { onConfirm(tempMap) }
                     ) {
                         Text(
-                            text = confirmText,
+                            text = applyText,
                             color = MaterialBlue
                         )
                     }
+
+                    if (textTitle == customText) {
+                        TextButton(
+                            onClick = { onSaveConfirm(textTitle, tempMap) }
+                        ) {
+                            Text(
+                                text = applySaveText
+                            )
+                        }
+                    } 
 
                 }
             }
@@ -226,7 +243,8 @@ fun CategoryFilterPreview() {
             onDismiss = {},
             onConfirm = { _ -> },
             onSelectedChange = {},
-            profileList = listOf("Default", "Profile 1")
+            profileList = listOf("Default", "Profile 1"),
+            onSaveConfirm = {_, _ ->}
         )
     }
 }

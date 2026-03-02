@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">LazyWallet</string>
+
+    # Button Texts
+    <string name="btn_apply_and_save">Apply &amp; Save</string>
+    <string name="btn_apply">Apply</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_delete">Delete</string>
+
+    <string name="title_custom">Custom</string>
 </resources>

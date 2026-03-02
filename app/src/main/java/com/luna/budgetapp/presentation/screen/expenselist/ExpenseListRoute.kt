@@ -153,6 +153,8 @@ fun MainContent(
                     },
                     onSelectedChange = { profileName ->
                         onEvent(Event.SelectCategoryProfile(profileName))
+                    },
+                    onSaveConfirm = { newProfileName, filters ->
                     }
                 )
             }
