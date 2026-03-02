@@ -155,6 +155,7 @@ fun MainContent(
                         onEvent(Event.SelectCategoryProfile(profileName))
                     },
                     onSaveConfirm = { newProfileName, filters ->
+                        onEvent(Event.SaveCategoryProfile(newProfileName, filters))
                     }
                 )
             }

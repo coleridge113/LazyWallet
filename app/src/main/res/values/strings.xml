@@ -6,6 +6,7 @@
     <string name="btn_apply">Apply</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_delete">Delete</string>
+    <string name="btn_save">Save</string>
 
     <string name="title_custom">Custom</string>
 </resources>

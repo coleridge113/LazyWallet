@@ -14,7 +14,8 @@ data class UiState(
     val chartDataList: List<ChartData> = emptyList(),
     val totalAmount: Double = 0.0,
     val profileList: List<String> = emptyList(),
-    val selectedCategoryMap: Map<Category, Boolean> = emptyMap()
+    val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
+    val activeProfile: String = "Default"
 ) 
 
 sealed interface DialogState {
@@ -33,6 +34,10 @@ sealed interface Event {
     data class SelectDateRange(val selectedRange: DateFilter) : Event
     data class SelectCategoryFilter(val selectedCategoryMap: Map<Category, Boolean>) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
+    data class SaveCategoryProfile(
+        val profileName: String,
+        val selectedCategoryMap: Map<Category, Boolean>
+    ) : Event
 }
 
 sealed interface Navigation {}

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.UseCases
@@ -67,6 +68,12 @@ class ExpenseListViewModel(
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.SelectCategoryFilter -> selectCategoryFilter(event.selectedCategoryMap)
             is Event.SelectCategoryProfile -> getCategoryProfile(event.profileName)
+            is Event.SaveCategoryProfile -> { 
+                saveCategoryProfile(
+                    event.profileName,
+                    event.selectedCategoryMap
+                ) 
+            }
         }
     }
 
@@ -254,10 +261,32 @@ class ExpenseListViewModel(
                     _uiState.update { currentState ->
                         currentState.copy(
                             selectedCategoryMap = categoryMap,
+                            activeProfile = profileName,
                             dialogState = null
                         )
                     }
                 }
+        }
+    }
+
+    private fun saveCategoryProfile(
+        profileName: String,
+        categoryMap: Map<Category, Boolean>
+    ) {
+        viewModelScope.launch {
+            val filters = categoryMap.map { (category, isActive) ->
+                CategoryFilter(
+                    profileName = profileName,
+                    category = category,
+                    isActive = isActive
+                )
+            }
+
+            useCases.saveCategoryProfile(filters)
+
+            _uiState.update { currentState ->
+                currentState.copy(dialogState = null)
+            }
         }
     }
 }

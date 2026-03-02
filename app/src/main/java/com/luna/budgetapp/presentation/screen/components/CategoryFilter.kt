@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,13 +57,15 @@ fun CategoryFilterDialog(
     onSelectedChange: (String) -> Unit
 ) {
 
-    val applySaveText = stringResource(R.string.btn_apply_and_save)
+    val applySaveText = stringResource(R.string.btn_save)
     val cancelText = stringResource(R.string.btn_cancel)
     val applyText = stringResource(R.string.btn_apply)
-
     val customText = stringResource(R.string.title_custom)
+
     var tempMap by remember(selectedCategoryMap) { mutableStateOf(selectedCategoryMap) }
     var textTitle by remember { mutableStateOf(selectedProfile) }
+    var isSaveMode by remember { mutableStateOf(false) }
+    var profileNameInput by remember { mutableStateOf("") }
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -76,57 +79,86 @@ fun CategoryFilterDialog(
                 modifier = Modifier.padding(16.dp)
             ) {
 
-                CategoryProfileSelectorDropdown(
-                    selectedProfile = textTitle,
-                    profileList = profileList,
-                    onSelectedChange = onSelectedChange,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+                if (!isSaveMode) {
+                    CategoryProfileSelectorDropdown(
+                        selectedProfile = textTitle,
+                        profileList = profileList,
+                        onSelectedChange = onSelectedChange,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            horizontal = 10.dp,
+                            vertical = 10.dp
+                        ),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(
-                        horizontal = 10.dp,
-                        vertical = 10.dp
-                    ),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                )
+                    CategoryFilter(
+                        selectedCategoryMap = tempMap,
+                        onCheckedChange = { category, isChecked ->
+                            tempMap = tempMap + (category to isChecked)
+                            textTitle = customText
+                        }
+                    )
 
-                CategoryFilter(
-                    selectedCategoryMap = tempMap,
-                    onCheckedChange = { category, isChecked ->
-                        tempMap = tempMap + (category to isChecked)
-                        textTitle = customText
-                    }
-                )
+                    Spacer(Modifier.height(16.dp))
 
-                Spacer(Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(cancelText)
-                    }
-                    TextButton(
-                        onClick = { onConfirm(tempMap) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
                     ) {
-                        Text(
-                            text = applyText,
-                            color = MaterialBlue
-                        )
-                    }
-
-                    if (textTitle == customText) {
+                        TextButton(onClick = onDismiss) {
+                            Text(cancelText)
+                        }
                         TextButton(
-                            onClick = { onSaveConfirm(textTitle, tempMap) }
+                            onClick = { onConfirm(tempMap) }
                         ) {
                             Text(
-                                text = applySaveText
+                                text = applyText,
+                                color = MaterialBlue
                             )
                         }
-                    } 
 
+                        if (textTitle == customText) {
+                            TextButton(
+                                onClick = { isSaveMode = true }
+                            ) {
+                                Text(
+                                    text = applySaveText
+                                )
+                            }
+                        }
+
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = profileNameInput,
+                        onValueChange = { profileNameInput = it },
+                        label = { Text("Profile Name") },
+                        singleLine = true
+                    )
+
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = { isSaveMode = false }
+                        ) {
+                            Text(stringResource(R.string.btn_cancel))
+                        }
+
+                        TextButton(
+                            onClick = {
+                                onSaveConfirm(profileNameInput, tempMap)
+                                isSaveMode = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.btn_save))
+                        }
+                    }
                 }
             }
         }
