@@ -261,7 +261,7 @@ class ExpenseListViewModel(
                     _uiState.update { currentState ->
                         currentState.copy(
                             selectedCategoryMap = categoryMap,
-                            activeProfile = profileName,
+                            selectedProfile = profileName,
                             dialogState = null
                         )
                     }

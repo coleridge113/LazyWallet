@@ -52,7 +52,7 @@ fun CategoryFilterDialog(
     onDismiss: () -> Unit,
     onConfirm: (Map<Category, Boolean>) -> Unit,
     onSaveConfirm: (String, Map<Category, Boolean>) -> Unit,
-    selectedProfile: String = "Default",
+    selectedProfile: String,
     profileList: List<String>,
     onSelectedChange: (String) -> Unit
 ) {
@@ -276,7 +276,8 @@ fun CategoryFilterPreview() {
             onConfirm = { _ -> },
             onSelectedChange = {},
             profileList = listOf("Default", "Profile 1"),
-            onSaveConfirm = {_, _ ->}
+            onSaveConfirm = {_, _ ->},
+            selectedProfile = "Default"
         )
     }
 }

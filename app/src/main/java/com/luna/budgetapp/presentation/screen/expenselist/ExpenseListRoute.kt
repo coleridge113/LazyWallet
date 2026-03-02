@@ -146,6 +146,7 @@ fun MainContent(
             is DialogState.CategoryFilterForm -> {
                 CategoryFilterDialog(
                     selectedCategoryMap = dialog.filteredCategories,
+                    selectedProfile = uiState.selectedProfile,
                     profileList = uiState.profileList,
                     onDismiss = { onEvent(Event.DismissDialog) },
                     onConfirm = { filters ->

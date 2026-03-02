@@ -15,7 +15,7 @@ data class UiState(
     val totalAmount: Double = 0.0,
     val profileList: List<String> = emptyList(),
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
-    val activeProfile: String = "Default"
+    val selectedProfile: String = ""
 ) 
 
 sealed interface DialogState {
