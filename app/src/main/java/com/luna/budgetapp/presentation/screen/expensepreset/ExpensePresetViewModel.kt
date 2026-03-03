@@ -32,6 +32,7 @@ class ExpensePresetViewModel(
     val navigation = _navigation.receiveAsFlow()
 
     init {
+        initializeCategoryFilterIfNeeded()
         observeTotalAmount()
         observeExpensePresets()
     }
@@ -252,6 +253,12 @@ class ExpensePresetViewModel(
     private fun gotoExpenseRoute() {
         viewModelScope.launch {
             _navigation.send(Navigation.GotoExpenseRoute)
+        }
+    }
+
+    private fun initializeCategoryFilterIfNeeded() {
+        viewModelScope.launch {
+            useCases.initializeCategoryProfile()
         }
     }
 }

@@ -5,15 +5,6 @@ import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.presentation.model.ChartData
 import com.luna.budgetapp.domain.model.Category
 
-val defaultCategories = listOf(
-    Category.FOOD,
-    Category.DATE,
-    Category.BEVERAGE,
-    Category.COMMUTE,
-    Category.OTHERS,
-    Category.FITNESS
-)
-
 data class UiState(
     val isExpensesLoading: Boolean = false,
     val error: String? = null,
@@ -22,15 +13,9 @@ data class UiState(
     val selectedRange: DateFilter = DateFilter.Daily,
     val chartDataList: List<ChartData> = emptyList(),
     val totalAmount: Double = 0.0,
-    val selectedCategoryMap: Map<Category, Boolean> = 
-        Category.entries
-            .associate {
-                if (it in defaultCategories) {
-                    it to true
-                } else {
-                    it to false
-                }
-            }
+    val profileList: List<String> = emptyList(),
+    val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
+    val selectedProfile: String = ""
 ) 
 
 sealed interface DialogState {
@@ -48,6 +33,11 @@ sealed interface Event {
     data class DeleteExpense(val expenseId: Long) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
     data class SelectCategoryFilter(val selectedCategoryMap: Map<Category, Boolean>) : Event
+    data class SelectCategoryProfile(val profileName: String) : Event
+    data class SaveCategoryProfile(
+        val profileName: String,
+        val selectedCategoryMap: Map<Category, Boolean>
+    ) : Event
 }
 
 sealed interface Navigation {}

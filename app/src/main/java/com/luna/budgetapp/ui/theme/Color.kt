@@ -24,4 +24,5 @@ val CommuteChartColor = Color(0xFFFFB74D)     // Soft Orange
 val BillsChartColor = Color(0xFFBA68C8)       // Muted Purple
 val GroceryChartColor = Color(0xFF4CAF50)     // Fresh Green
 val FitnessChartColor = Color(0xFFFF8F00)     // Amber 800
+val PersonalChartColor = Color(0xFF4DD0E1)    // Cyan 300
 val OthersChartColor = Color(0xFF616161)      // Grey

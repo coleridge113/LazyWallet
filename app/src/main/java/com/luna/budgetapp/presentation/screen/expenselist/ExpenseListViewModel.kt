@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.UseCases
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.flatMap
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,6 +30,7 @@ class ExpenseListViewModel(
     private val useCases: UseCases
 ) : ViewModel() {
     
+    private val DEFAULT_PROFILE = "Default"
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
 
@@ -47,6 +51,8 @@ class ExpenseListViewModel(
             .cachedIn(viewModelScope)
 
     init {
+        getCategoryProfileList()
+        getCategoryProfile(DEFAULT_PROFILE)
         observeTotalAmount()
         computeChartData()
     }
@@ -61,6 +67,13 @@ class ExpenseListViewModel(
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.SelectCategoryFilter -> selectCategoryFilter(event.selectedCategoryMap)
+            is Event.SelectCategoryProfile -> getCategoryProfile(event.profileName)
+            is Event.SaveCategoryProfile -> { 
+                saveCategoryProfile(
+                    event.profileName,
+                    event.selectedCategoryMap
+                ) 
+            }
         }
     }
 
@@ -221,6 +234,59 @@ class ExpenseListViewModel(
                 selectedCategoryMap =
                     Category.entries.associateWith { true }
             )
+        }
+    }
+
+    private fun getCategoryProfileList() {
+        viewModelScope.launch {
+            useCases.getCategoryProfiles().collectLatest { profileList ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        profileList = profileList
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun getCategoryProfile(profileName: String) {
+        viewModelScope.launch {
+            useCases.getCategoryProfile(profileName)
+                .collectLatest { filters ->
+
+                    val categoryMap = filters.associate { filter ->
+                        filter.category to filter.isActive
+                    }
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            selectedCategoryMap = categoryMap,
+                            selectedProfile = profileName,
+                            dialogState = null
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun saveCategoryProfile(
+        profileName: String,
+        categoryMap: Map<Category, Boolean>
+    ) {
+        viewModelScope.launch {
+            val filters = categoryMap.map { (category, isActive) ->
+                CategoryFilter(
+                    profileName = profileName,
+                    category = category,
+                    isActive = isActive
+                )
+            }
+
+            useCases.saveCategoryProfile(filters)
+
+            _uiState.update { currentState ->
+                currentState.copy(dialogState = null)
+            }
         }
     }
 }

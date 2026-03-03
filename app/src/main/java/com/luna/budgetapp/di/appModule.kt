@@ -5,15 +5,23 @@ import com.luna.budgetapp.data.datastore.AuthLocalDataSource
 import com.luna.budgetapp.data.datastore.dataStore
 import com.luna.budgetapp.data.local.AppDatabase
 import com.luna.budgetapp.data.local.repository.AuthRepositoryImpl
+import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
+import com.luna.budgetapp.data.local.migrations.MIGRATION_1_2
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.data.utils.PusherManager
 import com.luna.budgetapp.domain.repository.AuthRepository
 import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.domain.repository.ExpenseRepository
+import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
+import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.GetCategoryProfilesUseCase
+import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
@@ -80,10 +88,17 @@ val networkModule = module {
 
 val databaseModule = module {
     single {
-        Room.databaseBuilder(androidContext(), AppDatabase::class.java, "budget_db").build()
+        Room.databaseBuilder(
+            androidContext(), 
+            AppDatabase::class.java, 
+            "budget_db"
+        )
+        .addMigrations(MIGRATION_1_2)
+        .build()
     }
     single { get<AppDatabase>().expenseDao() }
     single { get<AppDatabase>().expensePresetDao() }
+    single { get<AppDatabase>().categoryFilterDao() }
     single { androidContext().dataStore }
 }
 
@@ -98,6 +113,7 @@ val appModule = module {
     singleOf(::ExpenseRepositoryImpl) { bind<ExpenseRepository>() }
     singleOf(::ExpensePresetRepositoryImpl) { bind<ExpensePresetRepository>() }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
+    singleOf(::CategoryFilterRepositoryImpl) { bind<CategoryRepository>() }
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
 
@@ -117,6 +133,12 @@ val appModule = module {
     factoryOf(::AddExpensePresetUseCase)
     factoryOf(::GetPagingExpensesByDateRangeUseCase)
     factoryOf(::DeleteExpensePresetUseCase)
+    factoryOf(::GetCategoryProfileUseCase)
+    factoryOf(::GetCategoryProfilesUseCase)
+    factoryOf(::SaveCategoryProfileUseCase)
+    factoryOf(::DeleteCategoryProfileUseCase)
+    factoryOf(::InitializeCategoryProfileUseCase)
+
     factoryOf(::UseCases)
 
     // ViewModels

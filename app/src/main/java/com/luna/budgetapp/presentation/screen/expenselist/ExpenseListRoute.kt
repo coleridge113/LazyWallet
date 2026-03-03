@@ -146,9 +146,17 @@ fun MainContent(
             is DialogState.CategoryFilterForm -> {
                 CategoryFilterDialog(
                     selectedCategoryMap = dialog.filteredCategories,
+                    selectedProfile = uiState.selectedProfile,
+                    profileList = uiState.profileList,
                     onDismiss = { onEvent(Event.DismissDialog) },
                     onConfirm = { filters ->
                         onEvent(Event.SelectCategoryFilter(filters))
+                    },
+                    onSelectedChange = { profileName ->
+                        onEvent(Event.SelectCategoryProfile(profileName))
+                    },
+                    onSaveConfirm = { newProfileName, filters ->
+                        onEvent(Event.SaveCategoryProfile(newProfileName, filters))
                     }
                 )
             }
