@@ -10,7 +10,6 @@ import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.presentation.model.ChartData
-import com.luna.budgetapp.presentation.model.CategoryOptions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.flatMap
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

@@ -2,7 +2,8 @@ package com.luna.budgetapp.di
 
 import androidx.room.Room
 import com.luna.budgetapp.data.datastore.AuthLocalDataSource
-import com.luna.budgetapp.data.datastore.dataStore
+import com.luna.budgetapp.data.datastore.authDataStore
+import com.luna.budgetapp.data.datastore.settingsDataStore
 import com.luna.budgetapp.data.local.AppDatabase
 import com.luna.budgetapp.data.local.repository.AuthRepositoryImpl
 import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
@@ -36,6 +37,10 @@ import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUse
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.settings.GetActiveDateFilterUseCase
+import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.settings.SetActiveDateFilterUseCase
 import com.luna.budgetapp.network.AuthService
 import com.luna.budgetapp.network.ExpenseService
 import com.luna.budgetapp.network.interceptors.AuthInterceptor
@@ -99,7 +104,8 @@ val databaseModule = module {
     single { get<AppDatabase>().expenseDao() }
     single { get<AppDatabase>().expensePresetDao() }
     single { get<AppDatabase>().categoryFilterDao() }
-    single { androidContext().dataStore }
+    single { androidContext().authDataStore }
+    single { androidContext().settingsDataStore }
 }
 
 val servicesModule = module {
@@ -138,6 +144,10 @@ val appModule = module {
     factoryOf(::SaveCategoryProfileUseCase)
     factoryOf(::DeleteCategoryProfileUseCase)
     factoryOf(::InitializeCategoryProfileUseCase)
+    factoryOf(::GetActiveCategoryProfileUseCase)
+    factoryOf(::SetActiveCategoryProfileUseCase)
+    factoryOf(::GetActiveDateFilterUseCase)
+    factoryOf(::SetActiveDateFilterUseCase)
 
     factoryOf(::UseCases)
 
