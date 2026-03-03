@@ -37,21 +37,13 @@ class CategoryFilterRepositoryImpl(
     override suspend fun initializeIfNeeded() {
         if (dao.hasAny()) return
 
-        val profileName = "Default"
-        val defaultCategories = setOf(
-            Category.FOOD,
-            Category.DATE,
-            Category.BEVERAGE,
-            Category.COMMUTE,
-            Category.OTHERS,
-            Category.FITNESS
-        )
+        val profileName = "All"
 
         val items = Category.entries.map { category ->
             CategoryFilter(
                 profileName = profileName,
                 category = category,
-                isActive = category in defaultCategories
+                isActive = true
             )
         }
 

@@ -28,7 +28,6 @@ class ExpenseListViewModel(
     private val useCases: UseCases
 ) : ViewModel() {
     
-    private val DEFAULT_PROFILE = "Default"
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
 
@@ -49,8 +48,8 @@ class ExpenseListViewModel(
             .cachedIn(viewModelScope)
 
     init {
+        observeActiveProfileAndCategories()
         getCategoryProfileList()
-        getCategoryProfile(DEFAULT_PROFILE)
         observeTotalAmount()
         computeChartData()
     }
@@ -64,8 +63,8 @@ class ExpenseListViewModel(
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
-            is Event.SelectCategoryFilter -> selectCategoryFilter(event.profileName, event.selectedCategoryMap)
-            is Event.SelectCategoryProfile -> getCategoryProfile(event.profileName)
+            is Event.ApplyCategoryFilters -> applyCategoryFilters(event.profileName, event.selectedCategoryMap)
+            is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
             is Event.SaveCategoryProfile -> saveCategoryProfile(event.profileName, event.selectedCategoryMap)
         }
     }
@@ -212,22 +211,19 @@ class ExpenseListViewModel(
         }
     }
 
-    private fun selectCategoryFilter(profileName: String, filters: Map<Category, Boolean>) {
+    private fun applyCategoryFilters(profileName: String, filters: Map<Category, Boolean>) {
         _uiState.update { currentState ->
             currentState.copy(
                 selectedCategoryMap = filters,
-                selectedProfile = profileName,
+                activeProfile = profileName,
                 dialogState = null
             )
         }
     }
 
     private fun resetCategoryFilters() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                selectedCategoryMap =
-                    Category.entries.associateWith { true }
-            )
+        viewModelScope.launch {
+            useCases.setActiveCategoryProfile("All")
         }
     }
 
@@ -243,26 +239,6 @@ class ExpenseListViewModel(
         }
     }
     
-    private fun getCategoryProfile(profileName: String) {
-        viewModelScope.launch {
-            useCases.getCategoryProfile(profileName)
-                .collectLatest { filters ->
-
-                    val categoryMap = filters.associate { filter ->
-                        filter.category to filter.isActive
-                    }
-
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            selectedCategoryMap = categoryMap,
-                            selectedProfile = profileName,
-                            dialogState = null
-                        )
-                    }
-                }
-        }
-    }
-
     private fun saveCategoryProfile(
         profileName: String,
         categoryMap: Map<Category, Boolean>
@@ -281,6 +257,41 @@ class ExpenseListViewModel(
             _uiState.update { currentState ->
                 currentState.copy(dialogState = null)
             }
+        }
+    }
+
+    private fun setActiveCategoryProfile(profileName: String) {
+        viewModelScope.launch {
+            useCases.setActiveCategoryProfile(profileName)
+
+            _uiState.update { currentState ->
+                currentState.copy(dialogState = null)
+            }
+        }
+    }
+
+    private fun observeActiveProfileAndCategories() {
+        viewModelScope.launch {
+            useCases.getActiveCategoryProfile()
+                .flatMapLatest { profile ->
+                    useCases.getCategoryProfile(profile)
+                        .map { filters ->
+                            profile to filters
+                        }
+                }
+                .collectLatest { (profile, filters) ->
+
+                    val categoryMap = filters.associate {
+                        it.category to it.isActive
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            activeProfile = profile,
+                            selectedCategoryMap = categoryMap
+                        )
+                    }
+                }
         }
     }
 }

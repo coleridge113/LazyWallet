@@ -2,6 +2,7 @@ package com.luna.budgetapp.di
 
 import androidx.room.Room
 import com.luna.budgetapp.data.datastore.AuthLocalDataSource
+import com.luna.budgetapp.data.datastore.SettingsDataStore
 import com.luna.budgetapp.data.datastore.authDataStore
 import com.luna.budgetapp.data.datastore.settingsDataStore
 import com.luna.budgetapp.data.local.AppDatabase
@@ -10,12 +11,14 @@ import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
 import com.luna.budgetapp.data.local.migrations.MIGRATION_1_2
+import com.luna.budgetapp.data.local.repository.SettingsRepositoryImpl
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.data.utils.PusherManager
 import com.luna.budgetapp.domain.repository.AuthRepository
 import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.domain.repository.ExpenseRepository
 import com.luna.budgetapp.domain.repository.CategoryRepository
+import com.luna.budgetapp.domain.repository.SettingsRepository
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
 import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
@@ -120,8 +123,10 @@ val appModule = module {
     singleOf(::ExpensePresetRepositoryImpl) { bind<ExpensePresetRepository>() }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     singleOf(::CategoryFilterRepositoryImpl) { bind<CategoryRepository>() }
+    singleOf(::SettingsRepositoryImpl) { bind<SettingsRepository>() }
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
+    singleOf(::SettingsDataStore)
 
     // UseCases
     factoryOf(::AddExpenseUseCase)
@@ -149,7 +154,15 @@ val appModule = module {
     factoryOf(::GetActiveDateFilterUseCase)
     factoryOf(::SetActiveDateFilterUseCase)
 
-    factoryOf(::UseCases)
+    factory {
+        UseCases(
+            get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(),
+            get(), get(), get()
+        )
+    }
 
     // ViewModels
     viewModelOf(::AuthViewModel)

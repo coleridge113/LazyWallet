@@ -6,5 +6,5 @@ import kotlinx.coroutines.flow.Flow
 class GetActiveCategoryProfileUseCase(
     private val repository: SettingsRepository
 ) {
-    suspend operator fun invoke(): Flow<String> = repository.activeProfileFlow
+    operator fun invoke(): Flow<String> = repository.activeProfileFlow
 }

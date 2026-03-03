@@ -15,7 +15,7 @@ data class UiState(
     val totalAmount: Double = 0.0,
     val profileList: List<String> = emptyList(),
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
-    val selectedProfile: String = ""
+    val activeProfile: String = ""
 ) 
 
 sealed interface DialogState {
@@ -32,7 +32,7 @@ sealed interface Event {
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class DeleteExpense(val expenseId: Long) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
-    data class SelectCategoryFilter(val profileName: String, val selectedCategoryMap: Map<Category, Boolean>) : Event
+    data class ApplyCategoryFilters(val profileName: String, val selectedCategoryMap: Map<Category, Boolean>) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
     data class SaveCategoryProfile(
         val profileName: String,
