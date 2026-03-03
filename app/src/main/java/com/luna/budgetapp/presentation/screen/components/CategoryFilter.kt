@@ -86,6 +86,7 @@ fun CategoryFilterDialog(
                         onSelectedChange = onSelectedChange,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
+
                     HorizontalDivider(
                         modifier = Modifier.padding(
                             horizontal = 10.dp,
@@ -111,6 +112,7 @@ fun CategoryFilterDialog(
                         TextButton(onClick = onDismiss) {
                             Text(cancelText)
                         }
+
                         TextButton(
                             onClick = { onConfirm(profileTitle, tempMap) }
                         ) {
@@ -138,7 +140,6 @@ fun CategoryFilterDialog(
                         label = { Text("Profile Name") },
                         singleLine = true
                     )
-
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
