@@ -1,5 +1,10 @@
 package com.luna.budgetapp.presentation.screen.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import com.luna.budgetapp.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +25,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -111,7 +117,10 @@ fun CategoryFilterDialog(
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(onClick = onDismiss) {
-                            Text(cancelText)
+                            Text(
+                                text = cancelText,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
 
                         TextButton(
@@ -119,12 +128,15 @@ fun CategoryFilterDialog(
                         ) {
                             Text(
                                 text = applyText,
-                                color = MaterialBlue
                             )
                         }
 
-                        if (profileTitle == customText) {
-                            TextButton(
+                        AnimatedVisibility(
+                            visible = profileTitle == customText,
+                            enter = fadeIn() + expandHorizontally(),
+                            exit = fadeOut() + shrinkHorizontally()
+                        ) {
+                            Button(
                                 onClick = { isSaveMode = true }
                             ) {
                                 Text(
