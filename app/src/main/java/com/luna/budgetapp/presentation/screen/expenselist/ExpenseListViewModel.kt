@@ -2,6 +2,7 @@ package com.luna.budgetapp.presentation.screen.expenselist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.luna.budgetapp.domain.model.Category
@@ -216,9 +217,12 @@ class ExpenseListViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 selectedCategoryMap = filters,
-                activeProfile = profileName,
                 dialogState = null
             )
+        }
+
+        viewModelScope.launch {
+            useCases.setActiveCategoryProfile(profileName)
         }
     }
 
@@ -286,10 +290,11 @@ class ExpenseListViewModel(
                         it.category to it.isActive
                     }
 
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { currentState ->
+                        currentState.copy(
                             activeProfile = profile,
-                            selectedCategoryMap = categoryMap
+                            selectedCategoryMap =
+                                categoryMap.ifEmpty { currentState.selectedCategoryMap }
                         )
                     }
                 }
