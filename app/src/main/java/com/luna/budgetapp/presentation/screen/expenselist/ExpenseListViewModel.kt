@@ -66,14 +66,9 @@ class ExpenseListViewModel(
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
-            is Event.SelectCategoryFilter -> selectCategoryFilter(event.selectedCategoryMap)
+            is Event.SelectCategoryFilter -> selectCategoryFilter(event.profileName, event.selectedCategoryMap)
             is Event.SelectCategoryProfile -> getCategoryProfile(event.profileName)
-            is Event.SaveCategoryProfile -> { 
-                saveCategoryProfile(
-                    event.profileName,
-                    event.selectedCategoryMap
-                ) 
-            }
+            is Event.SaveCategoryProfile -> saveCategoryProfile(event.profileName, event.selectedCategoryMap)
         }
     }
 
@@ -219,10 +214,11 @@ class ExpenseListViewModel(
         }
     }
 
-    private fun selectCategoryFilter(filters: Map<Category, Boolean>) {
+    private fun selectCategoryFilter(profileName: String, filters: Map<Category, Boolean>) {
         _uiState.update { currentState ->
             currentState.copy(
                 selectedCategoryMap = filters,
+                selectedProfile = profileName,
                 dialogState = null
             )
         }

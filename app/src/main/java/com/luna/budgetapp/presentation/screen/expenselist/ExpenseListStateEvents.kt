@@ -32,7 +32,7 @@ sealed interface Event {
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class DeleteExpense(val expenseId: Long) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
-    data class SelectCategoryFilter(val selectedCategoryMap: Map<Category, Boolean>) : Event
+    data class SelectCategoryFilter(val profileName: String, val selectedCategoryMap: Map<Category, Boolean>) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
     data class SaveCategoryProfile(
         val profileName: String,

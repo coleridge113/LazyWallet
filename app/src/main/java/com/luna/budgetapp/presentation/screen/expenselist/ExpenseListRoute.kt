@@ -149,8 +149,8 @@ fun MainContent(
                     selectedProfile = uiState.selectedProfile,
                     profileList = uiState.profileList,
                     onDismiss = { onEvent(Event.DismissDialog) },
-                    onConfirm = { filters ->
-                        onEvent(Event.SelectCategoryFilter(filters))
+                    onConfirm = { profileName, filters ->
+                        onEvent(Event.SelectCategoryFilter(profileName, filters))
                     },
                     onSelectedChange = { profileName ->
                         onEvent(Event.SelectCategoryProfile(profileName))

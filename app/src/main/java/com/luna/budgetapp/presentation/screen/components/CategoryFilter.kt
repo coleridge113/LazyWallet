@@ -50,7 +50,7 @@ fun CategoryFilterDialog(
     modifier: Modifier = Modifier,
     selectedCategoryMap: Map<Category, Boolean>,
     onDismiss: () -> Unit,
-    onConfirm: (Map<Category, Boolean>) -> Unit,
+    onConfirm: (String, Map<Category, Boolean>) -> Unit,
     onSaveConfirm: (String, Map<Category, Boolean>) -> Unit,
     selectedProfile: String,
     profileList: List<String>,
@@ -112,7 +112,7 @@ fun CategoryFilterDialog(
                             Text(cancelText)
                         }
                         TextButton(
-                            onClick = { onConfirm(tempMap) }
+                            onClick = { onConfirm(profileTitle, tempMap) }
                         ) {
                             Text(
                                 text = applyText,
@@ -273,7 +273,7 @@ fun CategoryFilterPreview() {
         CategoryFilterDialog(
             selectedCategoryMap = selectedCategoryMap,
             onDismiss = {},
-            onConfirm = { _ -> },
+            onConfirm = { _, _ -> },
             onSelectedChange = {},
             profileList = listOf("Default", "Profile 1"),
             onSaveConfirm = {_, _ ->},
