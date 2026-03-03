@@ -274,12 +274,13 @@ fun CategoryFilterPreview() {
     ) {
         CategoryFilterDialog(
             selectedCategoryMap = selectedCategoryMap,
+            selectedProfile = "Default",
             onDismiss = {},
             onConfirm = { _, _ -> },
             onSelectedChange = {},
             profileList = listOf("Default", "Profile 1"),
             onSaveConfirm = {_, _ ->},
-            selectedProfile = "Default"
+            onDelete = {}
         )
     }
 }
