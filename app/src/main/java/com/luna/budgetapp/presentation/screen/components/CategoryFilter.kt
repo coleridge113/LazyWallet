@@ -63,7 +63,7 @@ fun CategoryFilterDialog(
     val customText = stringResource(R.string.title_custom)
 
     var tempMap by remember(selectedCategoryMap) { mutableStateOf(selectedCategoryMap) }
-    var textTitle by remember { mutableStateOf(selectedProfile) }
+    var profileTitle by remember { mutableStateOf(selectedProfile) }
     var isSaveMode by remember { mutableStateOf(false) }
     var profileNameInput by remember { mutableStateOf("") }
 
@@ -81,7 +81,7 @@ fun CategoryFilterDialog(
 
                 if (!isSaveMode) {
                     CategoryProfileSelectorDropdown(
-                        selectedProfile = textTitle,
+                        selectedProfile = profileTitle,
                         profileList = profileList,
                         onSelectedChange = onSelectedChange,
                         modifier = Modifier.padding(bottom = 4.dp)
@@ -98,7 +98,7 @@ fun CategoryFilterDialog(
                         selectedCategoryMap = tempMap,
                         onCheckedChange = { category, isChecked ->
                             tempMap = tempMap + (category to isChecked)
-                            textTitle = customText
+                            profileTitle = customText
                         }
                     )
 
@@ -120,7 +120,7 @@ fun CategoryFilterDialog(
                             )
                         }
 
-                        if (textTitle == customText) {
+                        if (profileTitle == customText) {
                             TextButton(
                                 onClick = { isSaveMode = true }
                             ) {
