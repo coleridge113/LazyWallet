@@ -34,6 +34,7 @@ sealed interface Event {
     data class SelectDateRange(val selectedRange: DateFilter) : Event
     data class ApplyCategoryFilters(val profileName: String, val selectedCategoryMap: Map<Category, Boolean>) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
+    data class DeleteCategoryProfile(val profileName: String) : Event
     data class SaveCategoryProfile(
         val profileName: String,
         val selectedCategoryMap: Map<Category, Boolean>

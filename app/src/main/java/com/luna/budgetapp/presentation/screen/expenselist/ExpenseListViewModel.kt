@@ -66,6 +66,7 @@ class ExpenseListViewModel(
             is Event.ApplyCategoryFilters -> applyCategoryFilters(event.profileName, event.selectedCategoryMap)
             is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
             is Event.SaveCategoryProfile -> saveCategoryProfile(event.profileName, event.selectedCategoryMap)
+            is Event.DeleteCategoryProfile -> deleteCategoryProfile(event.profileName)
         }
     }
 
@@ -292,6 +293,12 @@ class ExpenseListViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    private fun deleteCategoryProfile(profileName: String) {
+        viewModelScope.launch {
+            useCases.deleteCategoryProfile(profileName)
         }
     }
 }

@@ -54,7 +54,8 @@ fun CategoryFilterDialog(
     onSaveConfirm: (String, Map<Category, Boolean>) -> Unit,
     selectedProfile: String,
     profileList: List<String>,
-    onSelectedChange: (String) -> Unit
+    onSelectedChange: (String) -> Unit,
+    onDelete: (String) -> Unit
 ) {
 
     val applySaveText = stringResource(R.string.btn_save)
@@ -160,7 +161,7 @@ fun CategoryFilterDialog(
                             Text(stringResource(R.string.btn_save))
                         }
                     }
-                }
+                } 
             }
         }
     }
