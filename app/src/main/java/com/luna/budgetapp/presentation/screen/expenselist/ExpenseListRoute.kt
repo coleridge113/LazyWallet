@@ -53,7 +53,7 @@ fun ExpenseListRoute(
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
-                is Navigation.GotoAnalysisRoute -> {
+                Navigation.GotoAnalysisRoute -> {
                     navController.navigate(Routes.AnalysisRoute) {
                         launchSingleTop = true
                     }
