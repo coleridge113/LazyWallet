@@ -47,6 +47,7 @@ import com.luna.budgetapp.domain.usecase.settings.SetActiveDateFilterUseCase
 import com.luna.budgetapp.network.AuthService
 import com.luna.budgetapp.network.ExpenseService
 import com.luna.budgetapp.network.interceptors.AuthInterceptor
+import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
@@ -168,4 +169,5 @@ val appModule = module {
     viewModelOf(::AuthViewModel)
     viewModelOf(::ExpensePresetViewModel)
     viewModelOf(::ExpenseListViewModel)
+    viewModelOf(::AnalysisViewModel)
 }

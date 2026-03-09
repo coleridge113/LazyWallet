@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseListViewModel(
@@ -31,6 +33,9 @@ class ExpenseListViewModel(
     
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
+
+    private val _navigation = Channel<Navigation>()
+    val navigation = _navigation.receiveAsFlow()
 
     val expensesPagingFlow: Flow<PagingData<Expense>> = 
         _uiState
@@ -61,6 +66,7 @@ class ExpenseListViewModel(
             Event.ShowCategoryFilterDialog -> showCategoryFilterDialog()
             Event.ShowCalendarForm -> showCalendarForm()
             Event.ResetCategoryFilters -> resetCategoryFilters()
+            Event.GotoBarGraph -> gotoAnalysisRoute()
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
@@ -304,6 +310,12 @@ class ExpenseListViewModel(
     private fun deleteCategoryProfile(profileName: String) {
         viewModelScope.launch {
             useCases.deleteCategoryProfile(profileName)
+        }
+    }
+
+    private fun gotoAnalysisRoute() {
+        viewModelScope.launch {
+            _navigation.send(Navigation.GotoAnalysisRoute) 
         }
     }
 }

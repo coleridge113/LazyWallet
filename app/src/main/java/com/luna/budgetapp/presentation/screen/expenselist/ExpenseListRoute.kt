@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expenselist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,6 +35,10 @@ import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdo
 import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
+import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.flow.collectLatest
+import com.luna.budgetapp.presentation.nav.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +49,18 @@ fun ExpenseListRoute(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
+
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collectLatest { navigation ->
+            when (navigation) {
+                is Navigation.GotoAnalysisRoute -> {
+                    navController.navigate(Routes.AnalysisRoute) {
+                        launchSingleTop = true
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -62,6 +81,14 @@ fun ExpenseListRoute(
                     }
                 },
                 actions = {
+                    Icon(
+                        imageVector = Icons.Default.BarChart, 
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            viewModel.onEvent(Event.GotoBarGraph)
+                        }
+                    )
+
                     DateRangeSelectorDropdown(
                         selected = uiState.selectedRange,
                         onSelectedChange = {
