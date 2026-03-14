@@ -167,9 +167,7 @@ class ExpensePresetViewModelTest {
     }
 
     @Test
-    fun `adding custom expense adds an expense of the same category but different type or amount`() = runTest {
-        viewModel.onEvent(Event.AddCustomExpense(dummyPreset))
-        advanceUntilIdle()
+    fun `adding custom expenses updates total amount`() = runTest {
         val custom = dummyPreset.copy(
             type = "Dinner",
             amount = 20.0
@@ -186,5 +184,19 @@ class ExpensePresetViewModelTest {
 
         val final = viewModel.uiState.value
         assertThat(final.totalAmount).isEqualTo(custom.amount)
+    }
+
+    @Test
+    fun `deleting latest expense deletes it`() = runTest {
+        viewModel.onEvent(Event.AddExpense(dummyPreset))
+        advanceUntilIdle()
+        val initial = viewModel.uiState.value
+        assertThat(initial.totalAmount).isEqualTo(dummyPreset.amount)
+
+        viewModel.onEvent(Event.DeleteLatestExpense)
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.totalAmount).isEqualTo(0.0)
     }
 }
