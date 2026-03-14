@@ -2,6 +2,7 @@ package com.luna.budgetapp.domain.repository
 
 import androidx.paging.PagingData
 import com.luna.budgetapp.common.Resource
+import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
 import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +15,7 @@ class FakeExpenseRepository : ExpenseRepository {
     private val expensesFlow = MutableStateFlow<List<Expense>>(emptyList())
 
     override fun getAllExpenses(): Flow<PagingData<Expense>> {
-        TODO()
+        return expensesFlow.map { PagingData.from(it) }
     }
 
     override fun getExpensesByCategory(category: String): Flow<Resource<List<Expense>>> {
@@ -29,14 +30,21 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<Expense>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            expenses.filter { it.date in start..end }
+        }
     }
 
     override fun getPagingExpensesByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<PagingData<Expense>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            val filtered = expenses.filter {
+                it.date in start..end
+            }
+            PagingData.from(filtered)
+        }
     }
 
     override fun getPagingExpensesByCategories(
@@ -44,7 +52,12 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<PagingData<Expense>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            val filtered = expenses.filter {
+                it.category in categories && it.date in start..end
+            }
+            PagingData.from(filtered)
+        }
     }
 
     override fun getTotalAmountByDateRange(
@@ -61,7 +74,19 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<CategoryTotalProjection>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            expenses
+                .filter { it.date in start..end }
+                .groupBy { it.category }
+                .map { (category, expenses) ->
+                    val match = Category.entries.find { it.displayName == category }
+
+                    CategoryTotalProjection(
+                        category = match!!,
+                        total = expenses.sumOf { it.amount }
+                    )
+                }
+        }
     }
 
     override fun getCategoryTotalsByCategory(
@@ -69,7 +94,19 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<CategoryTotalProjection>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            expenses
+                .filter { it.category in categories && it.date in start..end }
+                .groupBy { it.category }
+                .map { (category, expenses) ->
+
+                    val match = Category.entries.find { it.displayName == category }
+                    CategoryTotalProjection(
+                        category = match!!,
+                        total = expenses.sumOf { it.amount }
+                    )
+                }
+        }
     }
 
     override fun getTotalAmountByCategories(
@@ -83,18 +120,23 @@ class FakeExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun addExpense(expense: Expense) {
-        println("Adding expense to fake repo")
         expensesFlow.update {
             it + expense
         }
     }
 
     override suspend fun addExpenses(expenses: List<Expense>) {
-        TODO("Not yet implemented")
+        expensesFlow.update {
+            it + expenses
+        }
     }
 
     override suspend fun updateExpense(expense: Expense) {
-        TODO("Not yet implemented")
+        expensesFlow.update { list ->
+            list.map {
+                if (it.id == expense.id) expense else it
+            }
+        }
     }
 
     override suspend fun deleteExpenseById(expenseId: Long) {
