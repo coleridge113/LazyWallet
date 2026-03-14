@@ -1,6 +1,5 @@
 package com.luna.budgetapp.domain.repository
 
-import android.util.Log
 import androidx.paging.PagingData
 import com.luna.budgetapp.common.Resource
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
@@ -8,6 +7,7 @@ import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
 class FakeExpenseRepository : ExpenseRepository {
@@ -84,7 +84,9 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override suspend fun addExpense(expense: Expense) {
         println("Adding expense to fake repo")
-        expensesFlow.value += expense
+        expensesFlow.update {
+            it + expense
+        }
     }
 
     override suspend fun addExpenses(expenses: List<Expense>) {
@@ -96,10 +98,14 @@ class FakeExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun deleteExpenseById(expenseId: Long) {
-        TODO("Not yet implemented")
+        expensesFlow.update {
+            it.filter { e -> e.id != expenseId }
+        }
     }
 
     override suspend fun deleteLatestExpense() {
-        TODO("Not yet implemented")
+        expensesFlow.update {
+            it.dropLast(1)
+        }
     }
 }
