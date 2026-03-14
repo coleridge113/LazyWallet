@@ -6,11 +6,14 @@ import com.luna.budgetapp.MainDispatcherRule
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.repository.FakeCategoryRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
@@ -33,6 +36,9 @@ class ExpensePresetViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var fakeExpensePresetRepo: FakeExpensePresetRepository
+    private lateinit var fakeExpenseRepo: FakeExpenseRepository
+    private lateinit var fakeCategoryRepo: FakeCategoryRepository
+
 
     val defaultCategories = listOf(
         Category.FOOD,
@@ -61,7 +67,7 @@ class ExpensePresetViewModelTest {
     @Before
     fun setup() {
         fakeExpensePresetRepo = FakeExpensePresetRepository()
-        val fakeExpenseRepo = FakeExpenseRepository()
+        fakeExpenseRepo = FakeExpenseRepository()
 
         val initializeCategoryProfile = mockk<InitializeCategoryProfileUseCase>()
         coEvery { initializeCategoryProfile() } just Runs
@@ -69,8 +75,8 @@ class ExpensePresetViewModelTest {
         val useCases = UseCases(
             getToken = mockk(),
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
-            deleteExpense = mockk(),
-            deleteLatestExpense = mockk(),
+            deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
+            deleteLatestExpense = DeleteLatestExpenseUseCase(fakeExpenseRepo),
             getAllExpenses = mockk(),
             getExpensesByCategory = mockk(),
             getExpensesByDateRange = mockk(),
@@ -158,5 +164,27 @@ class ExpensePresetViewModelTest {
 
         val final = viewModel.uiState.value
         assertThat(final.expensePresets.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `adding custom expense adds an expense of the same category but different type or amount`() = runTest {
+        viewModel.onEvent(Event.AddCustomExpense(dummyPreset))
+        advanceUntilIdle()
+        val custom = dummyPreset.copy(
+            type = "Dinner",
+            amount = 20.0
+        )
+
+        viewModel.onEvent(
+            Event.AddExpense(
+                dummyPreset,
+                custom.amount,
+                custom.amount.toString()
+            )
+        )
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.totalAmount).isEqualTo(custom.amount)
     }
 }
