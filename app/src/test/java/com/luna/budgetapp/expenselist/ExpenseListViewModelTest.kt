@@ -19,6 +19,7 @@ import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.presentation.screen.expenselist.Event
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import io.mockk.Runs
@@ -43,6 +44,7 @@ class ExpenseListViewModelTest {
     private lateinit var fakeExpensePresetRepo: FakeExpensePresetRepository
     private lateinit var fakeExpenseRepo: FakeExpenseRepository
     private lateinit var viewModel: ExpenseListViewModel
+    private lateinit var useCases: UseCases
 
     val dummyPreset = ExpensePreset(
         id = 1,
@@ -63,7 +65,7 @@ class ExpenseListViewModelTest {
         fakeExpensePresetRepo = FakeExpensePresetRepository()
         fakeExpenseRepo = FakeExpenseRepository()
 
-        val useCases = UseCases(
+        useCases = UseCases(
             getToken = mockk(), // not used
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
             deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
@@ -102,5 +104,28 @@ class ExpenseListViewModelTest {
         val state = viewModel.uiState.value
         assertThat(state.totalAmount).isEqualTo(0.0)
         assertThat(state.expenses).isEmpty()
+    }
+
+    @Test
+    fun `adding an expense updates the total amount`() = runTest {
+        fakeExpenseRepo.addExpense(dummyExpense)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.totalAmount).isEqualTo(dummyExpense.amount)
+    }
+
+    @Test
+    fun `deleting an expense by its id deletes it`() = runTest {
+        fakeExpenseRepo.addExpense(dummyExpense)
+        advanceUntilIdle()
+        val initial = viewModel.uiState.value
+        assertThat(initial.totalAmount).isEqualTo(dummyExpense.amount)
+
+        viewModel.onEvent(Event.DeleteExpense(dummyExpense.id!!))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.totalAmount).isEqualTo(0.0)
     }
 }
