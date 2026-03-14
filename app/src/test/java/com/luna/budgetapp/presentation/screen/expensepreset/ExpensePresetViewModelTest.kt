@@ -1,12 +1,9 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
-import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
 import com.luna.budgetapp.domain.model.Category
-import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
-import com.luna.budgetapp.domain.repository.FakeCategoryRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
 import com.luna.budgetapp.domain.usecase.UseCases
@@ -37,26 +34,9 @@ class ExpensePresetViewModelTest {
 
     private lateinit var fakeExpensePresetRepo: FakeExpensePresetRepository
     private lateinit var fakeExpenseRepo: FakeExpenseRepository
-    private lateinit var fakeCategoryRepo: FakeCategoryRepository
-
-
-    val defaultCategories = listOf(
-        Category.FOOD,
-        Category.DATE,
-        Category.BEVERAGE,
-        Category.COMMUTE,
-        Category.OTHERS,
-        Category.FITNESS
-    )
 
     val dummyPreset = ExpensePreset(
         id = 1,
-        amount = 10.0,
-        category = "Food",
-        type = "Lunch"
-    )
-
-    val dummyExpense = Expense(
         amount = 10.0,
         category = "Food",
         type = "Lunch"
@@ -187,7 +167,7 @@ class ExpensePresetViewModelTest {
     }
 
     @Test
-    fun `deleting latest expense deletes it`() = runTest {
+    fun `invoking the undo button deletes the latest expense`() = runTest {
         viewModel.onEvent(Event.AddExpense(dummyPreset))
         advanceUntilIdle()
         val initial = viewModel.uiState.value
@@ -198,5 +178,19 @@ class ExpensePresetViewModelTest {
 
         val final = viewModel.uiState.value
         assertThat(final.totalAmount).isEqualTo(0.0)
+    }
+
+    @Test
+    fun `confirming preset delete dialog deletes the preset with the target id`() = runTest {
+        fakeExpensePresetRepo.addExpensePreset(dummyPreset)
+        advanceUntilIdle()
+        val initial = viewModel.uiState.value
+        assertThat(initial.expensePresets.size).isEqualTo(1)
+
+        viewModel.onEvent(Event.DeleteExpensePreset(dummyPreset.id!!))
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.expensePresets.size).isEqualTo(0)
     }
 }
