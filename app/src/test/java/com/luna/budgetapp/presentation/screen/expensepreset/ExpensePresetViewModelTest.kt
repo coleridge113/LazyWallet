@@ -7,12 +7,19 @@ import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
 import com.luna.budgetapp.domain.usecase.UseCases
+import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -25,27 +32,31 @@ class ExpensePresetViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    val defaultCategories = listOf(
-        Category.FOOD,
-        Category.DATE,
-        Category.BEVERAGE,
-        Category.COMMUTE,
-        Category.OTHERS,
-        Category.FITNESS
+    private lateinit var fakeExpensePresetRepo: FakeExpensePresetRepository
+    private lateinit var fakeExpenseRepo: FakeExpenseRepository
+
+    val dummyPreset = ExpensePreset(
+        id = 1,
+        amount = 10.0,
+        category = "Food",
+        type = "Lunch"
     )
 
     private lateinit var viewModel: ExpensePresetViewModel
 
     @Before
     fun setup() {
-        val fakeExpensePresetRepo = FakeExpensePresetRepository()
-        val fakeExpenseRepo = FakeExpenseRepository()
+        fakeExpensePresetRepo = FakeExpensePresetRepository()
+        fakeExpenseRepo = FakeExpenseRepository()
+
+        val initializeCategoryProfile = mockk<InitializeCategoryProfileUseCase>()
+        coEvery { initializeCategoryProfile() } just Runs
 
         val useCases = UseCases(
             getToken = mockk(),
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
-            deleteExpense = mockk(),
-            deleteLatestExpense = mockk(),
+            deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
+            deleteLatestExpense = DeleteLatestExpenseUseCase(fakeExpenseRepo),
             getAllExpenses = mockk(),
             getExpensesByCategory = mockk(),
             getExpensesByDateRange = mockk(),
@@ -60,7 +71,7 @@ class ExpensePresetViewModelTest {
             getCategoryProfiles = mockk(),
             saveCategoryProfile = mockk(),
             deleteCategoryProfile = mockk(),
-            initializeCategoryProfile = mockk(),
+            initializeCategoryProfile = initializeCategoryProfile,
             getActiveCategoryProfile = mockk(),
             setActiveCategoryProfile = mockk(),
             getActiveDateFilter = mockk(),
@@ -100,5 +111,86 @@ class ExpensePresetViewModelTest {
 
         val final = viewModel.uiState.value
         assertThat(final.dialogState).isNotNull()
+    }
+
+    @Test
+    fun `confirming expense form adds an expense preset`() = runTest {
+        viewModel.onEvent(Event.ShowExpenseForm(null))
+        advanceUntilIdle()
+        viewModel.onEvent(
+            Event.ConfirmDialog(
+                Category.FOOD,
+                dummyPreset.type,
+                dummyPreset.amount.toString()
+            )
+        )
+
+        val state = viewModel.uiState.value
+
+        assertEquals(1, state.expensePresets.size)
+    }
+
+    @Test
+    fun `deleting an expense preset deletes it`() = runTest {
+        fakeExpensePresetRepo.addExpensePreset(dummyPreset)
+        advanceUntilIdle()
+
+        val initial = viewModel.uiState.value
+        assertThat(initial.expensePresets.size).isEqualTo(1)
+
+        dummyPreset.id?.let {
+            viewModel.onEvent(Event.DeleteExpensePreset(it))
+        }
+
+        val final = viewModel.uiState.value
+        assertThat(final.expensePresets.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `adding custom expenses updates total amount`() = runTest {
+        val custom = dummyPreset.copy(
+            type = "Dinner",
+            amount = 20.0
+        )
+
+        viewModel.onEvent(
+            Event.AddExpense(
+                dummyPreset,
+                custom.amount,
+                custom.amount.toString()
+            )
+        )
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.totalAmount).isEqualTo(custom.amount)
+    }
+
+    @Test
+    fun `invoking the undo button deletes the latest expense`() = runTest {
+        viewModel.onEvent(Event.AddExpense(dummyPreset))
+        advanceUntilIdle()
+        val initial = viewModel.uiState.value
+        assertThat(initial.totalAmount).isEqualTo(dummyPreset.amount)
+
+        viewModel.onEvent(Event.DeleteLatestExpense)
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.totalAmount).isEqualTo(0.0)
+    }
+
+    @Test
+    fun `confirming preset delete dialog deletes the preset with the target id`() = runTest {
+        fakeExpensePresetRepo.addExpensePreset(dummyPreset)
+        advanceUntilIdle()
+        val initial = viewModel.uiState.value
+        assertThat(initial.expensePresets.size).isEqualTo(1)
+
+        viewModel.onEvent(Event.DeleteExpensePreset(dummyPreset.id!!))
+        advanceUntilIdle()
+
+        val final = viewModel.uiState.value
+        assertThat(final.expensePresets.size).isEqualTo(0)
     }
 }
