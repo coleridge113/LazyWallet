@@ -12,7 +12,6 @@ import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
-import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfilesUseCase
