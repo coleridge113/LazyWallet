@@ -1,15 +1,19 @@
 package com.luna.budgetapp.expenselist
 
-import androidx.paging.PagingData
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
-import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.repository.FakeCategoryRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
+import com.luna.budgetapp.domain.repository.FakeSettingsRepository
 import com.luna.budgetapp.domain.usecase.UseCases
+import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.GetCategoryProfilesUseCase
 import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
@@ -19,14 +23,13 @@ import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
+import com.luna.budgetapp.presentation.screen.expenselist.DialogState
 import com.luna.budgetapp.presentation.screen.expenselist.Event
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
-import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
-import io.mockk.Runs
 import io.mockk.coEvery
-import io.mockk.just
 import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,7 +37,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseListViewModelTest {
@@ -43,6 +45,8 @@ class ExpenseListViewModelTest {
 
     private lateinit var fakeExpensePresetRepo: FakeExpensePresetRepository
     private lateinit var fakeExpenseRepo: FakeExpenseRepository
+    private lateinit var fakeSettingsRepo: FakeSettingsRepository
+    private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpenseListViewModel
     private lateinit var useCases: UseCases
 
@@ -61,9 +65,11 @@ class ExpenseListViewModelTest {
     )
 
     @Before
-    fun setup() {
+    fun setup() = runTest {
         fakeExpensePresetRepo = FakeExpensePresetRepository()
         fakeExpenseRepo = FakeExpenseRepository()
+        fakeSettingsRepo = FakeSettingsRepository()
+        fakeCategoryRepo = FakeCategoryRepository()
 
         useCases = UseCases(
             getToken = mockk(), // not used
@@ -80,21 +86,18 @@ class ExpenseListViewModelTest {
             getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
             addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
             deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
-            getCategoryProfile = mockk(),
-            getCategoryProfiles = mockk(),
-            saveCategoryProfile = mockk(),
-            deleteCategoryProfile = mockk(),
-            initializeCategoryProfile = mockk(),
-            getActiveCategoryProfile = mockk(),
-            setActiveCategoryProfile = mockk(),
+            getCategoryProfile = GetCategoryProfileUseCase(fakeCategoryRepo),
+            getCategoryProfiles = GetCategoryProfilesUseCase(fakeCategoryRepo),
+            saveCategoryProfile = SaveCategoryProfileUseCase(fakeCategoryRepo),
+            deleteCategoryProfile = DeleteCategoryProfileUseCase(fakeCategoryRepo),
+            initializeCategoryProfile = InitializeCategoryProfileUseCase(fakeCategoryRepo),
+            getActiveCategoryProfile = GetActiveCategoryProfileUseCase(fakeSettingsRepo),
+            setActiveCategoryProfile = SetActiveCategoryProfileUseCase(fakeSettingsRepo),
             getActiveDateFilter = mockk(),
             setActiveDateFilter = mockk()
         )
 
-        coEvery { useCases.getActiveCategoryProfile() } returns flowOf("")
-        coEvery { useCases.getCategoryProfile(any()) } returns flowOf(emptyList())
-        coEvery { useCases.getCategoryProfiles() } returns flowOf(emptyList())
-
+        fakeCategoryRepo.initializeIfNeeded()
         viewModel = ExpenseListViewModel(useCases)
     }
 
@@ -127,5 +130,48 @@ class ExpenseListViewModelTest {
 
         val state = viewModel.uiState.value
         assertThat(state.totalAmount).isEqualTo(0.0)
+    }
+
+    @Test
+    fun `invoking long press on an expense opens the delete confirmation dialog`() = runTest {
+        fakeExpenseRepo.addExpense(dummyExpense)
+        advanceUntilIdle()
+
+        val initial = viewModel.uiState.value
+        assertThat(initial.totalAmount).isEqualTo(dummyExpense.amount)
+
+        viewModel.onEvent(Event.ShowDeleteConfirmationDialog(dummyExpense.id!!))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.dialogState).isInstanceOf(DialogState.ConfirmDeleteExpense::class.java)
+    }
+
+    @Test
+    fun `invoking show calendar form opens the calendar form`() = runTest {
+        viewModel.onEvent(Event.ShowCalendarForm)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.dialogState).isInstanceOf(DialogState.CalendarForm::class.java)
+    }
+
+    @Test
+    fun `invoking show category filter dialog opens the category filter dialog`() = runTest {
+        viewModel.onEvent(Event.ShowCategoryFilterDialog)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.dialogState).isInstanceOf(DialogState.CategoryFilterForm::class.java)
+    }
+
+    @Test
+    fun `invoking reset category filters resets the category filters`() = runTest {
+        viewModel.onEvent(Event.ResetCategoryFilters)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.activeProfile).isEqualTo("All")
+
     }
 }
