@@ -8,6 +8,10 @@ import com.luna.budgetapp.domain.repository.FakeCategoryRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
 import com.luna.budgetapp.domain.repository.FakeSettingsRepository
+import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.usecase.SettingsUseCases
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
@@ -48,7 +52,6 @@ class ExpenseListViewModelTest {
     private lateinit var fakeSettingsRepo: FakeSettingsRepository
     private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpenseListViewModel
-    private lateinit var useCases: UseCases
 
     val dummyPreset = ExpensePreset(
         id = 1,
@@ -71,8 +74,12 @@ class ExpenseListViewModelTest {
         fakeSettingsRepo = FakeSettingsRepository()
         fakeCategoryRepo = FakeCategoryRepository()
 
-        useCases = UseCases(
-            getToken = mockk(), // not used
+        val presetUseCases = PresetUseCases(
+            getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
+            addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
+            deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
+        )
+        val expenseUseCases = ExpenseUseCases(
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
             deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
             deleteLatestExpense = DeleteLatestExpenseUseCase(fakeExpenseRepo),
@@ -80,12 +87,11 @@ class ExpenseListViewModelTest {
             getExpensesByCategory = mockk(),
             getExpensesByDateRange = mockk(),
             getTotalAmountByDateRange = GetTotalAmountByDateRangeUseCase(fakeExpenseRepo),
-            getCategoryTotalsByDateRange = GetCategoryTotalsByDateRange(fakeExpenseRepo),
-            getPagingExpensesByDateRange = GetPagingExpensesByDateRangeUseCase(fakeExpenseRepo),
+            getCategoryTotalsByDateRange = mockk(),
+            getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
-            getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
-            addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
-            deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
+        )
+        val profileUseCases = ProfileUseCases(
             getCategoryProfile = GetCategoryProfileUseCase(fakeCategoryRepo),
             getCategoryProfiles = GetCategoryProfilesUseCase(fakeCategoryRepo),
             saveCategoryProfile = SaveCategoryProfileUseCase(fakeCategoryRepo),
@@ -93,12 +99,18 @@ class ExpenseListViewModelTest {
             initializeCategoryProfile = InitializeCategoryProfileUseCase(fakeCategoryRepo),
             getActiveCategoryProfile = GetActiveCategoryProfileUseCase(fakeSettingsRepo),
             setActiveCategoryProfile = SetActiveCategoryProfileUseCase(fakeSettingsRepo),
+        )
+        val settingsUseCases = SettingsUseCases(
             getActiveDateFilter = mockk(),
             setActiveDateFilter = mockk()
         )
 
         fakeCategoryRepo.initializeIfNeeded()
-        viewModel = ExpenseListViewModel(useCases)
+        viewModel = ExpenseListViewModel(
+            presetUseCases,
+            expenseUseCases,
+            profileUseCases
+        )
     }
 
     @Test
