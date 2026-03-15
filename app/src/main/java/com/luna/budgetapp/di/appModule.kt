@@ -19,11 +19,11 @@ import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.domain.repository.ExpenseRepository
 import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.repository.SettingsRepository
+import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
-import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
 import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
@@ -159,15 +159,7 @@ val appModule = module {
     factoryOf(::GetActiveDateFilterUseCase)
     factoryOf(::SetActiveDateFilterUseCase)
 
-    factory {
-        UseCases(
-            get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(),
-            get(), get(), get()
-        )
-    }
+    factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
     factoryOf(::ProfileUseCases)
     factoryOf(::PresetUseCases)
