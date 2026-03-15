@@ -15,6 +15,10 @@ import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.usecase.SettingsUseCases
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.just
@@ -52,8 +56,12 @@ class ExpensePresetViewModelTest {
         val initializeCategoryProfile = mockk<InitializeCategoryProfileUseCase>()
         coEvery { initializeCategoryProfile() } just Runs
 
-        val useCases = UseCases(
-            getToken = mockk(),
+        val presetUseCases = PresetUseCases(
+            getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
+            addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
+            deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
+        )
+        val expenseUseCases = ExpenseUseCases(
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
             deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
             deleteLatestExpense = DeleteLatestExpenseUseCase(fakeExpenseRepo),
@@ -64,9 +72,8 @@ class ExpensePresetViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
-            getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
-            addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
-            deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
+        )
+        val profileUseCases = ProfileUseCases(
             getCategoryProfile = mockk(),
             getCategoryProfiles = mockk(),
             saveCategoryProfile = mockk(),
@@ -74,11 +81,18 @@ class ExpensePresetViewModelTest {
             initializeCategoryProfile = initializeCategoryProfile,
             getActiveCategoryProfile = mockk(),
             setActiveCategoryProfile = mockk(),
+        )
+        val settingsUseCases = SettingsUseCases(
             getActiveDateFilter = mockk(),
             setActiveDateFilter = mockk()
         )
 
-        viewModel = ExpensePresetViewModel(useCases)
+        viewModel = ExpensePresetViewModel(
+            presetUseCases,
+            expenseUseCases,
+            profileUseCases
+        )
+
         runTest {
             advanceUntilIdle()
         }
