@@ -19,6 +19,10 @@ import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.domain.repository.ExpenseRepository
 import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.repository.SettingsRepository
+import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.usecase.SettingsUseCases
 import com.luna.budgetapp.domain.usecase.UseCases
 import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
 import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
@@ -164,6 +168,10 @@ val appModule = module {
             get(), get(), get()
         )
     }
+    factoryOf(::ExpenseUseCases)
+    factoryOf(::ProfileUseCases)
+    factoryOf(::PresetUseCases)
+    factoryOf(::SettingsUseCases)
 
     // ViewModels
     viewModelOf(::AuthViewModel)

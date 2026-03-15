@@ -7,6 +7,9 @@ import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.usecase.UseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +25,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
-    private val useCases: UseCases,
+    private val presetUseCases: PresetUseCases,
+    private val expenseUseCases: ExpenseUseCases,
+    private val profileUseCases: ProfileUseCases
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -68,7 +73,7 @@ class ExpensePresetViewModel(
 
                     Log.d("ExpensePreset", "selected categories: $selectedCategories")
 
-                    useCases.getTotalAmountByDateRange(
+                    expenseUseCases.getTotalAmountByDateRange(
                         start = range.start,
                         end = range.end,
                         categories = selectedCategories
@@ -96,7 +101,7 @@ class ExpensePresetViewModel(
 
     private fun observeExpensePresets() {
         viewModelScope.launch {
-            useCases.getAllExpensePresets()
+            presetUseCases.getAllExpensePresets()
                 .onStart {
                     _uiState.update {
                         it.copy(
@@ -162,7 +167,7 @@ class ExpensePresetViewModel(
 
         viewModelScope.launch {
             try {
-                useCases.addExpensePreset(expensePreset)
+                presetUseCases.addExpensePreset(expensePreset)
                 _uiState.update {
                     it.copy(
                         dialogState = null
@@ -192,7 +197,7 @@ class ExpensePresetViewModel(
                 type = customType ?: expensePreset.type,
                 amount = customAmount ?: expensePreset.amount
             )
-            useCases.addExpense(expense)
+            expenseUseCases.addExpense(expense)
 
             if (state.dialogState != null) {
                 _uiState.update { currentState ->
@@ -211,14 +216,14 @@ class ExpensePresetViewModel(
             )
         }
         viewModelScope.launch {
-            useCases.deleteLatestExpense()
+            expenseUseCases.deleteLatestExpense()
         }
     }
 
     private fun deleteExpensePreset(expensePresetId: Long) {
         viewModelScope.launch {
             try {
-                useCases.deleteExpensePreset(expensePresetId)
+                presetUseCases.deleteExpensePreset(expensePresetId)
                 _uiState.update { currentState ->
                     currentState.copy(
                         dialogState = null
@@ -258,7 +263,7 @@ class ExpensePresetViewModel(
 
     private fun initializeCategoryFilterIfNeeded() {
         viewModelScope.launch {
-            useCases.initializeCategoryProfile()
+            profileUseCases.initializeCategoryProfile()
         }
     }
 }
