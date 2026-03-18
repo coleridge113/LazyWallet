@@ -37,6 +37,19 @@ sealed class DateFilter {
         }
     }
 
+    data object Last7Days : DateFilter() {
+        override fun resolve(now: LocalDate, locale: Locale): DateRange {
+
+            val end = now
+            val start = now.minusDays(6)
+
+            return DateRange(
+                start = start.atStartOfDay(),
+                end = end.atTime(LocalTime.MAX)
+            )
+        }
+    }
+
     data object Monthly : DateFilter() {
         override fun resolve(now: LocalDate, locale: Locale) =
             DateRange(

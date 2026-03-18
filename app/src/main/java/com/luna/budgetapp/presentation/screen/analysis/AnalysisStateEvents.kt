@@ -8,7 +8,7 @@ data class UiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val expenses: List<Expense> = emptyList(),
-    val selectedRange: DateFilter = DateFilter.Weekly,
+    val selectedRange: DateFilter = DateFilter.Last7Days,
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
     val activeProfile: String = ""
 )
