@@ -2,7 +2,6 @@ package com.luna.budgetapp.presentation.screen.expenselist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.luna.budgetapp.domain.model.Category

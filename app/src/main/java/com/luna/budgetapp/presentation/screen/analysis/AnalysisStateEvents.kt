@@ -10,6 +10,7 @@ data class UiState(
     val expenses: List<Expense> = emptyList(),
     val selectedRange: DateFilter = DateFilter.Weekly,
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
+    val activeProfile: String = ""
 )
 
 sealed interface Event {
