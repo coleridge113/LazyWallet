@@ -1,6 +1,7 @@
 package com.luna.budgetapp.presentation.screen.analysis.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,15 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,7 +36,9 @@ import java.time.LocalDateTime
 fun DailyExpenseBarChart(
     modifier: Modifier = Modifier,
     expenses: List<Expense>,
-    dBarColor: Color = MaterialTheme.colorScheme.primary
+    dBarColor: Color = MaterialTheme.colorScheme.primary,
+    selectedDate: LocalDate,
+    onClickBar: (LocalDate) -> Unit,
 ) {
     val dailyData = remember(expenses) {
         expenses.toLast7DaysExpenses()
@@ -40,13 +46,27 @@ fun DailyExpenseBarChart(
 
     val maxValue = dailyData.maxOfOrNull { it.total } ?: 1.0
 
+    val barPositions = remember { mutableStateListOf<Pair<Rect, LocalDate>>() }
+    barPositions.clear()
+
     Column(modifier = modifier.padding(16.dp)) {
 
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
+                .pointerInput(dailyData) {
+                    detectTapGestures { offset ->
+
+                        barPositions.forEach { (rect, date) ->
+                            if (rect.contains(offset)) {
+                                onClickBar(date)
+                            }
+                        }
+                    }
+                }
         ) {
+
             if (dailyData.isEmpty()) return@Canvas
 
             val barWidth = size.width / (dailyData.size * 1.65f)
@@ -60,20 +80,26 @@ fun DailyExpenseBarChart(
                 val x = index * (barWidth + spacing) + barWidth
                 val y = size.height - barHeight
 
-                val isToday = item.date == LocalDate.now()
-                val barColor = if (isToday) Color(0xFFE53935) else dBarColor
+                val rect = Rect(
+                    offset = Offset(x, y),
+                    size = Size(barWidth, barHeight)
+                )
+
+                barPositions.add(rect to item.date)
+
+                val isSelectedDate = item.date == selectedDate
+                val barColor = if (isSelectedDate) Color(0xFFE53935) else dBarColor
 
                 drawRoundRect(
                     color = barColor,
-                    topLeft = Offset(x, y),
-                    size = Size(barWidth, barHeight),
+                    topLeft = rect.topLeft,
+                    size = rect.size,
                     cornerRadius = CornerRadius(14f, 14f)
                 )
 
-                // Draw value text (₱)
                 drawContext.canvas.nativeCanvas.drawText(
                     "₱${item.total.toInt()}",
-                    x + 40,
+                    x + barWidth / 2,
                     y - 10,
                     android.graphics.Paint().apply {
                         textAlign = android.graphics.Paint.Align.CENTER
@@ -84,7 +110,6 @@ fun DailyExpenseBarChart(
                 )
             }
 
-            // Baseline
             drawLine(
                 color = Color.LightGray,
                 start = Offset(0f, size.height),
@@ -141,6 +166,11 @@ private fun PreviewContent() {
     )
 
     MaterialTheme {
-        DailyExpenseBarChart(Modifier, dummyExpenses)
+        DailyExpenseBarChart(
+            modifier = Modifier,
+            expenses = dummyExpenses,
+            selectedDate = LocalDate.now(),
+            onClickBar = {}
+        )
     }
 }

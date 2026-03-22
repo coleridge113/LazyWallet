@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisViewModel (
@@ -28,7 +29,11 @@ class AnalysisViewModel (
         observeExpenses()
     }
 
-    fun onEvent(event: Event) {}
+    fun onEvent(event: Event) {
+        when (event) {
+            is Event.SelectBar -> setSelectedDate(event.date)
+        }
+    }
 
     private fun observeActiveProfileAndCategories() {
         viewModelScope.launch {
@@ -75,4 +80,11 @@ class AnalysisViewModel (
             }
     }
 
+    private fun setSelectedDate(date: LocalDate) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedDate = date
+            )
+        }
+    }
 }

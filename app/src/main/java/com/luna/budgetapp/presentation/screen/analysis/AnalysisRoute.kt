@@ -69,12 +69,16 @@ fun MainContent(
     ) {
         DailyExpenseBarChart(
             modifier = Modifier,
-            expenses = uiState.expenses
+            expenses = uiState.expenses,
+            selectedDate = uiState.selectedDate,
+            onClickBar = { date ->
+                onEvent(Event.SelectBar(date)) 
+            }
         )
 
         ExpenseTable(
             modifier = Modifier,
-            expenses = uiState.expenses
+            expenses = uiState.filteredExpenses
         )
     }
 }
