@@ -30,9 +30,9 @@ import java.time.LocalDateTime
 
 @Composable
 fun DailyExpenseBarChart(
-    expenses: List<Expense>,
     modifier: Modifier = Modifier,
-    barColor: Color = MaterialTheme.colorScheme.primary
+    expenses: List<Expense>,
+    dBarColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val dailyData = remember(expenses) {
         expenses.toLast7DaysExpenses()
@@ -61,7 +61,7 @@ fun DailyExpenseBarChart(
                 val y = size.height - barHeight
 
                 val isToday = item.date == LocalDate.now()
-                val barColor = if (isToday) Color(0xFFE53935) else barColor
+                val barColor = if (isToday) Color(0xFFE53935) else dBarColor
 
                 drawRoundRect(
                     color = barColor,
@@ -141,6 +141,6 @@ private fun PreviewContent() {
     )
 
     MaterialTheme {
-        DailyExpenseBarChart(dummyExpenses)
+        DailyExpenseBarChart(Modifier, dummyExpenses)
     }
 }
