@@ -2,14 +2,15 @@ package com.luna.budgetapp.presentation.screen.expenselist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
-import com.luna.budgetapp.domain.usecase.UseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.presentation.model.ChartData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -23,14 +24,21 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpenseListViewModel(
-    private val useCases: UseCases
+    private val presetUseCases: PresetUseCases,
+    private val expenseUseCases: ExpenseUseCases,
+    private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(UiState())
     val uiState = _uiState.asStateFlow()
+
+    private val _navigation = Channel<Navigation>()
+    val navigation = _navigation.receiveAsFlow()
 
     val expensesPagingFlow: Flow<PagingData<Expense>> = 
         _uiState
@@ -44,7 +52,7 @@ class ExpenseListViewModel(
                         .keys
                         .map { it.name }
 
-                useCases.getPagingExpensesByDateRange(selectedCategories, range.start, range.end)
+                expenseUseCases.getPagingExpensesByDateRange(selectedCategories, range.start, range.end)
             }
             .cachedIn(viewModelScope)
 
@@ -61,6 +69,7 @@ class ExpenseListViewModel(
             Event.ShowCategoryFilterDialog -> showCategoryFilterDialog()
             Event.ShowCalendarForm -> showCalendarForm()
             Event.ResetCategoryFilters -> resetCategoryFilters()
+            Event.GotoBarGraph -> gotoAnalysisRoute()
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
@@ -85,7 +94,7 @@ class ExpenseListViewModel(
                             .keys
                             .map { it.name }
 
-                    useCases.getTotalAmountByDateRange(
+                    expenseUseCases.getTotalAmountByDateRange(
                         start = range.start,
                         end = range.end,
                         categories = selectedCategories
@@ -129,7 +138,7 @@ class ExpenseListViewModel(
                             .keys
                             .map { it.name }
 
-                    useCases.getCategoryTotalsByDateRange(selectedCategories, range.start, range.end)
+                    expenseUseCases.getCategoryTotalsByDateRange(selectedCategories, range.start, range.end)
                 }
                 .catch { error ->
                     _uiState.update {
@@ -176,7 +185,7 @@ class ExpenseListViewModel(
 
     private fun deleteExpense(expenseId: Long) {
         viewModelScope.launch {
-            useCases.deleteExpense(expenseId)
+            expenseUseCases.deleteExpense(expenseId)
             _uiState.update { currentState ->
                 currentState.copy(
                     dialogState = null
@@ -222,19 +231,19 @@ class ExpenseListViewModel(
         }
 
         viewModelScope.launch {
-            useCases.setActiveCategoryProfile(profileName)
+            profileUseCases.setActiveCategoryProfile(profileName)
         }
     }
 
     private fun resetCategoryFilters() {
         viewModelScope.launch {
-            useCases.setActiveCategoryProfile("All")
+            profileUseCases.setActiveCategoryProfile("All")
         }
     }
 
     private fun getCategoryProfileList() {
         viewModelScope.launch {
-            useCases.getCategoryProfiles().collectLatest { profileList ->
+            profileUseCases.getCategoryProfiles().collectLatest { profileList ->
                 _uiState.update { currentState ->
                     currentState.copy(
                         profileList = profileList
@@ -257,7 +266,7 @@ class ExpenseListViewModel(
                 )
             }
 
-            useCases.saveCategoryProfile(filters)
+            profileUseCases.saveCategoryProfile(filters)
 
             _uiState.update { currentState ->
                 currentState.copy(dialogState = null)
@@ -267,7 +276,7 @@ class ExpenseListViewModel(
 
     private fun setActiveCategoryProfile(profileName: String) {
         viewModelScope.launch {
-            useCases.setActiveCategoryProfile(profileName)
+            profileUseCases.setActiveCategoryProfile(profileName)
 
             _uiState.update { currentState ->
                 currentState.copy(dialogState = null)
@@ -277,9 +286,9 @@ class ExpenseListViewModel(
 
     private fun observeActiveProfileAndCategories() {
         viewModelScope.launch {
-            useCases.getActiveCategoryProfile()
+            profileUseCases.getActiveCategoryProfile()
                 .flatMapLatest { profile ->
-                    useCases.getCategoryProfile(profile)
+                    profileUseCases.getCategoryProfile(profile)
                         .map { filters ->
                             profile to filters
                         }
@@ -303,7 +312,13 @@ class ExpenseListViewModel(
 
     private fun deleteCategoryProfile(profileName: String) {
         viewModelScope.launch {
-            useCases.deleteCategoryProfile(profileName)
+            profileUseCases.deleteCategoryProfile(profileName)
+        }
+    }
+
+    private fun gotoAnalysisRoute() {
+        viewModelScope.launch {
+            _navigation.send(Navigation.GotoAnalysisRoute) 
         }
     }
 }

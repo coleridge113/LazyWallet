@@ -44,7 +44,7 @@ fun ExpensePresetRoute(
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
-                is Navigation.GotoExpenseRoute -> {
+                Navigation.GotoExpenseRoute -> {
                     navController.navigate(Routes.ExpensesRoute) {
                         launchSingleTop = true
                     }

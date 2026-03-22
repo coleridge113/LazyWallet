@@ -29,6 +29,7 @@ sealed interface Event {
     data object ShowCategoryFilterDialog : Event
     data object DismissDialog : Event
     data object ResetCategoryFilters : Event
+    data object GotoBarGraph : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class DeleteExpense(val expenseId: Long) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
@@ -41,4 +42,6 @@ sealed interface Event {
     ) : Event
 }
 
-sealed interface Navigation {}
+sealed interface Navigation {
+    data object GotoAnalysisRoute : Navigation
+}

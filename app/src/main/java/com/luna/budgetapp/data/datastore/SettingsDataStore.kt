@@ -73,6 +73,11 @@ class SettingsDataStore(
                     clearCustom(prefs)
                 }
 
+                DateFilter.Last7Days -> {
+                    prefs[Keys.dateFilterType] = "LAST_7_DAYS"
+                    clearCustom(prefs)
+                }
+
                 DateFilter.Monthly -> {
                     prefs[Keys.dateFilterType] = "MONTHLY"
                     clearCustom(prefs)

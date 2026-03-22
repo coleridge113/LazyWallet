@@ -120,5 +120,6 @@ fun DateFilter.displayName() =
         DateFilter.Daily -> "Today"
         DateFilter.Weekly -> "Week"
         DateFilter.Monthly -> "Month"
+        DateFilter.Last7Days -> ""
         is DateFilter.Custom -> "Custom"
     }

@@ -13,4 +13,7 @@ sealed interface Routes {
 
     @Serializable
     data object ExpensesRoute : Routes
+
+    @Serializable
+    data object AnalysisRoute : Routes
 }

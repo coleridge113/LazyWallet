@@ -2,7 +2,7 @@ package com.luna.budgetapp.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.domain.usecase.UseCases
+import com.luna.budgetapp.domain.usecase.AuthUseCases
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
-    private val useCases: UseCases
+    private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
     init {
@@ -34,7 +34,7 @@ class AuthViewModel(
     private fun fetchToken() {
         viewModelScope.launch {
             try {
-                useCases.getToken()
+                authUseCases.getToken()
                 _state.update { curr ->
                     curr.copy(
                         isLoading = false,

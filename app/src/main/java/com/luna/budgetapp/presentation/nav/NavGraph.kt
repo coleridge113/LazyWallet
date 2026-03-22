@@ -16,6 +16,8 @@ import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetRoute
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthRoute
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListRoute
+import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
+import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
 
 @ExperimentalMaterial3Api
 @ExperimentalSharedTransitionApi
@@ -72,6 +74,13 @@ fun NavGraphSetup(
                     navController = navController,
                     viewModel = viewModel
                 )
+            }
+            composable<Routes.AnalysisRoute> {
+                val viewModel: AnalysisViewModel = koinViewModel()
+                AnalysisRoute(
+                    navController = navController,
+                    viewModel = viewModel
+                ) 
             }
         }
     }
