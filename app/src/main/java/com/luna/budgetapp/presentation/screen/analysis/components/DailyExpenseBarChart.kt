@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.analysis.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -64,6 +65,19 @@ fun DailyExpenseBarChart(
         label = "bar-rise"
     )
 
+    val animatedColors = dailyData.map { item ->
+
+        val isSelected = item.date == selectedDate
+
+        animateColorAsState(
+            targetValue =
+            if (isSelected) Color(0xFFE53935)
+            else dBarColor,
+            animationSpec = tween(250),
+            label = "bar-color"
+        ).value
+    }
+
     LaunchedEffect(Unit) {
         animationTarget = 0f
         animationTarget = 1f
@@ -113,11 +127,7 @@ fun DailyExpenseBarChart(
 
                 barPositions.add(rect to item.date)
 
-                val isSelectedDate = item.date == selectedDate
-                val barColor =
-                    if (isSelectedDate) Color(0xFFE53935)
-                    else dBarColor
-
+                val barColor = animatedColors[index]
                 drawRoundRect(
                     color = barColor,
                     topLeft = rect.topLeft,
