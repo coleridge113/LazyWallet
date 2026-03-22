@@ -1,5 +1,8 @@
 package com.luna.budgetapp.presentation.screen.analysis.components
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -12,8 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -40,11 +47,27 @@ fun DailyExpenseBarChart(
     selectedDate: LocalDate,
     onClickBar: (LocalDate) -> Unit,
 ) {
+
     val dailyData = remember(expenses) {
         expenses.toLast7DaysExpenses()
     }
 
     val maxValue = dailyData.maxOfOrNull { it.total } ?: 1.0
+
+    var animationTarget by remember { mutableStateOf(0f) }
+    val animationProgress by animateFloatAsState(
+        targetValue = animationTarget,
+        animationSpec = tween(
+            durationMillis = 700,
+            easing = FastOutSlowInEasing
+        ),
+        label = "bar-rise"
+    )
+
+    LaunchedEffect(Unit) {
+        animationTarget = 0f
+        animationTarget = 1f
+    }
 
     val barPositions = remember { mutableStateListOf<Pair<Rect, LocalDate>>() }
     barPositions.clear()
@@ -57,7 +80,6 @@ fun DailyExpenseBarChart(
                 .height(220.dp)
                 .pointerInput(dailyData) {
                     detectTapGestures { offset ->
-
                         barPositions.forEach { (rect, date) ->
                             if (rect.contains(offset)) {
                                 onClickBar(date)
@@ -75,7 +97,11 @@ fun DailyExpenseBarChart(
             dailyData.forEachIndexed { index, item ->
 
                 val ratio = (item.total / maxValue).toFloat()
-                val barHeight = (size.height * 0.85f) * ratio
+
+                val barHeight =
+                    (size.height * 0.85f) *
+                            ratio *
+                            animationProgress   // 👈 animation here
 
                 val x = index * (barWidth + spacing) + barWidth
                 val y = size.height - barHeight
@@ -88,7 +114,9 @@ fun DailyExpenseBarChart(
                 barPositions.add(rect to item.date)
 
                 val isSelectedDate = item.date == selectedDate
-                val barColor = if (isSelectedDate) Color(0xFFE53935) else dBarColor
+                val barColor =
+                    if (isSelectedDate) Color(0xFFE53935)
+                    else dBarColor
 
                 drawRoundRect(
                     color = barColor,
@@ -116,31 +144,6 @@ fun DailyExpenseBarChart(
                 end = Offset(size.width, size.height),
                 strokeWidth = 2f
             )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-
-            val barWidth = 1f / (dailyData.size * 2.2f)
-            val spacing = barWidth / 2
-
-            Spacer(modifier = Modifier.weight(barWidth))
-
-            dailyData.forEach {
-                Box(
-                    modifier = Modifier.weight(barWidth),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = it.date.dayOfWeek.name.take(3),
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(spacing))
-            }
         }
     }
 }
