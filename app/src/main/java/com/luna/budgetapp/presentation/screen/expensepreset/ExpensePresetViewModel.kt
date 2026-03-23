@@ -129,22 +129,16 @@ class ExpensePresetViewModel(
     }
 
     private fun showExpenseForm(selectedPreset: ExpensePreset?) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ExpenseForm(
-                    selectedPreset = selectedPreset,
-                    isSaving = false
-                )
+        updateDialogState(
+            dialogState = DialogState.ExpenseForm(
+                selectedPreset = selectedPreset,
+                isSaving = false
             )
-        }
+        )
     }
 
     private fun dismissDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                 dialogState = null
-            )
-        }
+        updateDialogState(null)
     }
 
     private fun saveExpensePreset(category: Category, type: String, amount: String) {
@@ -199,21 +193,13 @@ class ExpensePresetViewModel(
             expenseUseCases.addExpense(expense)
 
             if (state.dialogState != null) {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        dialogState = null
-                    )
-                }
+                updateDialogState(null)
             }
         }
     }
 
     private fun deleteLatestExpense() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = null
-            )
-        }
+        updateDialogState(null)
         viewModelScope.launch {
             expenseUseCases.deleteLatestExpense()
         }
@@ -223,11 +209,7 @@ class ExpensePresetViewModel(
         viewModelScope.launch {
             try {
                 presetUseCases.deleteExpensePreset(expensePresetId)
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        dialogState = null
-                    )
-                }
+                updateDialogState(null)
             } catch (_: Exception) {
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -247,11 +229,7 @@ class ExpensePresetViewModel(
     }
 
     private fun showExpenseDeleteConfirmationDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ConfirmDeleteExpense
-            )
-        }
+        updateDialogState(DialogState.ConfirmDeleteExpense)
     }
 
     private fun gotoExpenseRoute() {
@@ -263,6 +241,12 @@ class ExpensePresetViewModel(
     private fun initializeCategoryFilterIfNeeded() {
         viewModelScope.launch {
             profileUseCases.initializeCategoryProfile()
+        }
+    }
+
+    private fun updateDialogState(dialogState: DialogState?) {
+        _uiState.update { currentState ->
+            currentState.copy(dialogState = dialogState)
         }
     }
 }
