@@ -28,6 +28,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
 import com.luna.budgetapp.presentation.screen.utils.formatToDisplay
+import com.luna.budgetapp.presentation.screen.utils.toCurrency
 
 @Composable
 fun ExpenseTable(
@@ -98,7 +99,7 @@ fun ExpenseItem(
                 modifier = Modifier.padding(end = 4.dp)
             )
             Text(
-                text = "%,.2f".format(item.amount),
+                text = item.amount.toCurrency(),
                 modifier = Modifier
                     .widthIn(min = 64.dp)
                     .wrapContentWidth(Alignment.End)
