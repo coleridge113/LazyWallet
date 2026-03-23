@@ -28,7 +28,7 @@ fun Double.toCurrency(): String {
     return if (this >= 0)
         "%,.2f".format(this)
     else
-        "-(%,.2f)".format(abs(this))
+        "(%,.2f)".format(abs(this))
 }
 
 fun Double.formatToPercentage(): String {
