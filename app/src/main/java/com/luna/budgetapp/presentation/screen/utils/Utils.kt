@@ -3,7 +3,6 @@ package com.luna.budgetapp.presentation.screen.utils
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -15,6 +14,7 @@ import com.luna.budgetapp.presentation.model.CategoryOptions
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 fun getIconForCategory(category: String): ImageVector {
@@ -24,8 +24,11 @@ fun getIconForCategory(category: String): ImageVector {
         ?: Icons.Default.AttachMoney
 }
 
-fun Double.formatToCurrency(): String {
-    return "%,.2f".format(this)
+fun Double.toCurrency(): String {
+    return if (this >= 0)
+        "%,.2f".format(this)
+    else
+        "-(%,.2f)".format(abs(this))
 }
 
 fun Double.formatToPercentage(): String {

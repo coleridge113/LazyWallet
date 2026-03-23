@@ -149,7 +149,8 @@ fun ExpensePresetDialog(
                     ),
                     inputTransformation = InputTransformation {
                         val text = asCharSequence().toString()
-                        if (!text.matches(Regex("^\\d*\\.?\\d*$"))) {
+
+                        if (!text.matches(Regex("^-?(\\d+)?(\\.\\d*)?$"))) {
                             revertAllChanges()
                         }
                     }
