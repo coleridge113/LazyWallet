@@ -83,7 +83,7 @@ class ExpensePresetViewModel(
                 .catch { error ->
                     _uiState.update {
                         it.copy(
-                            isExpensesLoading = false,
+                            isLoading = false,
                             error = error.localizedMessage
                         )
                     }
@@ -91,7 +91,7 @@ class ExpensePresetViewModel(
                 .collect { totalAmount ->
                     _uiState.update { currentState ->
                         currentState.copy(
-                            isExpensesLoading = false,
+                            isLoading = false,
                             error = null,
                             totalAmount = totalAmount
                         )
@@ -106,14 +106,14 @@ class ExpensePresetViewModel(
                 .onStart {
                     _uiState.update {
                         it.copy(
-                            isPresetsLoading = true,
+                            isLoading = true,
                         )
                     }
                 }
                 .catch { error ->
                     _uiState.update {
                         it.copy(
-                            isPresetsLoading = false,
+                            isLoading = false,
                             error = error.localizedMessage
                         )
                     }
@@ -121,7 +121,7 @@ class ExpensePresetViewModel(
                 .collect { expensePresets ->
                     _uiState.update {
                         it.copy(
-                            isPresetsLoading = false,
+                            isLoading = false,
                             error = null,
                             expensePresets = expensePresets
                         )

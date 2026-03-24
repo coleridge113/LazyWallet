@@ -6,8 +6,7 @@ import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
 
 data class UiState(
-    val isExpensesLoading: Boolean = false,
-    val isPresetsLoading: Boolean = false,
+    val isLoading: Boolean = false,
     val error: String? = null,
     val expensePresets: List<ExpensePreset> = emptyList(),
     val expenses: List<Expense> = emptyList(),
