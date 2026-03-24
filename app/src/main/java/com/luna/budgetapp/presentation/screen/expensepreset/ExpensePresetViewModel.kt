@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -37,6 +38,7 @@ class ExpensePresetViewModel(
 
     init {
         initializeCategoryFilterIfNeeded()
+        observeActiveProfileAndCategories()
         observeTotalAmount()
         observeExpensePresets()
     }
@@ -241,6 +243,31 @@ class ExpensePresetViewModel(
     private fun initializeCategoryFilterIfNeeded() {
         viewModelScope.launch {
             profileUseCases.initializeCategoryProfile()
+        }
+    }
+
+    private fun observeActiveProfileAndCategories() {
+        viewModelScope.launch {
+            profileUseCases.getActiveCategoryProfile()
+                .flatMapLatest { profile ->
+                    profileUseCases.getCategoryProfile(profile)
+                        .map { filters ->
+                            profile to filters
+                        }
+                }
+                .collectLatest { (profile, filters) ->
+
+                    val categoryMap = filters.associate {
+                        it.category to it.isActive
+                    }
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            selectedCategoryMap =
+                                categoryMap.ifEmpty { currentState.selectedCategoryMap }
+                        )
+                    }
+                }
         }
     }
 
