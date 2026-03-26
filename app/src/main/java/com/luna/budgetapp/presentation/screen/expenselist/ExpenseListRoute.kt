@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -35,8 +34,8 @@ import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdo
 import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
-import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.Lifecycle
 import kotlinx.coroutines.flow.collectLatest
 import com.luna.budgetapp.presentation.nav.Routes
 
@@ -48,6 +47,7 @@ fun ExpenseListRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(Unit) {
@@ -90,7 +90,7 @@ fun ExpenseListRoute(
                     )
 
                     DateRangeSelectorDropdown(
-                        selected = uiState.selectedRange,
+                        selected = uiState.dateFilter,
                         onSelectedChange = {
                             when (it) {
                                 DateFilter.Daily,
@@ -108,6 +108,7 @@ fun ExpenseListRoute(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
             onEvent = viewModel::onEvent,
+            totalAmount = totalAmount,
             expenses = expenses
         )
     }
@@ -118,6 +119,7 @@ fun MainContent(
     modifier: Modifier,
     uiState: UiState,
     onEvent: (Event) -> Unit,
+    totalAmount: Double,
     expenses: LazyPagingItems<Expense>
 ) {
     Column(
@@ -127,13 +129,13 @@ fun MainContent(
     ) {
         ExpenseChart(
             chartDataList = uiState.chartDataList,
-            totalAmount = uiState.totalAmount,
+            totalAmount = totalAmount,
             showDialog = { onEvent(Event.ShowCategoryFilterDialog) },
             onClickCenter = { onEvent(Event.ResetCategoryFilters) }
         )
         Spacer(modifier = Modifier.height(48.dp))
         when {
-            uiState.isExpensesLoading -> CircularProgressIndicator()
+            uiState.isLoading -> CircularProgressIndicator()
             expenses.itemCount <= 0 -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
