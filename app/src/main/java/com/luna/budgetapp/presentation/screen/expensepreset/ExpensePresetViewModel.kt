@@ -181,18 +181,17 @@ class ExpensePresetViewModel(
 
     private fun addExpense(
         expensePreset: ExpensePreset, 
-        customAmount: Double?,
+        customAmount: String?,
         customType: String?
     ) {
         val state = _uiState.value
 
         viewModelScope.launch {
-            val expense = Expense(
+            expenseUseCases.addExpense(
                 category = expensePreset.category,
                 type = customType ?: expensePreset.type,
-                amount = customAmount ?: expensePreset.amount
+                amount = customAmount ?: expensePreset.amount.toString()
             )
-            expenseUseCases.addExpense(expense)
 
             if (state.dialogState != null) {
                 updateDialogState(null)
