@@ -105,7 +105,7 @@ fun MainContent(
                         onDismissRequest = { onEvent(Event.DismissDialog) },
                         onConfirm = { category, type, amount ->
                             if (dialog.selectedPreset == null) {
-                                onEvent(Event.ConfirmDialog(category, type, amount))
+                                onEvent(Event.ConfirmExpenseFormDialog(category, type, amount))
                             } else {
                                 onEvent(Event.AddExpense(dialog.selectedPreset, amount, type))
                             }

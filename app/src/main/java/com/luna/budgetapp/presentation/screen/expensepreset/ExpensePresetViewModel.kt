@@ -3,7 +3,6 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.usecase.PresetUseCases
@@ -54,14 +53,14 @@ class ExpensePresetViewModel(
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
-            is Event.ConfirmDialog -> saveExpensePreset(event.category, event.type, event.amount)
+            is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
         }
     }
 
     private fun observeTotalAmount() {
         viewModelScope.launch {
             _uiState
-                .map { it.selectedRange to it.selectedCategoryMap }
+                .map { it.dateFilter to it.selectedCategories }
                 .distinctUntilChanged()
                 .flatMapLatest { (filter, categoryMap) ->
                     val range = filter.resolve()
@@ -262,8 +261,8 @@ class ExpensePresetViewModel(
 
                     _uiState.update { currentState ->
                         currentState.copy(
-                            selectedCategoryMap =
-                                categoryMap.ifEmpty { currentState.selectedCategoryMap }
+                            selectedCategories =
+                                categoryMap.ifEmpty { currentState.selectedCategories }
                         )
                     }
                 }

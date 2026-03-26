@@ -131,7 +131,7 @@ class ExpensePresetViewModelTest {
         viewModel.onEvent(Event.ShowExpenseForm(null))
         advanceUntilIdle()
         viewModel.onEvent(
-            Event.ConfirmDialog(
+            Event.ConfirmExpenseFormDialog(
                 Category.FOOD,
                 dummyPreset.type,
                 dummyPreset.amount.toString()
