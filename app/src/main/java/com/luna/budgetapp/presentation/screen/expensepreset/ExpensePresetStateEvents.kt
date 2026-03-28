@@ -7,10 +7,8 @@ import com.luna.budgetapp.domain.model.DateFilter
 data class UiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val expensePresets: List<ExpensePreset> = emptyList(),
     val dialogState: DialogState? = null,
     val dateFilter: DateFilter = DateFilter.Daily,
-    val totalAmount: Double = 0.0,
     val selectedCategories: Map<Category, Boolean> = emptyMap()
 )
 
