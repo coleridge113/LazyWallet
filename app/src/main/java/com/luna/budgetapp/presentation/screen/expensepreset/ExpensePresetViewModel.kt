@@ -1,29 +1,28 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
-import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
@@ -43,7 +42,6 @@ class ExpensePresetViewModel(
     init {
         initializeCategoryFilterIfNeeded()
         observeActiveProfileAndCategories()
-        observeExpensePresets()
     }
 
     fun onEvent(event: Event) {
@@ -60,6 +58,14 @@ class ExpensePresetViewModel(
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
         }
     }
+    
+    val expensePresets: StateFlow<List<ExpensePreset>> =
+        presetUseCases.getAllExpensePresets()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
     val totalAmount: StateFlow<Double> =
         filterDataByState { categories, start, end ->
@@ -75,77 +81,6 @@ class ExpensePresetViewModel(
                 initialValue = 0.0
             )
 
-    private fun observeTotalAmount() {
-        viewModelScope.launch {
-            _uiState
-                .map { it.dateFilter to it.selectedCategories }
-                .distinctUntilChanged()
-                .flatMapLatest { (filter, categoryMap) ->
-                    val range = filter.resolve()
-
-                    val selectedCategories =
-                        categoryMap
-                            .filterValues { it }
-                            .keys
-                            .map { it.name }
-
-                    Log.d("ExpensePreset", "selected categories: $selectedCategories")
-
-                    expenseUseCases.getTotalAmountByDateRange(
-                        start = range.start,
-                        end = range.end,
-                        categories = selectedCategories
-                    )
-                }
-                .catch { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = error.localizedMessage
-                        )
-                    }
-                }
-                .collect { totalAmount ->
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            error = null,
-                            totalAmount = totalAmount
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun observeExpensePresets() {
-        viewModelScope.launch {
-            presetUseCases.getAllExpensePresets()
-                .onStart {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = true,
-                        )
-                    }
-                }
-                .catch { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = error.localizedMessage
-                        )
-                    }
-                }
-                .collect { expensePresets ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = null,
-                            expensePresets = expensePresets
-                        )
-                    }
-                }
-        }
-    }
 
     private fun showExpenseForm(selectedPreset: ExpensePreset?) {
         updateDialogState(

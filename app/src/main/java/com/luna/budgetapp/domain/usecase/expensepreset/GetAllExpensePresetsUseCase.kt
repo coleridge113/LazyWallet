@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 class GetAllExpensePresetsUseCase(
     private val repository: ExpensePresetRepository
 ) {
-    suspend operator fun invoke(): Flow<List<ExpensePreset>> {
+    operator fun invoke(): Flow<List<ExpensePreset>> {
         return repository.getAllExpensePresets()
     }
 }

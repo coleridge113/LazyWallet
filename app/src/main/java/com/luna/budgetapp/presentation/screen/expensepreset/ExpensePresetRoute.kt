@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
@@ -38,6 +39,7 @@ fun ExpensePresetRoute(
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
+    val expensePresets by viewModel.expensePresets.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
@@ -57,6 +59,7 @@ fun ExpensePresetRoute(
         MainContent(
             uiState = uiState,
             totalAmount = totalAmount,
+            expensePresets = expensePresets,
             modifier = Modifier.padding(innerPadding),
             onEvent = viewModel::onEvent,
         )
@@ -67,6 +70,7 @@ fun ExpensePresetRoute(
 fun MainContent(
     uiState: UiState,
     totalAmount: Double,
+    expensePresets: List<ExpensePreset>,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
@@ -85,7 +89,7 @@ fun MainContent(
             )
 
             ExpensePresetTable(
-                expensePresets = uiState.expensePresets,
+                expensePresets = expensePresets,
                 onClickIcon = { onEvent(Event.ShowExpenseForm(it)) },
                 onLongClickIcon = { onEvent(Event.ShowConfirmationDialog(it)) },
                 onClickItem = { onEvent(Event.AddExpense(it)) },
