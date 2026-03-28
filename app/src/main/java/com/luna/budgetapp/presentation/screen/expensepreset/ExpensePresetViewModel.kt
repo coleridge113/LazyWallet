@@ -10,6 +10,7 @@ import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -20,7 +21,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
@@ -38,7 +43,6 @@ class ExpensePresetViewModel(
     init {
         initializeCategoryFilterIfNeeded()
         observeActiveProfileAndCategories()
-        observeTotalAmount()
         observeExpensePresets()
     }
 
@@ -56,6 +60,20 @@ class ExpensePresetViewModel(
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
         }
     }
+
+    val totalAmount: StateFlow<Double> =
+        filterDataByState { categories, start, end ->
+            expenseUseCases.getTotalAmountByDateRange(
+                categories = categories,
+                start = start,
+                end = end
+            )
+        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = 0.0
+            )
 
     private fun observeTotalAmount() {
         viewModelScope.launch {
@@ -273,5 +291,22 @@ class ExpensePresetViewModel(
         _uiState.update { currentState ->
             currentState.copy(dialogState = dialogState)
         }
+    }
+
+    private fun <T> filterDataByState(
+        useCase: (categories: List<String>, start: LocalDateTime, end: LocalDateTime) -> Flow<T>
+    ): Flow<T> {
+        return _uiState
+            .map { it.dateFilter to it.selectedCategories }
+            .distinctUntilChanged()
+            .flatMapLatest { (dateFilter, categoryMap) ->
+                val range = dateFilter.resolve()
+                val activeCategories = categoryMap
+                    .filterValues { it }
+                    .keys
+                    .map { it.name }
+
+                useCase(activeCategories, range.start, range.end)
+            }
     }
 }

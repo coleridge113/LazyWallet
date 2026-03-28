@@ -37,6 +37,7 @@ fun ExpensePresetRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
@@ -55,6 +56,7 @@ fun ExpensePresetRoute(
     ) { innerPadding ->
         MainContent(
             uiState = uiState,
+            totalAmount = totalAmount,
             modifier = Modifier.padding(innerPadding),
             onEvent = viewModel::onEvent,
         )
@@ -64,6 +66,7 @@ fun ExpensePresetRoute(
 @Composable
 fun MainContent(
     uiState: UiState,
+    totalAmount: Double,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
@@ -75,7 +78,7 @@ fun MainContent(
             modifier = Modifier.fillMaxSize()
         ) {
             ExpenseAmountDisplay(
-                totalAmount = uiState.totalAmount,
+                totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
                     .fillMaxWidth()
                     .singleClick { onEvent(Event.GotoExpenseRoute) }
