@@ -11,6 +11,7 @@ import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.presentation.model.ChartData
+import com.luna.budgetapp.presentation.screen.utils.filterDataByState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,17 +66,22 @@ class ExpenseListViewModel(
     }
 
     val expensesPagingFlow: Flow<PagingData<Expense>> =
-        filterDataByState { categories, start, end ->
+        _uiState.filterDataByState(
+            dateFilterSelector = UiState::dateFilter, 
+            categorySelector = UiState::selectedCategories
+        ) { categories, start, end ->
             expenseUseCases.getPagingExpensesByDateRange(
                 categories = categories,
                 start = start,
                 end = end
             )
         }
-            .cachedIn(viewModelScope)
 
     val totalAmount: StateFlow<Double> =
-        filterDataByState { categories, start, end ->
+        _uiState.filterDataByState(
+            dateFilterSelector = UiState::dateFilter,
+            categorySelector = UiState::selectedCategories
+        ) { categories, start, end ->
             expenseUseCases.getTotalAmountByDateRange(
                 categories = categories,
                 start = start,
