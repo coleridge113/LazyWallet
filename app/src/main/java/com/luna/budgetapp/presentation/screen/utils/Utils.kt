@@ -10,7 +10,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.presentation.model.CategoryOptions
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -58,3 +65,26 @@ fun Modifier.singleClick(
         }
     }
 }
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun <STATE, T> Flow<STATE>.filterDataByState(
+    dateFilterSelector: (STATE) -> DateFilter,
+    categorySelector: (STATE) -> Map<Category, Boolean>,
+    useCase: (categories: List<String>, start: LocalDateTime, end: LocalDateTime) -> Flow<T>
+): Flow<T> =
+    map { state ->
+        dateFilterSelector(state) to categorySelector(state)
+    }
+        .distinctUntilChanged()
+        .flatMapLatest { (dateFilter, categoryMap) ->
+
+            val range = dateFilter.resolve()
+
+            val activeCategories =
+                categoryMap
+                    .filterValues { it }
+                    .keys
+                    .map { it.name }
+
+            useCase(activeCategories, range.start, range.end)
+        }
