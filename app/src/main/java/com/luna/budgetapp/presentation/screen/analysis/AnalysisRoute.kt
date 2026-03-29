@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
+import com.luna.budgetapp.domain.model.Expense
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +28,8 @@ fun AnalysisRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val expenses by viewModel.expenses.collectAsStateWithLifecycle()
+    val filteredExpenses by viewModel.filteredExpenses.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -52,6 +55,8 @@ fun AnalysisRoute(
         MainContent(
             modifier = Modifier.padding(innerPadding),
             uiState = uiState,
+            expenses = expenses,
+            filteredExpenses = filteredExpenses,
             onEvent = viewModel::onEvent,
         )
     }
@@ -60,6 +65,8 @@ fun AnalysisRoute(
 @Composable
 fun MainContent(
     modifier: Modifier,
+    expenses: List<Expense>,
+    filteredExpenses: List<Expense>,
     uiState: UiState,
     onEvent: (Event) -> Unit,
 ) {
@@ -69,7 +76,7 @@ fun MainContent(
     ) {
         DailyExpenseBarChart(
             modifier = Modifier,
-            expenses = uiState.expenses,
+            expenses = expenses,
             selectedDate = uiState.selectedDate,
             onClickBar = { date ->
                 onEvent(Event.SelectBar(date)) 
@@ -78,7 +85,7 @@ fun MainContent(
 
         ExpenseTable(
             modifier = Modifier,
-            expenses = uiState.filteredExpenses
+            expenses = filteredExpenses
         )
     }
 }
