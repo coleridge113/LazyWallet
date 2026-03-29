@@ -7,6 +7,7 @@ import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.presentation.screen.utils.filterDataByState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +69,10 @@ class ExpensePresetViewModel(
             )
 
     val totalAmount: StateFlow<Double> =
-        filterDataByState { categories, start, end ->
+        _uiState.filterDataByState(
+            dateFilterSelector = UiState::dateFilter,
+            categorySelector = UiState::selectedCategories
+        ) { categories, start, end ->
             expenseUseCases.getTotalAmountByDateRange(
                 categories = categories,
                 start = start,
@@ -226,22 +230,5 @@ class ExpensePresetViewModel(
         _uiState.update { currentState ->
             currentState.copy(dialogState = dialogState)
         }
-    }
-
-    private fun <T> filterDataByState(
-        useCase: (categories: List<String>, start: LocalDateTime, end: LocalDateTime) -> Flow<T>
-    ): Flow<T> {
-        return _uiState
-            .map { it.dateFilter to it.selectedCategories }
-            .distinctUntilChanged()
-            .flatMapLatest { (dateFilter, categoryMap) ->
-                val range = dateFilter.resolve()
-                val activeCategories = categoryMap
-                    .filterValues { it }
-                    .keys
-                    .map { it.name }
-
-                useCase(activeCategories, range.start, range.end)
-            }
     }
 }

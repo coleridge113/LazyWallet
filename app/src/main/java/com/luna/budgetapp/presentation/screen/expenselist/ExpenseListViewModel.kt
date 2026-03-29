@@ -292,21 +292,4 @@ class ExpenseListViewModel(
             _navigation.send(Navigation.GotoAnalysisRoute) 
         }
     }
-
-    private fun <T> filterDataByState(
-        useCase: (categories: List<String>, start: LocalDateTime, end: LocalDateTime) -> Flow<T>
-    ): Flow<T> {
-        return _uiState
-            .map { it.dateFilter to it.selectedCategories }
-            .distinctUntilChanged()
-            .flatMapLatest { (dateFilter, categoryMap) ->
-                val range = dateFilter.resolve()
-                val activeCategories = categoryMap
-                    .filterValues { it }
-                    .keys
-                    .map { it.name }
-
-                useCase(activeCategories, range.start, range.end)
-            }
-    }
 }
