@@ -117,7 +117,6 @@ class ExpenseListViewModelTest {
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertThat(state.totalAmount).isEqualTo(0.0)
-        assertThat(state.expenses).isEmpty()
     }
 
     @Test

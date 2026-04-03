@@ -1,26 +1,31 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.domain.model.Expense
-import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
-import com.luna.budgetapp.domain.usecase.PresetUseCases
+import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.presentation.screen.utils.filterDataByState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
@@ -37,8 +42,7 @@ class ExpensePresetViewModel(
 
     init {
         initializeCategoryFilterIfNeeded()
-        observeTotalAmount()
-        observeExpensePresets()
+        observeActiveProfileAndCategories()
     }
 
     fun onEvent(event: Event) {
@@ -52,99 +56,47 @@ class ExpensePresetViewModel(
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
-            is Event.ConfirmDialog -> saveExpensePreset(event.category, event.type, event.amount)
+            is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
         }
     }
+    
+    val expensePresets: StateFlow<List<ExpensePreset>> =
+        presetUseCases.getAllExpensePresets()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
-    private fun observeTotalAmount() {
-        viewModelScope.launch {
-            _uiState
-                .map { it.selectedRange to it.selectedCategoryMap }
-                .distinctUntilChanged()
-                .flatMapLatest { (filter, categoryMap) ->
-                    val range = filter.resolve()
-
-                    val selectedCategories =
-                        categoryMap
-                            .filterValues { it }
-                            .keys
-                            .map { it.name }
-
-                    Log.d("ExpensePreset", "selected categories: $selectedCategories")
-
-                    expenseUseCases.getTotalAmountByDateRange(
-                        start = range.start,
-                        end = range.end,
-                        categories = selectedCategories
-                    )
-                }
-                .catch { error ->
-                    _uiState.update {
-                        it.copy(
-                            isExpensesLoading = false,
-                            error = error.localizedMessage
-                        )
-                    }
-                }
-                .collect { totalAmount ->
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isExpensesLoading = false,
-                            error = null,
-                            totalAmount = totalAmount
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun observeExpensePresets() {
-        viewModelScope.launch {
-            presetUseCases.getAllExpensePresets()
-                .onStart {
-                    _uiState.update {
-                        it.copy(
-                            isPresetsLoading = true,
-                        )
-                    }
-                }
-                .catch { error ->
-                    _uiState.update {
-                        it.copy(
-                            isPresetsLoading = false,
-                            error = error.localizedMessage
-                        )
-                    }
-                }
-                .collect { expensePresets ->
-                    _uiState.update {
-                        it.copy(
-                            isPresetsLoading = false,
-                            error = null,
-                            expensePresets = expensePresets
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun showExpenseForm(selectedPreset: ExpensePreset?) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ExpenseForm(
-                    selectedPreset = selectedPreset,
-                    isSaving = false
-                )
+    val totalAmount: StateFlow<Double> =
+        _uiState.filterDataByState(
+            dateFilterSelector = UiState::dateFilter,
+            categorySelector = UiState::selectedCategories
+        ) { categories, start, end ->
+            expenseUseCases.getTotalAmountByDateRange(
+                categories = categories,
+                start = start,
+                end = end
             )
         }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = 0.0
+            )
+
+
+    private fun showExpenseForm(selectedPreset: ExpensePreset?) {
+        updateDialogState(
+            dialogState = DialogState.ExpenseForm(
+                selectedPreset = selectedPreset,
+                isSaving = false
+            )
+        )
     }
 
     private fun dismissDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                 dialogState = null
-            )
-        }
+        updateDialogState(null)
     }
 
     private fun saveExpensePreset(category: Category, type: String, amount: String) {
@@ -185,35 +137,26 @@ class ExpensePresetViewModel(
 
     private fun addExpense(
         expensePreset: ExpensePreset, 
-        customAmount: Double?,
+        customAmount: String?,
         customType: String?
     ) {
         val state = _uiState.value
 
         viewModelScope.launch {
-            val expense = Expense(
+            expenseUseCases.addExpense(
                 category = expensePreset.category,
                 type = customType ?: expensePreset.type,
-                amount = customAmount ?: expensePreset.amount
+                amount = customAmount ?: expensePreset.amount.toString()
             )
-            expenseUseCases.addExpense(expense)
 
             if (state.dialogState != null) {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        dialogState = null
-                    )
-                }
+                updateDialogState(null)
             }
         }
     }
 
     private fun deleteLatestExpense() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = null
-            )
-        }
+        updateDialogState(null)
         viewModelScope.launch {
             expenseUseCases.deleteLatestExpense()
         }
@@ -223,11 +166,7 @@ class ExpensePresetViewModel(
         viewModelScope.launch {
             try {
                 presetUseCases.deleteExpensePreset(expensePresetId)
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        dialogState = null
-                    )
-                }
+                updateDialogState(null)
             } catch (_: Exception) {
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -247,11 +186,7 @@ class ExpensePresetViewModel(
     }
 
     private fun showExpenseDeleteConfirmationDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ConfirmDeleteExpense
-            )
-        }
+        updateDialogState(DialogState.ConfirmDeleteExpense)
     }
 
     private fun gotoExpenseRoute() {
@@ -263,6 +198,37 @@ class ExpensePresetViewModel(
     private fun initializeCategoryFilterIfNeeded() {
         viewModelScope.launch {
             profileUseCases.initializeCategoryProfile()
+        }
+    }
+
+    private fun observeActiveProfileAndCategories() {
+        viewModelScope.launch {
+            profileUseCases.getActiveCategoryProfile()
+                .flatMapLatest { profile ->
+                    profileUseCases.getCategoryProfile(profile)
+                        .map { filters ->
+                            profile to filters
+                        }
+                }
+                .collectLatest { (profile, filters) ->
+
+                    val categoryMap = filters.associate {
+                        it.category to it.isActive
+                    }
+
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            selectedCategories =
+                                categoryMap.ifEmpty { currentState.selectedCategories }
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun updateDialogState(dialogState: DialogState?) {
+        _uiState.update { currentState ->
+            currentState.copy(dialogState = dialogState)
         }
     }
 }

@@ -19,11 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
-import com.luna.budgetapp.presentation.screen.components.DateRangePickerDialog
-import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdown
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
@@ -40,6 +38,8 @@ fun ExpensePresetRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
+    val expensePresets by viewModel.expensePresets.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
@@ -58,6 +58,8 @@ fun ExpensePresetRoute(
     ) { innerPadding ->
         MainContent(
             uiState = uiState,
+            totalAmount = totalAmount,
+            expensePresets = expensePresets,
             modifier = Modifier.padding(innerPadding),
             onEvent = viewModel::onEvent,
         )
@@ -67,6 +69,8 @@ fun ExpensePresetRoute(
 @Composable
 fun MainContent(
     uiState: UiState,
+    totalAmount: Double,
+    expensePresets: List<ExpensePreset>,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
@@ -78,14 +82,14 @@ fun MainContent(
             modifier = Modifier.fillMaxSize()
         ) {
             ExpenseAmountDisplay(
-                totalAmount = uiState.totalAmount,
+                totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
                     .fillMaxWidth()
                     .singleClick { onEvent(Event.GotoExpenseRoute) }
             )
 
             ExpensePresetTable(
-                expensePresets = uiState.expensePresets,
+                expensePresets = expensePresets,
                 onClickIcon = { onEvent(Event.ShowExpenseForm(it)) },
                 onLongClickIcon = { onEvent(Event.ShowConfirmationDialog(it)) },
                 onClickItem = { onEvent(Event.AddExpense(it)) },
@@ -108,9 +112,9 @@ fun MainContent(
                         onDismissRequest = { onEvent(Event.DismissDialog) },
                         onConfirm = { category, type, amount ->
                             if (dialog.selectedPreset == null) {
-                                onEvent(Event.ConfirmDialog(category, type, amount))
+                                onEvent(Event.ConfirmExpenseFormDialog(category, type, amount))
                             } else {
-                                onEvent(Event.AddExpense(dialog.selectedPreset, amount.toDouble(), type))
+                                onEvent(Event.AddExpense(dialog.selectedPreset, amount, type))
                             }
                         },
                         isSaving = dialog.isSaving
