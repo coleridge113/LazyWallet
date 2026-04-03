@@ -152,7 +152,8 @@ fun MainContent(
                     modifier = Modifier,
                     expenses = expenses,
                     onClick = {},
-                    onLongClick = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) }
+                    onLongClick = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
+                    onDelete = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
                 )
             }
         }
