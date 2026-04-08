@@ -34,10 +34,11 @@ import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdo
 import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.Lifecycle
 import kotlinx.coroutines.flow.collectLatest
 import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -152,7 +153,7 @@ fun MainContent(
                     modifier = Modifier,
                     expenses = expenses,
                     onClick = {},
-                    onLongClick = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
+                    onEdit = { onEvent(Event.ShowExpenseForm(it)) },
                     onDelete = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
                 )
             }
@@ -169,7 +170,7 @@ fun MainContent(
                         }
                     }
                 )
-            is DialogState.CategoryFilterForm -> {
+            is DialogState.CategoryFilterForm ->
                 CategoryFilterDialog(
                     selectedCategoryMap = dialog.filteredCategories,
                     selectedProfile = uiState.activeProfile,
@@ -188,9 +189,8 @@ fun MainContent(
                         onEvent(Event.DeleteCategoryProfile(profileName))
                     }
                 )
-            }
 
-            is DialogState.ConfirmDeleteExpense -> {
+            is DialogState.ConfirmDeleteExpense ->
                 ConfirmationDialog(
                     message = "Delete this expense?",
                     confirmText = "Delete",
@@ -199,7 +199,16 @@ fun MainContent(
                     onConfirm = { onEvent(Event.DeleteExpense(dialog.expenseId)) }
                 )
 
-            }
+            is DialogState.ExpenseForm ->
+                ExpenseForm(
+                    selectedExpense = dialog.selectedExpense,
+                    onDismissRequest = { onEvent(Event.DismissDialog) },
+                    onConfirm = { expenseId, type, amount ->
+                        onEvent(Event.EditExpense(expenseId, type, amount))
+                    },
+                    isSaving = dialog.isSaving
+                )
+
             else -> {}
         }
     }

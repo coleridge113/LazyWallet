@@ -33,6 +33,7 @@ import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.EditExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetAllExpensesUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetCategoryTotalsByDateRange
 import com.luna.budgetapp.domain.usecase.expense.GetExpensesByCategoryUseCase
@@ -158,6 +159,7 @@ val appModule = module {
     factoryOf(::SetActiveCategoryProfileUseCase)
     factoryOf(::GetActiveDateFilterUseCase)
     factoryOf(::SetActiveDateFilterUseCase)
+    factoryOf(::EditExpenseUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)

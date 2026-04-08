@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +54,7 @@ fun ExpenseTable(
     modifier: Modifier = Modifier,
     expenses: LazyPagingItems<Expense>,
     onClick: (Expense) -> Unit,
-    onLongClick: (Expense) -> Unit,
+    onEdit: (Expense) -> Unit,
     onDelete: (Expense) -> Unit
 ) {
     LazyColumn(
@@ -67,7 +67,7 @@ fun ExpenseTable(
                     item = expense,
                     icon = getIconForCategory(expense.category),
                     onClick = {},
-                    onLongClick = {},
+                    onEdit = { onEdit(expense) },
                     onDelete = { onDelete(expense) }, 
                 )
             }
@@ -84,7 +84,7 @@ fun SwipeableExpenseItem(
     icon: ImageVector,
     onDelete: (Expense) -> Unit,
     onClick: (Expense) -> Unit,
-    onLongClick: (Expense) -> Unit
+    onEdit: (Expense) -> Unit
 ) {
 
     val density = LocalDensity.current
@@ -111,30 +111,40 @@ fun SwipeableExpenseItem(
         animationSpec = spring()
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RectangleShape)
-    ) {
+    Box {
 
         Row(
             modifier = Modifier.matchParentSize(),
             horizontalArrangement = Arrangement.End
         ) {
-
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .width(actionWidth)
+                    .width(actionWidth / 2)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.clickable { onEdit(item) }
+                )
+            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .width(actionWidth / 2)
                     .fillMaxHeight()
                     .background(MaterialTheme.colorScheme.error)
-                    .clickable { onDelete(item) },
-
-                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onError
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.clickable { 
+                        onDelete(item)
+                    }
                 )
             }
         }
@@ -142,28 +152,24 @@ fun SwipeableExpenseItem(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-
                 .offset {
                     IntOffset(
                         x = state.offset.roundToInt(),
                         y = 0
                     )
                 }
-
                 .anchoredDraggable(
                     state = state,
                     orientation = Orientation.Horizontal,
                     flingBehavior = flingBehavior
                 )
-
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-
             ExpenseItem(
                 item = item,
                 icon = icon,
                 onClick = onClick,
-                onLongClick = onLongClick
+                onLongClick = onEdit
             )
         }
     }
@@ -237,7 +243,7 @@ fun SwipeableExpenseItemPreview() {
         item = expense,
         icon = CategoryOptions.BEVERAGE.icon,
         onClick = {},
-        onLongClick = {},
+        onEdit = {},
         onDelete = {},
     )
 }

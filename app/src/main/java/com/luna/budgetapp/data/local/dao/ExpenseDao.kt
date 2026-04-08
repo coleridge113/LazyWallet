@@ -125,4 +125,16 @@ interface ExpenseDao {
     @Delete
     suspend fun deleteExpenses(expenses: List<ExpenseEntity>)
 
+    @Query("""
+        UPDATE expenses
+        SET amount = :amount,
+            type = :type
+        WHERE id = :expenseId
+    """)
+    suspend fun editExpenseById(
+        expenseId: Long,
+        amount: Double,
+        type: String
+    )
+
 }

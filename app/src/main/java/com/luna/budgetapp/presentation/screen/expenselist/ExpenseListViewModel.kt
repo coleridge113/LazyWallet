@@ -55,6 +55,8 @@ class ExpenseListViewModel(
             Event.ShowCalendarForm -> showCalendarForm()
             Event.ResetCategoryFilters -> resetCategoryFilters()
             Event.GotoBarGraph -> gotoAnalysisRoute()
+            is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
+            is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount)
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
@@ -284,6 +286,30 @@ class ExpenseListViewModel(
     private fun deleteCategoryProfile(profileName: String) {
         viewModelScope.launch {
             profileUseCases.deleteCategoryProfile(profileName)
+        }
+    }
+
+    private fun showExpenseForm(selectedExpense: Expense) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                dialogState = DialogState.ExpenseForm(selectedExpense)
+            )
+        }
+    }
+
+    private fun editExpense(expenseId: Long, type: String, amount: String) {
+        viewModelScope.launch {
+            expenseUseCases.editExpense(
+                expenseId, 
+                amount.toDouble(),
+                type
+            )
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                dialogState = null
+            )
         }
     }
 

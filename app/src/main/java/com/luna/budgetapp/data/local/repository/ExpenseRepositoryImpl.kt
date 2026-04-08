@@ -177,4 +177,12 @@ class ExpenseRepositoryImpl(
     override suspend fun deleteLatestExpense() {
         dao.deleteLatestExpense()
     }
+
+    override suspend fun editExpenseById(
+        expenseId: Long,
+        amount: Double,
+        type: String
+    ) {
+        dao.editExpenseById(expenseId, amount, type)
+    }
 }

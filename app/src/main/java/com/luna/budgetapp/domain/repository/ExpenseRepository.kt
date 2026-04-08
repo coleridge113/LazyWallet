@@ -61,4 +61,10 @@ interface ExpenseRepository {
     suspend fun deleteExpenseById(expenseId: Long)
 
     suspend fun deleteLatestExpense()
+
+    suspend fun editExpenseById(
+        expenseId: Long,
+        amount: Double,
+        type: String
+    )
 }
