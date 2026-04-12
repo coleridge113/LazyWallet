@@ -141,38 +141,26 @@ class ExpenseListViewModel(
 
 
     private fun showDeleteConfirmationDialog(expenseId: Long) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ConfirmDeleteExpense(expenseId)
-            )
-        }
+        updateDialogState(
+            DialogState.ConfirmDeleteExpense(expenseId)
+        )
     }
 
     private fun dismissDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = null
-            )
-        }
+        updateDialogState(null)
     }
 
     private fun deleteExpense(expenseId: Long) {
         viewModelScope.launch {
             expenseUseCases.deleteExpense(expenseId)
-            _uiState.update { currentState ->
-                currentState.copy(
-                    dialogState = null
-                )
-            }
+            updateDialogState(null)
         }
     }
 
     private fun showCalendarForm() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.CalendarForm
-            )
-        }
+        updateDialogState(
+            DialogState.CalendarForm
+        )
     }
 
     private fun selectDateRange(selectedRange: DateFilter) {
@@ -185,14 +173,11 @@ class ExpenseListViewModel(
     }
 
     private fun showCategoryFilterDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = 
-                    DialogState.CategoryFilterForm(
-                        currentState.selectedCategories
-                )
+        updateDialogState(
+            DialogState.CategoryFilterForm(
+                _uiState.value.selectedCategories
             )
-        }
+        )
     }
 
     private fun applyCategoryFilters(profileName: String, filters: Map<Category, Boolean>) {
@@ -240,10 +225,7 @@ class ExpenseListViewModel(
             }
 
             profileUseCases.saveCategoryProfile(filters)
-
-            _uiState.update { currentState ->
-                currentState.copy(dialogState = null)
-            }
+            updateDialogState(null)
         }
     }
 
@@ -251,9 +233,7 @@ class ExpenseListViewModel(
         viewModelScope.launch {
             profileUseCases.setActiveCategoryProfile(profileName)
 
-            _uiState.update { currentState ->
-                currentState.copy(dialogState = null)
-            }
+            updateDialogState(null)
         }
     }
 
@@ -290,32 +270,34 @@ class ExpenseListViewModel(
     }
 
     private fun showExpenseForm(selectedExpense: Expense) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = DialogState.ExpenseForm(selectedExpense)
-            )
-        }
+        updateDialogState(
+            DialogState.ExpenseForm(selectedExpense)
+        )
     }
 
     private fun editExpense(expenseId: Long, type: String, amount: String) {
         viewModelScope.launch {
             expenseUseCases.editExpense(
-                expenseId, 
-                amount.toDouble(),
-                type
+                id = expenseId,
+                type = type,
+                amount = amount
+                    .ifEmpty { "0" }
+                    .toDouble()
             )
         }
 
-        _uiState.update { currentState ->
-            currentState.copy(
-                dialogState = null
-            )
-        }
+        updateDialogState(null)
     }
 
     private fun gotoAnalysisRoute() {
         viewModelScope.launch {
             _navigation.send(Navigation.GotoAnalysisRoute) 
+        }
+    }
+
+    private fun updateDialogState(dialogState: DialogState?) {
+        _uiState.update { currentState ->
+            currentState.copy(dialogState = dialogState)
         }
     }
 }
