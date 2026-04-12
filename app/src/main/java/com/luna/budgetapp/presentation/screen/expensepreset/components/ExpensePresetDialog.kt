@@ -41,10 +41,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.input.KeyboardType
+import com.luna.budgetapp.common.Constants.EMPTY
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
 
@@ -65,8 +67,10 @@ fun ExpensePresetDialog(
         val options = remember { Category.entries }
         var expanded by remember { mutableStateOf(false) }
         var selectedOption by remember { mutableStateOf(options.first()) }
-        val typeState = rememberTextFieldState(selectedPreset?.type ?: "")
-        val amountState = rememberTextFieldState("")
+        val typeState = rememberTextFieldState(selectedPreset?.type ?: EMPTY)
+        val amountState = rememberTextFieldState(
+            selectedPreset?.amount.toString()
+        )
         val isLocked = selectedPreset != null
 
         LaunchedEffect(Unit) {
@@ -138,7 +142,13 @@ fun ExpensePresetDialog(
 
                 OutlinedTextField(
                     state = typeState,
-                    label = { Text("Type") }
+                    label = { Text("Type") },
+                    placeholder = {
+                        Text(selectedPreset?.type ?: EMPTY)
+                    },
+                    modifier = Modifier.onFocusChanged {
+                        if (it.isFocused) typeState.clearText()
+                    }
                 )
 
                 OutlinedTextField(
@@ -147,6 +157,9 @@ fun ExpensePresetDialog(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
                     ),
+                    placeholder = {
+                        Text(selectedPreset?.amount.toString())
+                    },
                     inputTransformation = InputTransformation {
                         val text = asCharSequence().toString()
 
@@ -156,6 +169,9 @@ fun ExpensePresetDialog(
                         if (!validExpression.matches(text)) {
                             revertAllChanges()
                         }
+                    },
+                    modifier = Modifier.onFocusChanged {
+                        if (it.isFocused) amountState.clearText()
                     }
                 )
 
