@@ -64,7 +64,13 @@ fun ExpenseForm(
         var expanded by remember { mutableStateOf(false) }
         var selectedOption by remember { mutableStateOf(options.first()) }
         val typeState = rememberTextFieldState(selectedExpense.type)
-        val amountState = rememberTextFieldState("")
+        val amountState = rememberTextFieldState(
+            if (selectedExpense.amount % 1.0 == 0.0) {
+                selectedExpense.amount.toInt().toString()
+            } else {
+                selectedExpense.amount.toString()
+            }
+        )
 
         LaunchedEffect(Unit) {
             selectedOption = options.firstOrNull { option ->
