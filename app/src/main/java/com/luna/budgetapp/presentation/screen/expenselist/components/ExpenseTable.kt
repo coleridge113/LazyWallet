@@ -10,12 +10,14 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -33,6 +35,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,7 +72,7 @@ fun ExpenseTable(
                     icon = getIconForCategory(expense.category),
                     onClick = {},
                     onEdit = { onEdit(expense) },
-                    onDelete = { onDelete(expense) }, 
+                    onDelete = { onDelete(expense) }
                 )
             }
         }
@@ -90,6 +94,7 @@ fun SwipeableExpenseItem(
     val density = LocalDensity.current
     val actionWidth = 80.dp
     val actionWidthPx = with(density) { actionWidth.toPx() }
+    val iconSize = 32.dp
 
     val anchors = remember(actionWidthPx) {
         DraggableAnchors {
@@ -104,6 +109,7 @@ fun SwipeableExpenseItem(
             anchors = anchors
         )
     }
+    val scope = rememberCoroutineScope()
 
     val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
         state = state,
@@ -112,40 +118,63 @@ fun SwipeableExpenseItem(
     )
 
     Box {
-
         Row(
-            modifier = Modifier.matchParentSize(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
+                .matchParentSize(),
         ) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .width(actionWidth / 2)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.primary)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.clickable { onEdit(item) }
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable {
+                            onEdit(item)
+                            scope.launch {
+                                state.animateTo(DragValue.Closed)
+                            }
+                        }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
             }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .width(actionWidth / 2)
                     .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.error)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier.clickable { 
-                        onDelete(item)
-                    }
-                )
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .clickable {
+                            onDelete(item)
+                            scope.launch {
+                                state.animateTo(DragValue.Closed)
+                            }
+                        }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
             }
         }
 
