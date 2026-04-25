@@ -150,4 +150,12 @@ class FakeExpenseRepository : ExpenseRepository {
             it.dropLast(1)
         }
     }
+
+    override suspend fun editExpenseById(expenseId: Long, amount: Double, type: String) {
+        expensesFlow.update {
+            it.map { e ->
+                if (e.id == expenseId) e.copy(amount = amount, type = type) else e
+            }
+        }
+    }
 }
