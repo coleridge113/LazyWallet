@@ -14,10 +14,6 @@ class AuthViewModel(
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
-    init {
-        fetchToken()
-    }
-
     private val _state = MutableStateFlow(UiState())
     val state = _state.asStateFlow()
 
@@ -26,7 +22,7 @@ class AuthViewModel(
 
     fun onEvent(event: Event) {
         when (event) {
-            Event.FetchToken -> { fetchToken() }
+            Event.FetchToken -> {}
             Event.GotoAddExpenseRoute -> { gotoAddExpenseRoute() }
         }
     }
