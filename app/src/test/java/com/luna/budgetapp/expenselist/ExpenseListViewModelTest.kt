@@ -30,12 +30,9 @@ import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCas
 import com.luna.budgetapp.presentation.screen.expenselist.DialogState
 import com.luna.budgetapp.presentation.screen.expenselist.Event
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
-import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
