@@ -4,6 +4,7 @@ converterGson = "3.0.0"
 coreTesting = "2.2.0"
 datastorePreferences = "1.2.0"
 firebaseBom = "34.12.0"
+firebaseAuth = "9.1.1"
 koinAndroid = "4.1.1"
 koinAndroidxCompose = "4.1.1"
 koinCompose = "4.1.1"
@@ -53,7 +54,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebaseui-firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth" }
+firebaseui-firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebaseAuth" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
