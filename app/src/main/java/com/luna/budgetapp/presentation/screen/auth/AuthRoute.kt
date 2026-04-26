@@ -1,20 +1,22 @@
 package com.luna.budgetapp.presentation.screen.auth
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Column
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Scaffold
-import androidx.navigation.NavController
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import com.firebase.ui.auth.configuration.AuthUIConfiguration
+import com.firebase.ui.auth.configuration.authUIConfiguration
+import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
 import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.luna.budgetapp.presentation.nav.Routes
 import kotlinx.coroutines.flow.collectLatest
@@ -25,6 +27,18 @@ fun AuthRoute(
     navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val currentContext = LocalContext.current
+    val configuration = remember(currentContext) {
+        authUIConfiguration {
+            context = currentContext
+            providers {
+                provider(AuthProvider.Google(
+                    scopes = listOf("profile", "email"),
+                    serverClientId = null
+                ))
+            }
+        }
+    }
     
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
@@ -40,7 +54,9 @@ fun AuthRoute(
 
     Scaffold { innerPadding ->
         AuthContent(
+            context = currentContext,
             state = state,
+            configuration = configuration,
             onEvent = viewModel::onEvent,
             modifier = Modifier.padding(innerPadding)
         )
@@ -49,10 +65,34 @@ fun AuthRoute(
 
 @Composable
 fun AuthContent(
+    context: Context,
     state: UiState,
+    configuration: AuthUIConfiguration,
     onEvent: (Event) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
-    FirebaseAuthScreen()
+    FirebaseAuthScreen(
+        modifier = modifier.wrapContentSize(),
+        configuration = configuration,
+        onSignInSuccess = {
+            Toast.makeText(
+                context,
+                "Signed in successfully!",
+                Toast.LENGTH_SHORT
+            ).show()
+            Log.d("AuthRoute", "Signed in successfully!")
+        },
+        onSignInFailure = {
+            Toast.makeText(
+                context,
+                "Failed to sign in...",
+                Toast.LENGTH_SHORT
+            ).show()
+        },
+        onSignInCancelled = {},
+        authenticatedContent = { _, _ ->
+            onEvent(Event.GotoAddExpenseRoute)
+        }
+    )
 }
