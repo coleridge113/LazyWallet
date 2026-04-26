@@ -42,6 +42,7 @@ class ExpensePresetViewModel(
 
     fun onEvent(event: Event) {
         when (event) {
+            Event.Logout -> logoutUser()
             Event.GotoExpenseRoute -> gotoExpenseRoute()
             Event.DismissDialog -> dismissDialog()
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
@@ -224,6 +225,12 @@ class ExpensePresetViewModel(
     private fun updateDialogState(dialogState: DialogState?) {
         _uiState.update { currentState ->
             currentState.copy(dialogState = dialogState)
+        }
+    }
+
+    private fun logoutUser() {
+        viewModelScope.launch {
+            _navigation.send(Navigation.Logout)
         }
     }
 }
