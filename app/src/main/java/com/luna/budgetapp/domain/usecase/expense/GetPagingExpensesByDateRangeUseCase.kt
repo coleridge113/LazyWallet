@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 class GetPagingExpensesByDateRangeUseCase(
-        private val repository: ExpenseRepository
+    private val repository: ExpenseRepository
 ) {
     operator fun invoke(
         categories: List<String>? = null,
