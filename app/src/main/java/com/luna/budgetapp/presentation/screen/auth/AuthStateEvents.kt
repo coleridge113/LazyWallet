@@ -1,13 +1,16 @@
 package com.luna.budgetapp.presentation.screen.auth
 
-data class UiState(
-    val isLoading: Boolean = true,
-    val error: String = "",
-    val success: Boolean = false
-) 
+import com.firebase.ui.auth.AuthState
+
+sealed interface UiState {
+    data object Loading : UiState
+    data class Error(val message: String) : UiState
+    data class Success(
+        val authState: AuthState = AuthState.Idle
+    ) : UiState
+}
 
 sealed interface Event {
-    data object FetchToken : Event
     data object GotoAddExpenseRoute : Event
 }
 
