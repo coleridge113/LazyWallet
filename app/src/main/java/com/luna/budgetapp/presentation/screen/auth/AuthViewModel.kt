@@ -18,16 +18,16 @@ class AuthViewModel(
         fetchToken()
     }
 
-    private val _state = MutableStateFlow(ViewModelStateEvents.UiState())
+    private val _state = MutableStateFlow(UiState())
     val state = _state.asStateFlow()
 
-    private val _navigation = Channel<ViewModelStateEvents.Navigation>()
+    private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
 
-    fun onEvent(event: ViewModelStateEvents.Event) {
+    fun onEvent(event: Event) {
         when (event) {
-            ViewModelStateEvents.Event.FetchToken -> { fetchToken() }
-            ViewModelStateEvents.Event.GotoAddExpenseRoute -> { gotoAddExpenseRoute() }
+            Event.FetchToken -> { fetchToken() }
+            Event.GotoAddExpenseRoute -> { gotoAddExpenseRoute() }
         }
     }
 
@@ -55,24 +55,7 @@ class AuthViewModel(
 
     private fun gotoAddExpenseRoute() {
         viewModelScope.launch {
-            _navigation.send(ViewModelStateEvents.Navigation.GotoAddExpenseRoute)
+            _navigation.send(Navigation.GotoAddExpenseRoute)
         }
-    }
-}
-
-object ViewModelStateEvents {
-    data class UiState(
-        val isLoading: Boolean = true,
-        val error: String = "",
-        val success: Boolean = false
-    ) 
-
-    sealed interface Event {
-        data object FetchToken : Event
-        data object GotoAddExpenseRoute : Event
-    }
-
-    sealed class Navigation {
-        data object GotoAddExpenseRoute : Navigation()
     }
 }

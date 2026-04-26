@@ -15,7 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.luna.budgetapp.presentation.nav.Routes
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AuthRoute(
@@ -25,9 +27,9 @@ fun AuthRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
     
     LaunchedEffect(Unit) {
-        viewModel.navigation.collect { navigation ->
+        viewModel.navigation.collectLatest { navigation ->
                 when (navigation) {
-                    ViewModelStateEvents.Navigation.GotoAddExpenseRoute -> {
+                    Navigation.GotoAddExpenseRoute -> {
                         navController.navigate(Routes.AddExpensesRoute) {
                             popUpTo(Routes.AuthRoute) { inclusive = true }
                         }
@@ -47,25 +49,10 @@ fun AuthRoute(
 
 @Composable
 fun AuthContent(
-    state: ViewModelStateEvents.UiState,
-    onEvent: (ViewModelStateEvents.Event) -> Unit,
+    state: UiState,
+    onEvent: (Event) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    )  {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 4.dp
-                )
-            } else if (state.success) {
-                onEvent(ViewModelStateEvents.Event.GotoAddExpenseRoute)
-            }
-        }
-    }
+
+    FirebaseAuthScreen()
 }
