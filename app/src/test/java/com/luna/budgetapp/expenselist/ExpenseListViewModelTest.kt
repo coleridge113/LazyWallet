@@ -20,8 +20,7 @@ import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
-import com.luna.budgetapp.domain.usecase.expense.GetCategoryTotalsByDateRange
-import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUseCase
+import com.luna.budgetapp.domain.usecase.expense.EditExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
@@ -35,6 +34,8 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -89,6 +90,7 @@ class ExpenseListViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
+            editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
         val profileUseCases = ProfileUseCases(
             getCategoryProfile = GetCategoryProfileUseCase(fakeCategoryRepo),
@@ -105,18 +107,24 @@ class ExpenseListViewModelTest {
         )
 
         fakeCategoryRepo.initializeIfNeeded()
+        fakeSettingsRepo.setActiveProfile("All")
         viewModel = ExpenseListViewModel(
-            presetUseCases,
             expenseUseCases,
             profileUseCases
         )
+
+        backgroundScope.launch(UnconfinedTestDispatcher()) {
+            viewModel.totalAmount.collect {}
+        }
+
+        advanceUntilIdle()
     }
 
     @Test
     fun `expense list is empty by default`() = runTest {
         advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertThat(state.totalAmount).isEqualTo(0.0)
+        val totalAmount = viewModel.totalAmount.value
+        assertThat(totalAmount).isEqualTo(0.0)
     }
 
     @Test
@@ -124,22 +132,20 @@ class ExpenseListViewModelTest {
         fakeExpenseRepo.addExpense(dummyExpense)
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertThat(state.totalAmount).isEqualTo(dummyExpense.amount)
+        val totalAmount = viewModel.totalAmount.value
+        assertThat(totalAmount).isEqualTo(dummyExpense.amount)
     }
 
     @Test
     fun `deleting an expense by its id deletes it`() = runTest {
         fakeExpenseRepo.addExpense(dummyExpense)
         advanceUntilIdle()
-        val initial = viewModel.uiState.value
-        assertThat(initial.totalAmount).isEqualTo(dummyExpense.amount)
+        assertThat(viewModel.totalAmount).isEqualTo(dummyExpense.amount)
 
         viewModel.onEvent(Event.DeleteExpense(dummyExpense.id!!))
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertThat(state.totalAmount).isEqualTo(0.0)
+        assertThat(viewModel.totalAmount).isEqualTo(0.0)
     }
 
     @Test
@@ -147,8 +153,7 @@ class ExpenseListViewModelTest {
         fakeExpenseRepo.addExpense(dummyExpense)
         advanceUntilIdle()
 
-        val initial = viewModel.uiState.value
-        assertThat(initial.totalAmount).isEqualTo(dummyExpense.amount)
+        assertThat(viewModel.totalAmount).isEqualTo(dummyExpense.amount)
 
         viewModel.onEvent(Event.ShowDeleteConfirmationDialog(dummyExpense.id!!))
         advanceUntilIdle()
