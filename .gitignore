@@ -19,3 +19,5 @@ kls_database.db
 .kotlin/
 backup/
 google-services.json
+lazywallet.jks
+keystore.properties
