@@ -198,6 +198,9 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth.ktx)
 
+    // Firebase Auth UI
+    implementation(libs.firebase.ui.auth)
+
     // Google Authentication
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
