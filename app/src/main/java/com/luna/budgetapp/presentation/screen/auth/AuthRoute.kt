@@ -1,5 +1,4 @@
 package com.luna.budgetapp.presentation.screen.auth
-
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -14,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.firebase.ui.auth.FirebaseAuthUI
 import com.firebase.ui.auth.configuration.AuthUIConfiguration
 import com.firebase.ui.auth.configuration.authUIConfiguration
 import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
@@ -26,8 +26,9 @@ fun AuthRoute(
     viewModel: AuthViewModel,
     navController: NavController
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val currentContext = LocalContext.current
+    val authUI = FirebaseAuthUI.getInstance()
     val configuration = remember(currentContext) {
         authUIConfiguration {
             context = currentContext
@@ -39,7 +40,7 @@ fun AuthRoute(
             }
         }
     }
-    
+
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
                 when (navigation) {
@@ -56,6 +57,7 @@ fun AuthRoute(
         AuthContent(
             context = currentContext,
             state = state,
+            authUI = authUI,
             configuration = configuration,
             onEvent = viewModel::onEvent,
             modifier = Modifier.padding(innerPadding)
@@ -67,32 +69,36 @@ fun AuthRoute(
 fun AuthContent(
     context: Context,
     state: UiState,
+    authUI: FirebaseAuthUI,
     configuration: AuthUIConfiguration,
     onEvent: (Event) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    FirebaseAuthScreen(
-        modifier = modifier.wrapContentSize(),
-        configuration = configuration,
-        onSignInSuccess = {
-            Toast.makeText(
-                context,
-                "Signed in successfully!",
-                Toast.LENGTH_SHORT
-            ).show()
-            Log.d("AuthRoute", "Signed in successfully!")
-        },
-        onSignInFailure = {
-            Toast.makeText(
-                context,
-                "Failed to sign in...",
-                Toast.LENGTH_SHORT
-            ).show()
-        },
-        onSignInCancelled = {},
-        authenticatedContent = { _, _ ->
-            onEvent(Event.GotoAddExpenseRoute)
-        }
-    )
+    if (authUI.isSignedIn()) {
+        onEvent(Event.GotoAddExpenseRoute)
+    } else {
+        FirebaseAuthScreen(
+            modifier = modifier.wrapContentSize(),
+            configuration = configuration,
+            onSignInSuccess = {
+                Toast.makeText(
+                    context,
+                    "Signed in successfully!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.d("AuthRoute", "Signed in successfully!")
+            },
+            onSignInFailure = {
+                Toast.makeText(
+                    context,
+                    "Failed to sign in...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onSignInCancelled = {},
+            authenticatedContent = { _, _ ->
+                onEvent(Event.GotoAddExpenseRoute)
+            }
+        )
+    }
 }
