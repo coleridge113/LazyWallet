@@ -5,8 +5,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
     alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 val localProps = File(rootDir, "local.properties").inputStream().use {
@@ -156,7 +157,6 @@ dependencies {
     implementation(libs.androidx.room.paging)
     ksp(libs.androidx.room.compiler)
 
-
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -178,4 +178,9 @@ dependencies {
     implementation(libs.androidx.paging.compose)
     testImplementation(libs.androidx.paging.common)
     testImplementation(libs.androidx.paging.testing)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebaseui.firebase.ui.auth)
 }
