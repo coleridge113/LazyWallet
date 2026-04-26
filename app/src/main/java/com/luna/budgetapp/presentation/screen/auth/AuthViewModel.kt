@@ -2,6 +2,8 @@ package com.luna.budgetapp.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.firebase.ui.auth.AuthState
+import com.firebase.ui.auth.FirebaseAuthUI
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,38 +16,15 @@ class AuthViewModel(
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(UiState())
-    val state = _state.asStateFlow()
+    private val _uiState = MutableStateFlow(UiState.Success())
+    val uiState = _uiState.asStateFlow()
 
     private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
 
     fun onEvent(event: Event) {
         when (event) {
-            Event.FetchToken -> {}
             Event.GotoAddExpenseRoute -> { gotoAddExpenseRoute() }
-        }
-    }
-
-    private fun fetchToken() {
-        viewModelScope.launch {
-            try {
-                authUseCases.getToken()
-                _state.update { curr ->
-                    curr.copy(
-                        isLoading = false,
-                        success = true
-                    )
-                }
-            } catch (e: IllegalStateException) {
-               _state.update { curr ->
-                   curr.copy(
-                       isLoading = false,
-                       error = e.message ?: "Unknown error occurred...",
-                       success = false
-                   )
-               } 
-            }
         }
     }
 
