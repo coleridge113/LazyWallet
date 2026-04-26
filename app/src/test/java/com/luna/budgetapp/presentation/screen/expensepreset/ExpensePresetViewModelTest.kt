@@ -18,6 +18,7 @@ import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
+import com.luna.budgetapp.domain.usecase.expense.EditExpenseUseCase
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.just
@@ -71,6 +72,7 @@ class ExpensePresetViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
+            editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
         val profileUseCases = ProfileUseCases(
             getCategoryProfile = mockk(),
@@ -109,8 +111,7 @@ class ExpensePresetViewModelTest {
 
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertThat(state.totalAmount).isAtLeast(1.0)
+        assertThat(viewModel.totalAmount).isEqualTo(expensePreset.amount)
     }
 
     @Test
@@ -128,8 +129,6 @@ class ExpensePresetViewModelTest {
 
     @Test
     fun `confirming expense form adds an expense preset`() = runTest {
-        viewModel.onEvent(Event.ShowExpenseForm(null))
-        advanceUntilIdle()
         viewModel.onEvent(
             Event.ConfirmExpenseFormDialog(
                 Category.FOOD,
@@ -138,9 +137,7 @@ class ExpensePresetViewModelTest {
             )
         )
 
-        val state = viewModel.uiState.value
-
-        assertEquals(1, state.expensePresets.size)
+        assertEquals(1, viewModel.expensePresets.value.size)
     }
 
     @Test
@@ -148,15 +145,13 @@ class ExpensePresetViewModelTest {
         fakeExpensePresetRepo.addExpensePreset(dummyPreset)
         advanceUntilIdle()
 
-        val initial = viewModel.uiState.value
-        assertThat(initial.expensePresets.size).isEqualTo(1)
+        assertThat(viewModel.expensePresets.value.size).isEqualTo(1)
 
         dummyPreset.id?.let {
             viewModel.onEvent(Event.DeleteExpensePreset(it))
         }
 
-        val final = viewModel.uiState.value
-        assertThat(final.expensePresets.size).isEqualTo(0)
+        assertThat(viewModel.expensePresets.value.size).isEqualTo(0)
     }
 
     @Test
@@ -169,41 +164,37 @@ class ExpensePresetViewModelTest {
         viewModel.onEvent(
             Event.AddExpense(
                 dummyPreset,
-                custom.amount,
+                custom.amount.toString(),
                 custom.amount.toString()
             )
         )
         advanceUntilIdle()
 
-        val final = viewModel.uiState.value
-        assertThat(final.totalAmount).isEqualTo(custom.amount)
+        assertThat(viewModel.totalAmount).isEqualTo(custom.amount)
     }
 
     @Test
     fun `invoking the undo button deletes the latest expense`() = runTest {
         viewModel.onEvent(Event.AddExpense(dummyPreset))
         advanceUntilIdle()
-        val initial = viewModel.uiState.value
-        assertThat(initial.totalAmount).isEqualTo(dummyPreset.amount)
+        assertThat(viewModel.totalAmount).isEqualTo(dummyPreset.amount)
 
         viewModel.onEvent(Event.DeleteLatestExpense)
         advanceUntilIdle()
 
-        val final = viewModel.uiState.value
-        assertThat(final.totalAmount).isEqualTo(0.0)
+        assertThat(viewModel.totalAmount).isEqualTo(0.0)
     }
 
     @Test
     fun `confirming preset delete dialog deletes the preset with the target id`() = runTest {
         fakeExpensePresetRepo.addExpensePreset(dummyPreset)
         advanceUntilIdle()
-        val initial = viewModel.uiState.value
-        assertThat(initial.expensePresets.size).isEqualTo(1)
+        assertThat(viewModel.expensePresets.value.size).isEqualTo(1)
 
         viewModel.onEvent(Event.DeleteExpensePreset(dummyPreset.id!!))
         advanceUntilIdle()
 
         val final = viewModel.uiState.value
-        assertThat(final.expensePresets.size).isEqualTo(0)
+        assertThat(viewModel.expensePresets.value.size).isEqualTo(0)
     }
 }
