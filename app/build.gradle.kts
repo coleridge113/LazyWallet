@@ -56,6 +56,11 @@ android {
             "LOCAL_BACKEND_URL",
             "\"${localProps["LOCAL_BACKEND_URL"]}\""
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProps["GOOGLE_WEB_CLIENT_ID"]}\""
+        )
     }
 
     signingConfigs {
