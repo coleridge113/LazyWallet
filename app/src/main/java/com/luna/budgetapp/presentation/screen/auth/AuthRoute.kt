@@ -20,6 +20,9 @@ import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
 import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.luna.budgetapp.presentation.nav.Routes
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.res.stringResource
+import com.firebase.ui.auth.configuration.PasswordRule
+import com.luna.budgetapp.BuildConfig
 
 @Composable
 fun AuthRoute(
@@ -33,9 +36,19 @@ fun AuthRoute(
         authUIConfiguration {
             context = currentContext
             providers {
+                provider(AuthProvider.Email(
+                    emailLinkActionCodeSettings = null,
+                    passwordValidationRules = listOf(
+                        PasswordRule.MinimumLength(8),
+                        PasswordRule.RequireUppercase,
+                        PasswordRule.RequireLowercase,
+                        PasswordRule.RequireDigit,
+                        PasswordRule.RequireSpecialCharacter
+                    )
+                ))
                 provider(AuthProvider.Google(
                     scopes = listOf("profile", "email"),
-                    serverClientId = null
+                    serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
                 ))
             }
         }
