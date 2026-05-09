@@ -4,7 +4,7 @@ converterGson = "3.0.0"
 coreTesting = "2.2.0"
 credentials = "1.6.0"
 datastorePreferences = "1.2.1"
-firebaseBom = "34.12.0"
+firebaseBom = "34.13.0"
 firebaseUiAuth = "10.0.0-beta02"
 googleid = "1.2.0"
 koinAndroid = "4.2.1"
@@ -60,6 +60,7 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebaseUiAuth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
