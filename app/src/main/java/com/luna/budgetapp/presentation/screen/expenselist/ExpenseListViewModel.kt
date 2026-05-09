@@ -10,6 +10,7 @@ import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.model.ChartData
 import com.luna.budgetapp.presentation.screen.utils.filterDataByState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -280,9 +281,7 @@ class ExpenseListViewModel(
             expenseUseCases.editExpense(
                 id = expenseId,
                 type = type,
-                amount = amount
-                    .ifEmpty { "0" }
-                    .toDouble()
+                amount = parseAmountExpression(amount)
             )
         }
 
