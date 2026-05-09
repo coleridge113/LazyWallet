@@ -7,6 +7,7 @@ import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.screen.utils.filterDataByState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -137,12 +138,13 @@ class ExpensePresetViewModel(
         customType: String?
     ) {
         val state = _uiState.value
-
+        val amount =
+            parseAmountExpression(customAmount ?: expensePreset.amount.toString())
         viewModelScope.launch {
             expenseUseCases.addExpense(
                 category = expensePreset.category,
                 type = customType ?: expensePreset.type,
-                amount = customAmount ?: expensePreset.amount.toString()
+                amount = amount
             )
 
             if (state.dialogState != null) {
