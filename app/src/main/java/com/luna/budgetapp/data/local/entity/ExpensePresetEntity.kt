@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 @Entity(tableName = "expense_presets")
 data class ExpensePresetEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
+    @ColumnInfo(name = "remote_id") val remoteId: String? = null,
     @ColumnInfo(name = "amount") val amount: Double,
     @ColumnInfo(name = "category") val category: String,
     @ColumnInfo(name = "type") val type: String,

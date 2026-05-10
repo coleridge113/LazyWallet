@@ -24,6 +24,9 @@ interface ExpensePresetDao {
     @Query("SELECT * FROM expense_presets")
     suspend fun getAllExpensePresetsOnce(): List<ExpensePresetEntity>
 
+    @Query("SELECT * FROM expense_presets WHERE id = :id")
+    suspend fun getExpensePresetByIdOnce(id: Long): ExpensePresetEntity?
+
     @Query("DELETE FROM expense_presets")
     suspend fun deleteAll()
 }

@@ -138,10 +138,11 @@ interface ExpenseDao {
         type: String
     )
 
-    @Query("""
-        SELECT * FROM expenses
-    """)
+    @Query("SELECT * FROM expenses")
     fun getAllExpensesOnce(): List<ExpenseEntity>
+
+    @Query("SELECT * FROM expenses WHERE id = :expenseId")
+    suspend fun getExpenseByIdOnce(expenseId: Long): ExpenseEntity?
 
     @Query("""
         DELETE FROM expenses

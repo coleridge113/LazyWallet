@@ -1,10 +1,15 @@
 package com.luna.budgetapp.data.local.repository
 
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.common.Resource
+import com.luna.budgetapp.data.datastore.SettingsDataStore
+import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.ExpenseDao
 import com.luna.budgetapp.data.mapper.toEntity
 import com.luna.budgetapp.data.mapper.toModel
@@ -15,6 +20,7 @@ import com.luna.budgetapp.network.ExpenseService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -22,10 +28,14 @@ import kotlinx.coroutines.flow.onStart
 import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDateTime
+import java.util.UUID
 
 class ExpenseRepositoryImpl(
     private val dao: ExpenseDao,
-    private val api: ExpenseService
+    private val api: ExpenseService,
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
+    private val settingsDataStore: SettingsDataStore
 ) : ExpenseRepository {
 
     override fun getAllExpenses(): Flow<PagingData<Expense>> {
@@ -159,7 +169,23 @@ class ExpenseRepositoryImpl(
         dao.getCategoryTotalsByCategory(categories, start, end)
 
     override suspend fun addExpense(expense: Expense) {
-        dao.addExpense(expense.toEntity())
+        val isMigrated = settingsDataStore.isMigratedFlow.first()
+        val userId = auth.currentUser?.uid
+        val remoteId = if (isMigrated) UUID.randomUUID().toString() else null
+
+        val entity = expense.toEntity().copy(remoteId = remoteId)
+        dao.addExpense(entity)
+
+        if (isMigrated && userId != null && remoteId != null) {
+            try {
+                val firestoreModel = entity.toFirestoreModel()
+                firestore.collection("users").document(userId)
+                    .collection("expenses").document(remoteId)
+                    .set(firestoreModel)
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync added expense", e)
+            }
+        }
     }
 
     override suspend fun addExpenses(expenses: List<Expense>) {
@@ -167,15 +193,32 @@ class ExpenseRepositoryImpl(
     }
 
     override suspend fun updateExpense(expense: Expense) {
-        return dao.updateExpense(expense.toEntity())
+        dao.updateExpense(expense.toEntity())
+        // Sync update if needed, but we mainly use editExpenseById
     }
 
     override suspend fun deleteExpenseById(expenseId: Long) {
+        val expense = dao.getExpenseByIdOnce(expenseId)
+        val remoteId = expense?.remoteId
+        val userId = auth.currentUser?.uid
+        
         dao.deleteExpenseById(expenseId)
+
+        if (remoteId != null && userId != null) {
+            try {
+                firestore.collection("users").document(userId)
+                    .collection("expenses").document(remoteId)
+                    .delete()
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync deleted expense", e)
+            }
+        }
     }
 
     override suspend fun deleteLatestExpense() {
         dao.deleteLatestExpense()
+        // Syncing deleteLatest might be complex without the ID, 
+        // ideally deleteLatestExpense also returns the deleted entity or its remoteId
     }
 
     override suspend fun editExpenseById(
@@ -184,5 +227,20 @@ class ExpenseRepositoryImpl(
         type: String
     ) {
         dao.editExpenseById(expenseId, amount, type)
+
+        val expense = dao.getExpenseByIdOnce(expenseId)
+        val remoteId = expense?.remoteId
+        val userId = auth.currentUser?.uid
+
+        if (remoteId != null && userId != null && expense != null) {
+            try {
+                val firestoreModel = expense.toFirestoreModel()
+                firestore.collection("users").document(userId)
+                    .collection("expenses").document(remoteId)
+                    .set(firestoreModel)
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync edited expense", e)
+            }
+        }
     }
 }

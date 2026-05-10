@@ -11,6 +11,7 @@ import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
 import com.luna.budgetapp.data.local.migrations.MIGRATION_1_2
+import com.luna.budgetapp.data.local.migrations.MIGRATION_2_3
 import com.luna.budgetapp.data.local.repository.SettingsRepositoryImpl
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.data.utils.PusherManager
@@ -113,7 +114,7 @@ val databaseModule = module {
             AppDatabase::class.java, 
             "budget_db"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
     }
     single { get<AppDatabase>().expenseDao() }
@@ -131,10 +132,10 @@ val appModule = module {
     includes(networkModule, databaseModule, servicesModule)
 
     // Repositories
-    singleOf(::ExpenseRepositoryImpl) { bind<ExpenseRepository>() }
-    singleOf(::ExpensePresetRepositoryImpl) { bind<ExpensePresetRepository>() }
+    single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<ExpensePresetRepository> { ExpensePresetRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<CategoryRepository> { CategoryFilterRepositoryImpl(get(), get(), get(), get()) }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
-    singleOf(::CategoryFilterRepositoryImpl) { bind<CategoryRepository>() }
     singleOf(::SettingsRepositoryImpl) { bind<SettingsRepository>() }
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)

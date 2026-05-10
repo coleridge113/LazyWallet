@@ -31,6 +31,7 @@ fun ExpenseEntity.toFirestoreModel(): Expense {
 
 fun Expense.toEntity(): ExpenseEntity {
     return ExpenseEntity(
+        remoteId = this.id.ifBlank { null },
         name = this.name,
         amount = this.amount,
         category = this.category,
@@ -51,6 +52,7 @@ fun ExpensePresetEntity.toFirestoreModel(): ExpensePreset {
 fun ExpensePreset.toEntity(): ExpensePresetEntity {
     return ExpensePresetEntity(
         id = 0,
+        remoteId = this.id.ifBlank { null },
         amount = this.amount,
         category = this.category,
         type = this.type,
@@ -62,14 +64,14 @@ fun CategoryFilterEntity.toFirestoreModel(): CategoryFilter {
     return CategoryFilter(
         profileName = this.profileName,
         category = this.category.displayName,
-        isActive = this.isActive
+        active = this.isActive
     )
 }
 
 fun CategoryFilter.toEntity(): CategoryFilterEntity {
     return CategoryFilterEntity(
         profileName = this.profileName,
-        category = Category.entries.first { it.name == this.category },
-        isActive = this.isActive
+        category = Category.entries.first { it.displayName == this.category },
+        isActive = this.active
     )
 }
