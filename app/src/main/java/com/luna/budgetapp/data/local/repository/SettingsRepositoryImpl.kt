@@ -14,11 +14,17 @@ class SettingsRepositoryImpl(
 
     override val activeDateFilterFlow: Flow<DateFilter> = local.activeDateFilterFlow
 
+    override val isMigratedFlow: Flow<Boolean> = local.isMigratedFlow
+
     override suspend fun setActiveProfile(profileName: String) {
         local.setActiveProfile(profileName)
     }
 
     override suspend fun setActiveDateFilter(dateFilter: DateFilter) {
         local.setActiveDateFilter(dateFilter)
+    }
+
+    override suspend fun setMigrationComplete() {
+        local.setMigrationComplete()
     }
 }

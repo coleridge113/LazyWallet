@@ -66,6 +66,11 @@ fun AuthRoute(
                             popUpTo(Routes.AuthRoute) { inclusive = true }
                         }
                     }
+                    Navigation.GotoMigrationRoute -> {
+                        navController.navigate(Routes.MigrationRoute) {
+                            popUpTo(Routes.AuthRoute) { inclusive = true }
+                        }
+                    }
                 }
             }
     }
@@ -92,7 +97,7 @@ fun AuthContent(
     modifier: Modifier = Modifier
 ) {
     if (authUI.isSignedIn()) {
-        onEvent(Event.GotoAddExpenseRoute)
+        onEvent(Event.HandleSignInSuccess)
     } else {
         FirebaseAuthScreen(
             modifier = modifier
@@ -116,7 +121,7 @@ fun AuthContent(
             },
             onSignInCancelled = {},
             authenticatedContent = { _, _ ->
-                onEvent(Event.GotoAddExpenseRoute)
+                onEvent(Event.HandleSignInSuccess)
             }
         )
     }

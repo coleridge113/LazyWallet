@@ -47,6 +47,8 @@ import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveDateFilterUseCase
+import com.luna.budgetapp.domain.usecase.settings.GetMigrationStatusUseCase
+import com.luna.budgetapp.domain.usecase.settings.SetMigrationCompleteUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveDateFilterUseCase
 import com.luna.budgetapp.network.AuthService
@@ -56,6 +58,10 @@ import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
+import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
+import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -133,6 +139,9 @@ val appModule = module {
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
     singleOf(::SettingsDataStore)
+    singleOf(::DataMigrationRepository)
+    single { FirebaseAuth.getInstance() }
+    single { FirebaseFirestore.getInstance() }
 
     // UseCases
     factoryOf(::AddExpenseUseCase)
@@ -159,6 +168,8 @@ val appModule = module {
     factoryOf(::SetActiveCategoryProfileUseCase)
     factoryOf(::GetActiveDateFilterUseCase)
     factoryOf(::SetActiveDateFilterUseCase)
+    factoryOf(::GetMigrationStatusUseCase)
+    factoryOf(::SetMigrationCompleteUseCase)
     factoryOf(::EditExpenseUseCase)
 
     factoryOf(::AuthUseCases)
@@ -169,6 +180,7 @@ val appModule = module {
 
     // ViewModels
     viewModelOf(::AuthViewModel)
+    viewModelOf(::MigrationViewModel)
     viewModelOf(::ExpensePresetViewModel)
     viewModelOf(::ExpenseListViewModel)
     viewModelOf(::AnalysisViewModel)

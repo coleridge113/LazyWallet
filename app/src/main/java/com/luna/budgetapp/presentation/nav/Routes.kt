@@ -9,6 +9,9 @@ sealed interface Routes {
     data object AuthRoute : Routes
 
     @Serializable
+    data object MigrationRoute : Routes
+
+    @Serializable
     data object AddExpensesRoute : Routes
 
     @Serializable

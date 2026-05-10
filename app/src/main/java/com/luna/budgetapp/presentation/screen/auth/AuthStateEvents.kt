@@ -11,9 +11,10 @@ sealed interface UiState {
 }
 
 sealed interface Event {
-    data object GotoAddExpenseRoute : Event
+    data object HandleSignInSuccess : Event
 }
 
 sealed class Navigation {
     data object GotoAddExpenseRoute : Navigation()
+    data object GotoMigrationRoute : Navigation()
 }

@@ -6,21 +6,36 @@ import com.luna.budgetapp.data.firebase.models.ExpensePreset
 import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
+import com.luna.budgetapp.domain.model.Category
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
 
-fun java.time.LocalDateTime.toDate(): Date {
+fun LocalDateTime.toDate(): Date {
     return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())
+}
+
+fun Date.toLocalDateTime(): LocalDateTime {
+    return this.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
 }
 
 fun ExpenseEntity.toFirestoreModel(): Expense {
     return Expense(
-        // We leave the ID blank so Firestore auto-generates a String ID
         name = this.name,
         amount = this.amount,
         category = this.category,
         type = this.type,
         date = this.date.toDate() 
+    )
+}
+
+fun Expense.toEntity(): ExpenseEntity {
+    return ExpenseEntity(
+        name = this.name,
+        amount = this.amount,
+        category = this.category,
+        type = this.type,
+        date = this.date.toLocalDateTime()
     )
 }
 
@@ -33,10 +48,28 @@ fun ExpensePresetEntity.toFirestoreModel(): ExpensePreset {
     )
 }
 
+fun ExpensePreset.toEntity(): ExpensePresetEntity {
+    return ExpensePresetEntity(
+        id = 0,
+        amount = this.amount,
+        category = this.category,
+        type = this.type,
+        createdAt = this.createdAt.toLocalDateTime()
+    )
+}
+
 fun CategoryFilterEntity.toFirestoreModel(): CategoryFilter {
     return CategoryFilter(
         profileName = this.profileName,
         category = this.category.displayName,
+        isActive = this.isActive
+    )
+}
+
+fun CategoryFilter.toEntity(): CategoryFilterEntity {
+    return CategoryFilterEntity(
+        profileName = this.profileName,
+        category = Category.entries.first { it.name == this.category },
         isActive = this.isActive
     )
 }

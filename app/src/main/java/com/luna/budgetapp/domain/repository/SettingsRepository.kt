@@ -9,8 +9,12 @@ interface SettingsRepository {
 
     val activeDateFilterFlow: Flow<DateFilter>
 
+    val isMigratedFlow: Flow<Boolean>
+
     suspend fun setActiveProfile(profileName: String)
 
     suspend fun setActiveDateFilter(dateFilter: DateFilter)
+
+    suspend fun setMigrationComplete()
 
 }
