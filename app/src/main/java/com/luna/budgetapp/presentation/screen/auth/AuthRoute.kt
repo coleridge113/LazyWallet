@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -20,9 +21,11 @@ import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
 import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.luna.budgetapp.presentation.nav.Routes
 import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.firebase.ui.auth.configuration.PasswordRule
+import com.firebase.ui.auth.configuration.theme.AuthUIAsset
 import com.luna.budgetapp.BuildConfig
+import com.luna.budgetapp.R
 
 @Composable
 fun AuthRoute(
@@ -35,6 +38,7 @@ fun AuthRoute(
     val configuration = remember(currentContext) {
         authUIConfiguration {
             context = currentContext
+            logo = AuthUIAsset.Resource(R.drawable.ic_lazywallet_no_bg)
             providers {
                 provider(AuthProvider.Email(
                     emailLinkActionCodeSettings = null,
@@ -91,7 +95,9 @@ fun AuthContent(
         onEvent(Event.GotoAddExpenseRoute)
     } else {
         FirebaseAuthScreen(
-            modifier = modifier.wrapContentSize(),
+            modifier = modifier
+                .padding(top = 132.dp)
+                .wrapContentSize(Alignment.Center),
             configuration = configuration,
             onSignInSuccess = {
                 Toast.makeText(
