@@ -26,4 +26,10 @@ interface CategoryFilterDao {
 
     @Query("DELETE FROM category_filter WHERE profile_name = :profileName")
     suspend fun deleteProfile(profileName: String)
+
+    @Query("SELECT * FROM category_filter")
+    fun getAllFiltersOnce(): List<CategoryFilterEntity>
+
+    @Query("DELETE FROM category_filter")
+    fun deleteAll()
 }

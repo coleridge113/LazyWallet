@@ -9,6 +9,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
+import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -137,4 +138,13 @@ interface ExpenseDao {
         type: String
     )
 
+    @Query("""
+        SELECT * FROM expenses
+    """)
+    fun getAllExpensesOnce(): List<ExpenseEntity>
+
+    @Query("""
+        DELETE FROM expenses
+    """)
+    fun deleteAll()
 }

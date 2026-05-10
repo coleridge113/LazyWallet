@@ -2,15 +2,12 @@ package com.luna.budgetapp.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.firebase.ui.auth.AuthState
-import com.firebase.ui.auth.FirebaseAuthUI
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
     private val authUseCases: AuthUseCases

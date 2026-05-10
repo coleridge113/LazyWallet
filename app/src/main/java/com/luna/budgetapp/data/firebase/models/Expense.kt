@@ -1,12 +1,14 @@
-package com.luna.budgetapp.data.firebasemodels
+package com.luna.budgetapp.data.firebase.models
 
 import com.google.firebase.firestore.DocumentId
 import java.util.Date
 
-data class ExpensePreset(
+data class Expense(
     @DocumentId val id: String = "",
+    val name: String? = null,
     val amount: Double = 0.0,
     val category: String = "",
     val type: String = "",
-    val createdAt: Date = Date()
+    val date: Date = Date()
 )
+

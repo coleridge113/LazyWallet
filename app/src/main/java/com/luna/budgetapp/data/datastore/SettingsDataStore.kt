@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.luna.budgetapp.domain.model.DateFilter
@@ -19,6 +20,7 @@ class SettingsDataStore(
         val dateFilterType = stringPreferencesKey("date_filter_type")
         val customStart = longPreferencesKey("custom_start")
         val customEnd = longPreferencesKey("custom_end")
+        val isMigratedToFireStore = booleanPreferencesKey("is_migrated_to_firestore")
     }
 
     /* ------------------------------
@@ -89,6 +91,20 @@ class SettingsDataStore(
                     filter.end?.let { prefs[Keys.customEnd] = it }
                 }
             }
+        }
+    }
+
+    /* ------------------------------
+       Migration State
+    ------------------------------ */
+    val isMigratedFlow: Flow<Boolean> =
+        dataStore.data.map { prefs ->
+            prefs[Keys.isMigratedToFireStore] ?: false
+        }
+
+    suspend fun setMigrationComplete() {
+        dataStore.edit { prefs ->
+            prefs[Keys.isMigratedToFireStore] = true
         }
     }
 
