@@ -32,15 +32,10 @@ class AuthViewModel(
 
     private fun handleSignInSuccess() {
         viewModelScope.launch {
-            val isMigrated = settingsUseCases.getMigrationStatus().first()
-            if (isMigrated) {
-                try {
-                    migrationRepository.syncFromCloud()
-                } catch (_: Exception) { }
-                _navigation.send(Navigation.GotoAddExpenseRoute)
-            } else {
-                _navigation.send(Navigation.GotoMigrationRoute)
-            }
+            try {
+                migrationRepository.syncFromCloud()
+            } catch (_: Exception) { }
+            _navigation.send(Navigation.GotoAddExpenseRoute)
         }
     }
 }
