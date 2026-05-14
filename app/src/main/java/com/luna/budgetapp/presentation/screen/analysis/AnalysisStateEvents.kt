@@ -10,11 +10,13 @@ data class UiState(
     val selectedRange: DateFilter = DateFilter.Last7Days,
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
-    val activeProfile: String = ""
+    val activeProfile: String = "",
+    val profileList: List<String> = emptyList()
 )
 
 sealed interface Event {
     data class SelectBar(val date: LocalDate) : Event
+    data class SelectCategoryProfile(val profileName: String) : Event
 }
 
 sealed interface Navigation {}

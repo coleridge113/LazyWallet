@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.presentation.screen.components.CategoryProfileSelectorDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +31,7 @@ fun AnalysisRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val expenses by viewModel.expenses.collectAsStateWithLifecycle()
     val filteredExpenses by viewModel.filteredExpenses.collectAsStateWithLifecycle()
+    val profileList by viewModel.profileList.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -47,6 +49,15 @@ fun AnalysisRoute(
                             contentDescription = null
                         )
                     }
+                },
+                actions = {
+                    CategoryProfileSelectorDropdown(
+                        selectedProfile = uiState.activeProfile,
+                        profileList = profileList,
+                        onSelectedChange = {
+                            viewModel.onEvent(Event.SelectCategoryProfile(it))
+                        }
+                    )
                 }
             )
         }
