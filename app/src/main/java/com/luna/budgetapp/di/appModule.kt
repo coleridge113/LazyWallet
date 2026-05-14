@@ -11,6 +11,7 @@ import com.luna.budgetapp.data.local.repository.CategoryFilterRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpensePresetRepositoryImpl
 import com.luna.budgetapp.data.local.repository.ExpenseRepositoryImpl
 import com.luna.budgetapp.data.local.migrations.MIGRATION_1_2
+import com.luna.budgetapp.data.local.migrations.MIGRATION_2_3
 import com.luna.budgetapp.data.local.repository.SettingsRepositoryImpl
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.data.utils.PusherManager
@@ -47,6 +48,8 @@ import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveDateFilterUseCase
+import com.luna.budgetapp.domain.usecase.settings.GetMigrationStatusUseCase
+import com.luna.budgetapp.domain.usecase.settings.SetMigrationCompleteUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveDateFilterUseCase
 import com.luna.budgetapp.network.AuthService
@@ -56,6 +59,10 @@ import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
+import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
+import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -107,7 +114,7 @@ val databaseModule = module {
             AppDatabase::class.java, 
             "budget_db"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
     }
     single { get<AppDatabase>().expenseDao() }
@@ -125,14 +132,17 @@ val appModule = module {
     includes(networkModule, databaseModule, servicesModule)
 
     // Repositories
-    singleOf(::ExpenseRepositoryImpl) { bind<ExpenseRepository>() }
-    singleOf(::ExpensePresetRepositoryImpl) { bind<ExpensePresetRepository>() }
+    single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<ExpensePresetRepository> { ExpensePresetRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<CategoryRepository> { CategoryFilterRepositoryImpl(get(), get(), get(), get()) }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
-    singleOf(::CategoryFilterRepositoryImpl) { bind<CategoryRepository>() }
     singleOf(::SettingsRepositoryImpl) { bind<SettingsRepository>() }
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
     singleOf(::SettingsDataStore)
+    singleOf(::DataMigrationRepository)
+    single { FirebaseAuth.getInstance() }
+    single { FirebaseFirestore.getInstance() }
 
     // UseCases
     factoryOf(::AddExpenseUseCase)
@@ -159,6 +169,8 @@ val appModule = module {
     factoryOf(::SetActiveCategoryProfileUseCase)
     factoryOf(::GetActiveDateFilterUseCase)
     factoryOf(::SetActiveDateFilterUseCase)
+    factoryOf(::GetMigrationStatusUseCase)
+    factoryOf(::SetMigrationCompleteUseCase)
     factoryOf(::EditExpenseUseCase)
 
     factoryOf(::AuthUseCases)
@@ -169,6 +181,7 @@ val appModule = module {
 
     // ViewModels
     viewModelOf(::AuthViewModel)
+    viewModelOf(::MigrationViewModel)
     viewModelOf(::ExpensePresetViewModel)
     viewModelOf(::ExpenseListViewModel)
     viewModelOf(::AnalysisViewModel)

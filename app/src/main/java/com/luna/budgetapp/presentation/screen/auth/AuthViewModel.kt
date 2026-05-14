@@ -3,59 +3,44 @@ package com.luna.budgetapp.presentation.screen.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.usecase.AuthUseCases
+import com.luna.budgetapp.domain.usecase.SettingsUseCases
+import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
-    private val authUseCases: AuthUseCases
+    private val authUseCases: AuthUseCases,
+    private val settingsUseCases: SettingsUseCases,
+    private val migrationRepository: DataMigrationRepository
 ) : ViewModel() {
 
-    init {
-        fetchToken()
-    }
-
-    private val _state = MutableStateFlow(UiState())
-    val state = _state.asStateFlow()
+    private val _uiState = MutableStateFlow(UiState.Success())
+    val uiState = _uiState.asStateFlow()
 
     private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
 
     fun onEvent(event: Event) {
         when (event) {
-            Event.FetchToken -> { fetchToken() }
-            Event.GotoAddExpenseRoute -> { gotoAddExpenseRoute() }
+            Event.HandleSignInSuccess -> { handleSignInSuccess() }
         }
     }
 
-    private fun fetchToken() {
+    private fun handleSignInSuccess() {
         viewModelScope.launch {
-            try {
-                authUseCases.getToken()
-                _state.update { curr ->
-                    curr.copy(
-                        isLoading = false,
-                        success = true
-                    )
-                }
-            } catch (e: IllegalStateException) {
-               _state.update { curr ->
-                   curr.copy(
-                       isLoading = false,
-                       error = e.message ?: "Unknown error occurred...",
-                       success = false
-                   )
-               } 
+            val isMigrated = settingsUseCases.getMigrationStatus().first()
+            if (isMigrated) {
+                try {
+                    migrationRepository.syncFromCloud()
+                } catch (_: Exception) { }
+                _navigation.send(Navigation.GotoAddExpenseRoute)
+            } else {
+                _navigation.send(Navigation.GotoMigrationRoute)
             }
-        }
-    }
-
-    private fun gotoAddExpenseRoute() {
-        viewModelScope.launch {
-            _navigation.send(Navigation.GotoAddExpenseRoute)
         }
     }
 }

@@ -25,6 +25,7 @@ sealed interface Event {
     data object GotoExpenseRoute : Event
     data object DismissDialog : Event
     data object ShowDeleteConfirmationDialog : Event
+    data object Logout : Event
     data object DeleteLatestExpense : Event
     data class ShowExpenseForm(val selectedPreset: ExpensePreset? = null) : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
@@ -36,4 +37,5 @@ sealed interface Event {
 
 sealed interface Navigation {
     data object GotoExpenseRoute : Navigation
+    data object Logout : Navigation
 }

@@ -56,6 +56,11 @@ android {
             "LOCAL_BACKEND_URL",
             "\"${localProps["LOCAL_BACKEND_URL"]}\""
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProps["GOOGLE_WEB_CLIENT_ID"]}\""
+        )
     }
 
     signingConfigs {
@@ -197,6 +202,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
     // Firebase Auth UI
     implementation(libs.firebase.ui.auth)

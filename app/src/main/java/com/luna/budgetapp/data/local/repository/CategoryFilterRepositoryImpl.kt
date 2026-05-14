@@ -1,5 +1,10 @@
 package com.luna.budgetapp.data.local.repository
 
+import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.data.datastore.SettingsDataStore
+import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.CategoryFilterDao
 import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.mapper.toModel
@@ -8,10 +13,15 @@ import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.Category
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 
 class CategoryFilterRepositoryImpl(
-    private val dao: CategoryFilterDao
+    private val dao: CategoryFilterDao,
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth,
+    private val settingsDataStore: SettingsDataStore
 ) : CategoryRepository {
 
     override fun getProfiles(): Flow<List<String>> {
@@ -23,11 +33,53 @@ class CategoryFilterRepositoryImpl(
             .map { entities -> entities.map(CategoryFilterEntity::toModel) }
 
     override suspend fun saveProfile(items: List<CategoryFilter>) {
-        dao.upsertAll(items.map(CategoryFilter::toEntity))
+        val entities = items.map(CategoryFilter::toEntity)
+        dao.upsertAll(entities)
+
+        val isMigrated = settingsDataStore.isMigratedFlow.first()
+        val userId = auth.currentUser?.uid
+
+        if (isMigrated && userId != null) {
+            try {
+                val batch = firestore.batch()
+                val userRef = firestore.collection("users").document(userId)
+                
+                entities.forEach { entity ->
+                    val customDocId = "${entity.profileName}_${entity.category.name}"
+                    val docRef = userRef.collection("category_filters").document(customDocId)
+                    batch.set(docRef, entity.toFirestoreModel())
+                }
+                
+                batch.commit().await()
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync category profile", e)
+            }
+        }
     }
 
     override suspend fun deleteProfile(profileName: String) {
+        val filtersToDelete = dao.getAllFiltersOnce().filter { it.profileName == profileName }
         dao.deleteProfile(profileName)
+
+        val isMigrated = settingsDataStore.isMigratedFlow.first()
+        val userId = auth.currentUser?.uid
+
+        if (isMigrated && userId != null) {
+            try {
+                val batch = firestore.batch()
+                val userRef = firestore.collection("users").document(userId)
+                
+                filtersToDelete.forEach { entity ->
+                    val customDocId = "${entity.profileName}_${entity.category.name}"
+                    val docRef = userRef.collection("category_filters").document(customDocId)
+                    batch.delete(docRef)
+                }
+                
+                batch.commit().await()
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync deleted category profile", e)
+            }
+        }
     }
 
     override suspend fun hasAny(): Boolean {
@@ -47,6 +99,6 @@ class CategoryFilterRepositoryImpl(
             )
         }
 
-        dao.upsertAll(items.map(CategoryFilter::toEntity))
+        saveProfile(items) // Use saveProfile to trigger sync
     }
 }

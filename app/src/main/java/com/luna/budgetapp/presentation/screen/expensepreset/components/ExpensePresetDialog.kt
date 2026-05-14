@@ -69,7 +69,7 @@ fun ExpensePresetDialog(
         var selectedOption by remember { mutableStateOf(options.first()) }
         val typeState = rememberTextFieldState(selectedPreset?.type ?: EMPTY)
         val amountState = rememberTextFieldState(
-            selectedPreset?.amount.toString()
+            selectedPreset?.let { it.amount.toString() } ?: EMPTY
         )
         val isLocked = selectedPreset != null
 
@@ -158,7 +158,9 @@ fun ExpensePresetDialog(
                         keyboardType = KeyboardType.Decimal
                     ),
                     placeholder = {
-                        Text(selectedPreset?.amount.toString())
+                        Text(
+                            selectedPreset?.let { it.amount.toString() } ?: EMPTY
+                        )
                     },
                     inputTransformation = InputTransformation {
                         val text = asCharSequence().toString()

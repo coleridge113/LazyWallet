@@ -1,36 +1,73 @@
 package com.luna.budgetapp.presentation.screen.auth
-
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Column
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Scaffold
-import androidx.navigation.NavController
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import com.firebase.ui.auth.FirebaseAuthUI
+import com.firebase.ui.auth.configuration.AuthUIConfiguration
+import com.firebase.ui.auth.configuration.authUIConfiguration
+import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
 import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.luna.budgetapp.presentation.nav.Routes
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.unit.dp
+import com.firebase.ui.auth.configuration.PasswordRule
+import com.firebase.ui.auth.configuration.theme.AuthUIAsset
+import com.luna.budgetapp.BuildConfig
+import com.luna.budgetapp.R
 
 @Composable
 fun AuthRoute(
     viewModel: AuthViewModel,
     navController: NavController
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentContext = LocalContext.current
+    val authUI = FirebaseAuthUI.getInstance()
+    val configuration = remember(currentContext) {
+        authUIConfiguration {
+            context = currentContext
+            logo = AuthUIAsset.Resource(R.drawable.ic_lazywallet_no_bg)
+            providers {
+                provider(AuthProvider.Email(
+                    emailLinkActionCodeSettings = null,
+                    passwordValidationRules = listOf(
+                        PasswordRule.MinimumLength(8),
+                        PasswordRule.RequireUppercase,
+                        PasswordRule.RequireLowercase,
+                        PasswordRule.RequireDigit,
+                        PasswordRule.RequireSpecialCharacter
+                    )
+                ))
+                provider(AuthProvider.Google(
+                    scopes = listOf("profile", "email"),
+                    serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
+                ))
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
                 when (navigation) {
                     Navigation.GotoAddExpenseRoute -> {
                         navController.navigate(Routes.AddExpensesRoute) {
+                            popUpTo(Routes.AuthRoute) { inclusive = true }
+                        }
+                    }
+                    Navigation.GotoMigrationRoute -> {
+                        navController.navigate(Routes.MigrationRoute) {
                             popUpTo(Routes.AuthRoute) { inclusive = true }
                         }
                     }
@@ -40,7 +77,10 @@ fun AuthRoute(
 
     Scaffold { innerPadding ->
         AuthContent(
+            context = currentContext,
             state = state,
+            authUI = authUI,
+            configuration = configuration,
             onEvent = viewModel::onEvent,
             modifier = Modifier.padding(innerPadding)
         )
@@ -49,10 +89,40 @@ fun AuthRoute(
 
 @Composable
 fun AuthContent(
+    context: Context,
     state: UiState,
+    authUI: FirebaseAuthUI,
+    configuration: AuthUIConfiguration,
     onEvent: (Event) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-    FirebaseAuthScreen()
+    if (authUI.isSignedIn()) {
+        onEvent(Event.HandleSignInSuccess)
+    } else {
+        FirebaseAuthScreen(
+            modifier = modifier
+                .padding(top = 132.dp)
+                .wrapContentSize(Alignment.Center),
+            configuration = configuration,
+            onSignInSuccess = {
+                Toast.makeText(
+                    context,
+                    "Signed in successfully!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Log.d("AuthRoute", "Signed in successfully!")
+            },
+            onSignInFailure = {
+                Toast.makeText(
+                    context,
+                    "Failed to sign in...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onSignInCancelled = {},
+            authenticatedContent = { _, _ ->
+                onEvent(Event.HandleSignInSuccess)
+            }
+        )
+    }
 }
