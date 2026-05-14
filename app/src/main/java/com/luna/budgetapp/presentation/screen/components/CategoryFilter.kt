@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
@@ -220,14 +221,14 @@ fun CategoryProfileSelectorDropdown(
     modifier: Modifier = Modifier,
     selectedProfile: String,
     profileList: List<String>,
-    onSelectedChange: (String) -> Unit
+    onSelectedChange: (String) -> Unit,
+    textStyle: TextStyle = MaterialTheme.typography.titleMedium
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Box(
         contentAlignment = Alignment.CenterStart,
-        modifier = modifier.fillMaxWidth()
-            .padding(start = 12.dp)
+        modifier = modifier.padding(start = 12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -235,7 +236,7 @@ fun CategoryProfileSelectorDropdown(
         ) {
             Text(
                 text = selectedProfile,
-                style = MaterialTheme.typography.titleLarge
+                style = textStyle
             )
             Spacer(Modifier.width(4.dp))
 
