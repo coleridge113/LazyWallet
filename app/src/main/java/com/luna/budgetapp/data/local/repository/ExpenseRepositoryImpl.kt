@@ -99,6 +99,17 @@ class ExpenseRepositoryImpl(
             }
             .flowOn(Dispatchers.IO)
 
+    override fun getExpensesByCategories(
+        categories: List<String>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Flow<List<Expense>> =
+        dao.getExpensesByCategories(categories, start, end)
+            .map { entities ->
+                entities.map { it.toModel() }
+            }
+            .flowOn(Dispatchers.IO)
+
     override fun getPagingExpensesByDateRange(
         start: LocalDateTime,
         end: LocalDateTime

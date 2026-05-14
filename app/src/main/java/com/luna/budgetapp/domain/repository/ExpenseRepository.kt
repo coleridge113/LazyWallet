@@ -19,6 +19,12 @@ interface ExpenseRepository {
         end: LocalDateTime
     ): Flow<List<Expense>>
 
+    fun getExpensesByCategories(
+        categories: List<String>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Flow<List<Expense>>
+
     fun getPagingExpensesByDateRange(
         start: LocalDateTime,
         end: LocalDateTime

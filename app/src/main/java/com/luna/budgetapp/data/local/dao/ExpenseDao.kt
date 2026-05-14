@@ -38,6 +38,18 @@ interface ExpenseDao {
     @Query("""
         SELECT * FROM expenses
         WHERE date BETWEEN :start AND :end
+        AND (category IN (:categories))
+        ORDER BY date DESC
+    """)
+    fun getExpensesByCategories(
+        categories: List<String>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Flow<List<ExpenseEntity>>
+
+    @Query("""
+        SELECT * FROM expenses
+        WHERE date BETWEEN :start AND :end
         ORDER BY date DESC
     """)
     fun getPagingExpensesByDateRange(

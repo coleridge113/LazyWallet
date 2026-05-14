@@ -10,9 +10,14 @@ class GetExpensesByDateRangeUseCase(
     private val repository: ExpenseRepository
 ) {
     suspend operator fun invoke(
+        categories: List<String>? = null,
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<Expense>> {
-        return repository.getExpensesByDateRange(start, end)
+        return if (categories == null) {
+            repository.getExpensesByDateRange(start, end)
+        } else {
+            repository.getExpensesByCategories(categories, start, end)
+        }
     }
 }
