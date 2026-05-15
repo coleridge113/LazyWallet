@@ -180,14 +180,13 @@ class ExpenseRepositoryImpl(
         dao.getCategoryTotalsByCategory(categories, start, end)
 
     override suspend fun addExpense(expense: Expense) {
-        val isMigrated = settingsDataStore.isMigratedFlow.first()
         val userId = auth.currentUser?.uid
-        val remoteId = if (isMigrated) UUID.randomUUID().toString() else null
+        val remoteId = UUID.randomUUID().toString()
 
         val entity = expense.toEntity().copy(remoteId = remoteId)
         dao.addExpense(entity)
 
-        if (isMigrated && userId != null && remoteId != null) {
+        if (userId != null) {
             try {
                 val firestoreModel = entity.toFirestoreModel()
                 firestore.collection("users").document(userId)

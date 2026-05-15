@@ -35,11 +35,9 @@ class CategoryFilterRepositoryImpl(
     override suspend fun saveProfile(items: List<CategoryFilter>) {
         val entities = items.map(CategoryFilter::toEntity)
         dao.upsertAll(entities)
-
-        val isMigrated = settingsDataStore.isMigratedFlow.first()
         val userId = auth.currentUser?.uid
 
-        if (isMigrated && userId != null) {
+        if (userId != null) {
             try {
                 val batch = firestore.batch()
                 val userRef = firestore.collection("users").document(userId)
@@ -60,11 +58,9 @@ class CategoryFilterRepositoryImpl(
     override suspend fun deleteProfile(profileName: String) {
         val filtersToDelete = dao.getAllFiltersOnce().filter { it.profileName == profileName }
         dao.deleteProfile(profileName)
-
-        val isMigrated = settingsDataStore.isMigratedFlow.first()
         val userId = auth.currentUser?.uid
 
-        if (isMigrated && userId != null) {
+        if (userId != null) {
             try {
                 val batch = firestore.batch()
                 val userRef = firestore.collection("users").document(userId)
