@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.collections.emptyList
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisViewModel (
@@ -30,10 +31,31 @@ class AnalysisViewModel (
     private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState = _uiState.asStateFlow()
+    private val _expensesState = MutableStateFlow(ExpensesState())
+    private val _dateState = MutableStateFlow(DateState())
+    private val _categoryProfileState = MutableStateFlow(CategoryProfileState())
+
+    private val _successState = combine(
+        _expensesState,
+        _dateState,
+        _categoryProfileState
+    ) { expensesState, dateState, categoryProfileState ->
+        UiState.Success(
+            expensesState = expensesState,
+            dateState = dateState,
+            categoryProfileState = categoryProfileState
+        )
+    }
+
+    val uiState = _successState
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = 0.0
+        )
 
     init {
+        observeCategoryProfiles()
         observeActiveProfileAndCategories()
     }
 
@@ -43,7 +65,20 @@ class AnalysisViewModel (
             is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
         }
     }
-    
+
+    private fun observeCategoryProfiles() {
+        viewModelScope.launch {
+            profileUseCases.getCategoryProfiles()
+                .collect { profileList ->
+                    _categoryProfileState.update {
+                        it.copy(
+                            profileList = profileList
+                        )
+                    }
+                }
+        }
+    }
+
     private fun observeActiveProfileAndCategories() {
         viewModelScope.launch {
             profileUseCases.getActiveCategoryProfile()
@@ -59,7 +94,7 @@ class AnalysisViewModel (
                         it.category to it.isActive
                     }
 
-                    _uiState.update { currentState ->
+                    _categoryProfileState.update { currentState ->
                         currentState.copy(
                             activeProfile = profile,
                             selectedCategoryMap =
@@ -69,6 +104,26 @@ class AnalysisViewModel (
                 }
         }
     }
+
+    val fooState: StateFlow<ExpensesState> = combine(
+        _dateState,
+        _categoryProfileState
+    ) { dateState, categoryProfileState ->
+        val range = dateState.selectedRange.resolve()
+        val categories = categoryProfileState.activeCategories
+
+        val expenses = expenseUseCases.getExpensesByDateRange(
+            categories = categories,
+            start = range.start,
+            end = range.end
+        )
+        ExpensesState(expenses)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ExpensesState()
+        )
 
     val expenses: StateFlow<List<Expense>> =
         _uiState.map { it.selectedRange to it.selectedCategoryMap }
