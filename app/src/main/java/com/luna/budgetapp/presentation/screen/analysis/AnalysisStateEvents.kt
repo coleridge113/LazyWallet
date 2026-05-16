@@ -7,7 +7,7 @@ import java.time.LocalDate
 
 sealed interface UiState {
     data object Loading : UiState
-    data class Error(val message: String) : UiState
+    data class Error(val message: String? = null) : UiState
     data class Success(
         val expensesState: ExpensesState = ExpensesState(),
         val dateState: DateState = DateState(),
@@ -17,12 +17,15 @@ sealed interface UiState {
 
 data class ExpensesState(
     val expenses: List<Expense> = emptyList(),
+    val filteredExpenses: List<Expense> = emptyList()
 )
 
 data class DateState(
-    val selectedRange: DateFilter = DateFilter.Last7Days,
+    val dateFilter: DateFilter = DateFilter.Last7Days,
     val selectedDate: LocalDate = LocalDate.now(),
-)
+) {
+    val dateRange = dateFilter.resolve()
+}
 
 data class CategoryProfileState(
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
@@ -41,5 +44,3 @@ sealed interface Event {
 }
 
 sealed interface Navigation {}
-
-
