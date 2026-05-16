@@ -1,9 +1,8 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -11,17 +10,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
-import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.components.CategoryProfileSelectorDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,9 +30,6 @@ fun AnalysisRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val expenses by viewModel.expenses.collectAsStateWithLifecycle()
-    val filteredExpenses by viewModel.filteredExpenses.collectAsStateWithLifecycle()
-    val profileList by viewModel.profileList.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -54,35 +49,46 @@ fun AnalysisRoute(
                     }
                 },
                 actions = {
-                    CategoryProfileSelectorDropdown(
-                        modifier = Modifier.padding(end = 12.dp),
-                        selectedProfile = uiState.activeProfile,
-                        profileList = profileList,
-                        onSelectedChange = {
-                            viewModel.onEvent(Event.SelectCategoryProfile(it))
-                        }
-                    )
+                    if (uiState is UiState.Success) {
+                        val successState = uiState as UiState.Success
+                        CategoryProfileSelectorDropdown(
+                            modifier = Modifier.padding(end = 12.dp),
+                            selectedProfile = successState.categoryProfileState.activeProfile,
+                            profileList = successState.categoryProfileState.profileList,
+                            onSelectedChange = {
+                                viewModel.onEvent(Event.SelectCategoryProfile(it))
+                            }
+                        )
+                    }
                 }
             )
         }
     ) { innerPadding ->
+        Box(
+            modifier = Modifier.padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
 
-        MainContent(
-            modifier = Modifier.padding(innerPadding),
-            uiState = uiState,
-            expenses = expenses,
-            filteredExpenses = filteredExpenses,
-            onEvent = viewModel::onEvent,
-        )
+        }
+        when (val state = uiState) {
+            is UiState.Loading -> {}
+            is UiState.Error -> {}
+            is UiState.Success -> {
+                MainContent(
+                    modifier = Modifier.padding(innerPadding),
+                    uiState = state,
+                    onEvent = viewModel::onEvent,
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun MainContent(
     modifier: Modifier,
-    expenses: List<Expense>,
-    filteredExpenses: List<Expense>,
-    uiState: UiState,
+    uiState: UiState.Success,
     onEvent: (Event) -> Unit,
 ) {
     Column(
@@ -91,8 +97,8 @@ fun MainContent(
     ) {
         DailyExpenseBarChart(
             modifier = Modifier,
-            expenses = expenses,
-            selectedDate = uiState.selectedDate,
+            expenses = uiState.expensesState.expenses,
+            selectedDate = uiState.dateState.selectedDate,
             onClickBar = { date ->
                 onEvent(Event.SelectBar(date)) 
             }
@@ -100,7 +106,7 @@ fun MainContent(
 
         ExpenseTable(
             modifier = Modifier,
-            expenses = filteredExpenses
+            expenses = uiState.expensesState.filteredExpenses
         )
     }
 }
