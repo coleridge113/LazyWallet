@@ -16,8 +16,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,17 +28,15 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.components.DateRangePickerDialog
 import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdown
-import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
-import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
-import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
-import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.flow.collectLatest
-import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
+import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +46,6 @@ fun ExpenseListRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
 
     LaunchedEffect(Unit) {
@@ -63,62 +60,67 @@ fun ExpenseListRoute(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                modifier = Modifier,
-                title = {},
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
-                            contentDescription = null
-                        )
-                    }
-                },
-                actions = {
-                    Icon(
-                        imageVector = Icons.Default.BarChart, 
-                        contentDescription = null,
-                        modifier = Modifier.clickable {
-                            viewModel.onEvent(Event.GotoBarGraph)
-                        }
-                    )
-
-                    DateRangeSelectorDropdown(
-                        selected = uiState.dateFilter,
-                        onSelectedChange = {
-                            when (it) {
-                                DateFilter.Daily,
-                                DateFilter.Weekly,
-                                DateFilter.Monthly -> viewModel.onEvent(Event.SelectDateRange(it))
-                                else -> viewModel.onEvent(Event.ShowCalendarForm)
+    when (val state = uiState) {
+        is UiState.Loading -> {}
+        is UiState.Error -> {}
+        is UiState.Success -> {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    TopAppBar(
+                        modifier = Modifier,
+                        title = {},
+                        navigationIcon = {
+                            IconButton(
+                                onClick = {
+                                    navController.popBackStack()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBackIosNew,
+                                    contentDescription = null
+                                )
                             }
+                        },
+                        actions = {
+                            Icon(
+                                imageVector = Icons.Default.BarChart,
+                                contentDescription = null,
+                                modifier = Modifier.clickable {
+                                    viewModel.onEvent(Event.GotoBarGraph)
+                                }
+                            )
+                            DateRangeSelectorDropdown(
+                                selected = state.dateState.dateFilter,
+                                onSelectedChange = {
+                                    when (it) {
+                                        DateFilter.Daily,
+                                        DateFilter.Weekly,
+                                        DateFilter.Monthly -> viewModel.onEvent(Event.SelectDateRange(it))
+                                        else -> viewModel.onEvent(Event.ShowCalendarForm)
+                                    }
+                                }
+                            )
                         }
                     )
                 }
-            )
+            ) { innerPadding ->
+                MainContent(
+                    modifier = Modifier.padding(innerPadding),
+                    uiState = state,
+                    onEvent = viewModel::onEvent,
+                    totalAmount = state.expensesState.totalAmount,
+                    expenses = expenses
+                )
+            }
         }
-    ) { innerPadding ->
-        MainContent(
-            modifier = Modifier.padding(innerPadding),
-            uiState = uiState,
-            onEvent = viewModel::onEvent,
-            totalAmount = totalAmount,
-            expenses = expenses
-        )
     }
 }
 
 @Composable
 fun MainContent(
     modifier: Modifier,
-    uiState: UiState,
+    uiState: UiState.Success,
     onEvent: (Event) -> Unit,
     totalAmount: Double,
     expenses: LazyPagingItems<Expense>
@@ -129,14 +131,13 @@ fun MainContent(
             .padding(16.dp)
     ) {
         ExpenseChart(
-            chartDataList = uiState.chartDataList,
+            chartDataList = uiState.chartDataState.chartDataList,
             totalAmount = totalAmount,
             showDialog = { onEvent(Event.ShowCategoryFilterDialog) },
             onClickCenter = { onEvent(Event.ResetCategoryFilters) }
         )
         Spacer(modifier = Modifier.height(48.dp))
         when {
-            uiState.isLoading -> CircularProgressIndicator()
             expenses.itemCount <= 0 -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -173,16 +174,16 @@ fun MainContent(
             is DialogState.CategoryFilterForm ->
                 CategoryFilterDialog(
                     selectedCategoryMap = dialog.filteredCategories,
-                    selectedProfile = uiState.activeProfile,
-                    profileList = uiState.profileList,
+                    selectedProfile = uiState.categoryProfileState.activeProfile,
+                    profileList = uiState.categoryProfileState.profileList,
                     onDismiss = { onEvent(Event.DismissDialog) },
-                    onConfirm = { profileName, filters ->
+                    onApply = { profileName, filters ->
                         onEvent(Event.ApplyCategoryFilters(profileName, filters))
                     },
                     onSelectedChange = { profileName ->
                         onEvent(Event.SelectCategoryProfile(profileName))
                     },
-                    onSaveConfirm = { newProfileName, filters ->
+                    onSave = { newProfileName, filters ->
                         onEvent(Event.SaveCategoryProfile(newProfileName, filters))
                     },
                     onDelete = { profileName ->

@@ -4,12 +4,30 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
 
-data class UiState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val dialogState: DialogState? = null,
-    val dateFilter: DateFilter = DateFilter.Daily,
-    val selectedCategories: Map<Category, Boolean> = emptyMap()
+sealed interface UiState {
+    data object Loading : UiState
+    data class Error(val message: String? = null) : UiState
+    data class Success(
+        val dialogState: DialogState? = null,
+        val dateState: DateState = DateState(),
+        val categoryProfileState: CategoryProfileState = CategoryProfileState(),
+        val expensesState: ExpensesState = ExpensesState()
+    ) : UiState
+}
+
+data class ExpensesState(
+    val expensePresets: List<ExpensePreset> = emptyList(),
+    val totalAmount: Double = 0.0
+)
+
+data class DateState(
+    val dateFilter: DateFilter = DateFilter.Daily
+) {
+    val dateRange = dateFilter.resolve()
+}
+
+data class CategoryProfileState(
+    val selectedCategoryMap: Map<Category, Boolean> = emptyMap()
 )
 
 sealed interface DialogState {

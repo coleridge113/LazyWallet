@@ -15,7 +15,7 @@ interface CategoryFilterDao {
     @Query("SELECT EXISTS(SELECT 1 FROM category_filter LIMIT 1)")
     suspend fun hasAny(): Boolean
 
-    @Query("SELECT DISTINCT profile_name FROM category_filter")
+    @Query("SELECT DISTINCT profile_name FROM category_filter WHERE profile_name IS NOT 'Custom'")
     fun getProfiles(): Flow<List<String>>
 
     @Query("SELECT * FROM category_filter WHERE profile_name = :profileName")

@@ -56,11 +56,11 @@ import com.luna.budgetapp.ui.theme.MaterialBlue
 fun CategoryFilterDialog(
     modifier: Modifier = Modifier,
     selectedCategoryMap: Map<Category, Boolean>,
-    onDismiss: () -> Unit,
-    onConfirm: (String, Map<Category, Boolean>) -> Unit,
-    onSaveConfirm: (String, Map<Category, Boolean>) -> Unit,
     selectedProfile: String,
     profileList: List<String>,
+    onDismiss: () -> Unit,
+    onApply: (String, Map<Category, Boolean>) -> Unit,
+    onSave: (String, Map<Category, Boolean>) -> Unit,
     onSelectedChange: (String) -> Unit,
     onDelete: (String) -> Unit
 ) {
@@ -125,7 +125,7 @@ fun CategoryFilterDialog(
                         }
 
                         TextButton(
-                            onClick = { onConfirm(profileTitle, tempMap) }
+                            onClick = { onApply(profileTitle, tempMap) }
                         ) {
                             Text(
                                 text = applyText,
@@ -167,7 +167,7 @@ fun CategoryFilterDialog(
 
                         TextButton(
                             onClick = {
-                                onSaveConfirm(profileNameInput, tempMap)
+                                onSave(profileNameInput, tempMap)
                                 isSaveMode = false
                             }
                         ) {
@@ -289,10 +289,10 @@ fun CategoryFilterPreview() {
             selectedCategoryMap = selectedCategoryMap,
             selectedProfile = "Default",
             onDismiss = {},
-            onConfirm = { _, _ -> },
+            onApply = { _, _ -> },
             onSelectedChange = {},
             profileList = listOf("Default", "Profile 1"),
-            onSaveConfirm = {_, _ ->},
+            onSave = { _, _ ->},
             onDelete = {}
         )
     }

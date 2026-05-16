@@ -13,6 +13,7 @@ import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.Category
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await

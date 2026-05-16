@@ -19,12 +19,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
@@ -43,8 +41,6 @@ fun ExpensePresetRoute(
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val totalAmount by viewModel.totalAmount.collectAsStateWithLifecycle()
-    val expensePresets by viewModel.expensePresets.collectAsStateWithLifecycle()
     val auth = remember { FirebaseAuth.getInstance() }
 
     LaunchedEffect(Unit) {
@@ -68,27 +64,30 @@ fun ExpensePresetRoute(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        MainContent(
-            uiState = uiState,
-            totalAmount = totalAmount,
-            expensePresets = expensePresets,
-            modifier = Modifier.padding(innerPadding),
-            onEvent = viewModel::onEvent,
-        )
+    when (val state = uiState) {
+        is UiState.Loading -> {}
+        is UiState.Error -> {}
+        is UiState.Success -> {
+            Scaffold(
+                modifier = Modifier.fillMaxSize()
+            ) { innerPadding ->
+                MainContent(
+                    uiState = state,
+                    modifier = Modifier.padding(innerPadding),
+                    onEvent = viewModel::onEvent,
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun MainContent(
-    uiState: UiState,
-    totalAmount: Double,
-    expensePresets: List<ExpensePreset>,
+    uiState: UiState.Success,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
+    val (expensePresets, totalAmount) = uiState.expensesState
     Box(
         modifier = modifier.fillMaxSize()
             .padding(16.dp)

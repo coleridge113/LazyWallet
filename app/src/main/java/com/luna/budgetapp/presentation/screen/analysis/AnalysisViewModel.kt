@@ -40,11 +40,6 @@ class AnalysisViewModel (
                 selectedCategoryMap = categoryMap
             )
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = CategoryProfileState()
-        )
 
     private val _expensesState: StateFlow<ExpensesState> = combine(
         _dateState,

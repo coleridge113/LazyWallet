@@ -5,16 +5,42 @@ import com.luna.budgetapp.presentation.model.ChartData
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 
-data class UiState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val dialogState: DialogState? = null,
-    val dateFilter: DateFilter = DateFilter.Daily,
-    val chartDataList: List<ChartData> = emptyList(),
-    val profileList: List<String> = emptyList(),
-    val selectedCategories: Map<Category, Boolean> = emptyMap(),
-    val activeProfile: String = ""
-) 
+sealed interface UiState {
+    data object Loading : UiState
+    data class Error(val message: String? = null) : UiState
+    data class Success(
+        val dialogState: DialogState? = null,
+        val dateState: DateState = DateState(),
+        val categoryProfileState: CategoryProfileState = CategoryProfileState(),
+        val chartDataState: ChartDataState = ChartDataState(),
+        val expensesState: ExpensesState = ExpensesState()
+    ) : UiState
+}
+
+data class ExpensesState(
+    val totalAmount: Double = 0.0
+)
+
+data class DateState(
+    val dateFilter: DateFilter = DateFilter.Daily
+) {
+    val dateRange = dateFilter.resolve()
+}
+
+data class CategoryProfileState(
+    val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
+    val activeProfile: String = "",
+    val profileList: List<String> = emptyList()
+) {
+    val activeCategories: List<String> = selectedCategoryMap
+        .filterValues { it }
+        .keys
+        .map { it.name }
+}
+
+data class ChartDataState(
+    val chartDataList: List<ChartData> = emptyList()
+)
 
 sealed interface DialogState {
     data object CalendarForm : DialogState
