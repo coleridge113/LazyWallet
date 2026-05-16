@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 class GetExpensesByDateRangeUseCase(
     private val repository: ExpenseRepository
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         categories: List<String>? = null,
         start: LocalDateTime,
         end: LocalDateTime
