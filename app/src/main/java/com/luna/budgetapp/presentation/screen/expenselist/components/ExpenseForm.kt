@@ -172,10 +172,18 @@ fun ExpenseForm(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = {
+                        val type =
+                            typeState.text.ifBlank {
+                                selectedExpense.type
+                            }.toString()
+                        val amount =
+                            amountState.text.ifBlank {
+                                selectedExpense.amount
+                            }.toString()
                         onConfirm(
                             selectedExpense.id!!,
-                            typeState.text.toString(),
-                            amountState.text.toString()
+                            type,
+                            amount
                         )
                     },
                         enabled = !isSaving

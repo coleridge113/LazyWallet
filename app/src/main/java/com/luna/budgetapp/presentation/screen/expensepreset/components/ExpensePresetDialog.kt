@@ -186,13 +186,22 @@ fun ExpensePresetDialog(
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = {
-                        onConfirm(
-                            selectedOption,
-                            typeState.text.toString(),
-                            amountState.text.toString()
-                        )
-                    },
+                    Button(
+                        onClick = {
+                            val type =
+                                typeState.text.ifBlank {
+                                    selectedPreset?.type
+                                }.toString()
+                            val amount =
+                                amountState.text.ifBlank {
+                                    selectedPreset?.amount
+                                }.toString()
+                            onConfirm(
+                                selectedOption,
+                                type,
+                                amount
+                            )
+                        },
                         enabled = !isSaving
                     ) {
                         Text("Confirm")
