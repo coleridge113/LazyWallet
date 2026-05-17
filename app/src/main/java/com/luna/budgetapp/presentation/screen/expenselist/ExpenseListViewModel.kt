@@ -3,6 +3,7 @@ package com.luna.budgetapp.presentation.screen.expenselist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import com.luna.budgetapp.common.Constants.CUSTOM
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.DateFilter
@@ -210,7 +211,7 @@ class ExpenseListViewModel(
 
     private fun applyCategoryFilters(profileName: String, filters: Map<Category, Boolean>) {
         viewModelScope.launch {
-            if (profileName == "Custom") saveCategoryProfile(profileName, filters)
+            if (profileName == CUSTOM) saveCategoryProfile(profileName, filters)
             profileUseCases.setActiveCategoryProfile(profileName)
         }
         dismissDialog()
