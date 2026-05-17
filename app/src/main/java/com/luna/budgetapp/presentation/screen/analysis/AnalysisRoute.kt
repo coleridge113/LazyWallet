@@ -52,7 +52,6 @@ fun AnalysisRoute(
                     if (uiState is UiState.Success) {
                         val successState = uiState as UiState.Success
                         CategoryProfileSelectorDropdown(
-                            modifier = Modifier.padding(end = 12.dp),
                             selectedProfile = successState.categoryProfileState.activeProfile,
                             profileList = successState.categoryProfileState.profileList,
                             onSelectedChange = {
