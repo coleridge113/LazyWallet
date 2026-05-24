@@ -1,4 +1,5 @@
 package com.luna.budgetapp.presentation.screen.auth
+
 import android.content.Context
 import android.util.Log
 import android.widget.Toast

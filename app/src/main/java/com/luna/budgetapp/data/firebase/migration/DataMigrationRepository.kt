@@ -3,6 +3,9 @@ package com.luna.budgetapp.data.firebase.migration
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.data.firebase.models.CategoryFilter
+import com.luna.budgetapp.data.firebase.models.Expense
+import com.luna.budgetapp.data.firebase.models.ExpensePreset
 import com.luna.budgetapp.data.firebase.toEntity
 import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.CategoryFilterDao
@@ -79,22 +82,19 @@ class DataMigrationRepository(
         val userRef = firestore.collection("users").document(userId)
 
         try {
-            // 1. Fetch from Firestore
             val expenses = userRef.collection("expenses").get().await()
-                .toObjects(com.luna.budgetapp.data.firebase.models.Expense::class.java)
+                .toObjects(Expense::class.java)
             
             val presets = userRef.collection("expense_presets").get().await()
-                .toObjects(com.luna.budgetapp.data.firebase.models.ExpensePreset::class.java)
+                .toObjects(ExpensePreset::class.java)
             
             val filters = userRef.collection("category_filters").get().await()
-                .toObjects(com.luna.budgetapp.data.firebase.models.CategoryFilter::class.java)
+                .toObjects(CategoryFilter::class.java)
 
-            // 2. Clear Local Room (Firestore is now the source of truth)
             expenseDao.deleteAll()
             expensePresetDao.deleteAll()
             categoryFilterDao.deleteAll()
 
-            // 3. Save to Room
             expenseDao.addExpenses(expenses.map { it.toEntity() })
             expensePresetDao.addExpensePresets(presets.map { it.toEntity() })
             categoryFilterDao.upsertAll(filters.map { it.toEntity() })
