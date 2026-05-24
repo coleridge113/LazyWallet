@@ -160,4 +160,10 @@ interface ExpenseDao {
         DELETE FROM expenses
     """)
     fun deleteAll()
+
+    @Query("""
+        SELECT * FROM expenses
+        WHERE id=(SELECT MAX(id) FROM expenses)
+    """)
+    suspend fun getLatestExpense(): ExpenseEntity?
 }
