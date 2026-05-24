@@ -14,6 +14,7 @@ import com.luna.budgetapp.data.local.dao.ExpenseDao
 import com.luna.budgetapp.data.mapper.toEntity
 import com.luna.budgetapp.data.mapper.toModel
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
 import com.luna.budgetapp.domain.repository.ExpenseRepository
 import com.luna.budgetapp.network.ExpenseService
@@ -209,10 +210,23 @@ class ExpenseRepositoryImpl(
 
     override suspend fun deleteExpenseById(expenseId: Long) {
         val expense = dao.getExpenseByIdOnce(expenseId)
-        val remoteId = expense?.remoteId
+        if (expense != null) {
+            performDelete(expense)
+        }
+    }
+
+    override suspend fun deleteLatestExpense() {
+        val expense = dao.getLatestExpense()
+        if (expense != null) {
+            performDelete(expense)
+        }
+    }
+
+    private suspend fun performDelete(expense: ExpenseEntity) {
+        val remoteId = expense.remoteId
         val userId = auth.currentUser?.uid
         
-        dao.deleteExpenseById(expenseId)
+        dao.deleteExpenseById(expense.id)
 
         if (remoteId != null && userId != null) {
             try {
@@ -223,12 +237,6 @@ class ExpenseRepositoryImpl(
                 Log.e("Sync", "Failed to sync deleted expense", e)
             }
         }
-    }
-
-    override suspend fun deleteLatestExpense() {
-        dao.deleteLatestExpense()
-        // Syncing deleteLatest might be complex without the ID, 
-        // ideally deleteLatestExpense also returns the deleted entity or its remoteId
     }
 
     override suspend fun editExpenseById(
@@ -242,7 +250,7 @@ class ExpenseRepositoryImpl(
         val remoteId = expense?.remoteId
         val userId = auth.currentUser?.uid
 
-        if (remoteId != null && userId != null && expense != null) {
+        if (remoteId != null && userId != null) {
             try {
                 val firestoreModel = expense.toFirestoreModel()
                 firestore.collection("users").document(userId)
