@@ -12,6 +12,7 @@ sealed interface UiState {
 
 sealed interface Event {
     data object HandleSignInSuccess : Event
+    data class SignInGoogle(val idToken: String) : Event
 }
 
 sealed class Navigation {

@@ -27,6 +27,7 @@ class AuthViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.HandleSignInSuccess -> { handleSignInSuccess() }
+            is Event.SignInGoogle -> signInGoogle(event.idToken)
         }
     }
 
@@ -36,6 +37,16 @@ class AuthViewModel(
                 migrationRepository.syncFromCloud()
             } catch (_: Exception) { }
             _navigation.send(Navigation.GotoAddExpenseRoute)
+        }
+    }
+
+    private fun signInGoogle(idToken: String) {
+        viewModelScope.launch {
+            authUseCases.signInGoogle(
+                idToken = idToken,
+                onSuccess = {},
+                onFailure = {}
+            )
         }
     }
 }
