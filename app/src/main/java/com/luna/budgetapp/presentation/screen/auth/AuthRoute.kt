@@ -1,10 +1,10 @@
 package com.luna.budgetapp.presentation.screen.auth
 
 import android.content.Context
-import androidx.credentials.GetCredentialRequest
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowCircleRight
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -58,7 +59,6 @@ import com.firebase.ui.auth.configuration.theme.AuthUIAsset
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-import com.google.common.io.Resources.getResource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.luna.budgetapp.BuildConfig
@@ -175,16 +175,41 @@ fun AuthContent(
                 value = passwordString,
                 onValueChange = { passwordString = it },
                 label = { Text("Password") },
+                trailingIcon = {
+                    Icon(
+                        imageVector =
+                            if (passwordVisible)
+                                Icons.Default.Visibility
+                            else
+                                Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            passwordVisible = !passwordVisible
+                        }
+                    )
+                },
                 visualTransformation =
                     if (passwordVisible)
-                        PasswordVisualTransformation()
-                    else
                         VisualTransformation.None
+                    else
+                        PasswordVisualTransformation()
             )
 
             Row {
                 SecondaryButton(
                     onClick = {
+                        auth.createUserWithEmailAndPassword(
+                            usernameState.text.toString().trim(),
+                            passwordString.trim()
+                        )
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    onEvent(Event.HandleSignInSuccess)
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("createUser:Failed", "Sign up failed: ${e.message}")
+                            }
                     },
                     text = "Sign Up",
                     modifier = Modifier.padding(16.dp)
@@ -192,13 +217,17 @@ fun AuthContent(
                 PrimaryButton(
                     onClick = {
                         auth.signInWithEmailAndPassword(
-                            usernameState.text.toString(),
-                            passwordString
-                        ).addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                onEvent(Event.HandleSignInSuccess)
+                            usernameState.text.toString().trim(),
+                            passwordString.trim()
+                        )
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    onEvent(Event.HandleSignInSuccess)
+                                }
                             }
-                        }
+                            .addOnFailureListener { e ->
+                                Log.e("signIn:Failed", "Sign in failed: ${e.message}")
+                            }
                     },
                     text = "Sign In",
                     modifier = Modifier.padding(16.dp)
