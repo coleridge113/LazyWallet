@@ -64,6 +64,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.luna.budgetapp.BuildConfig
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.components.PrimaryButton
+import com.luna.budgetapp.presentation.screen.components.SecondaryButton
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -180,30 +182,34 @@ fun AuthContent(
                         VisualTransformation.None
             )
 
-            Button(
-                onClick = {
-                    auth.signInWithEmailAndPassword(
-                        usernameState.text.toString(),
-                        passwordString
-                    ).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            onEvent(Event.HandleSignInSuccess)
-                        }
-                    }
-                },
-                modifier = Modifier.padding(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+            Row {
+                SecondaryButton(
+                    onClick = {
+                    },
+                    text = "Sign Up",
+                    modifier = Modifier.padding(16.dp)
                 )
-            ) {
-                Text(
-                    text = "Sign In"
+                PrimaryButton(
+                    onClick = {
+                        auth.signInWithEmailAndPassword(
+                            usernameState.text.toString(),
+                            passwordString
+                        ).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                onEvent(Event.HandleSignInSuccess)
+                            }
+                        }
+                    },
+                    text = "Sign In",
+                    modifier = Modifier.padding(16.dp)
                 )
             }
 
             Row(
-                modifier = Modifier.padding(vertical = 16.dp),
+                modifier = Modifier.padding(
+                    horizontal = 32.dp,
+                    vertical = 16.dp
+                ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HorizontalDivider(
@@ -221,18 +227,22 @@ fun AuthContent(
                 )
             }
 
-            Button(
-                onClick = handleGoogleSignIn
+            Column(
+                modifier = Modifier.padding(top = 20.dp)
             ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.google_logo),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Sign in with Google"
-                )
+                Button(
+                    onClick = handleGoogleSignIn
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.google_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Sign in with Google"
+                    )
+                }
             }
         }
     }
