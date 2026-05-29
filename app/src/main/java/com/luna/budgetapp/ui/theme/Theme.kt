@@ -24,7 +24,10 @@ private val DarkColorScheme = darkColorScheme(
     surface = GruvboxBg0,
     onSurface = GruvboxFg1,
     error = GruvboxRed,
-    onError = GruvboxBg0
+    onError = GruvboxBg0,
+    surfaceVariant = GruvboxBg2,
+    onSurfaceVariant = GruvboxGray,
+    outline = GruvboxGray
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -39,7 +42,10 @@ private val LightColorScheme = lightColorScheme(
     surface = GruvboxLightBg0,
     onSurface = GruvboxLightFg0,
     error = GruvboxLightRed,
-    onError = GruvboxLightBg0
+    onError = GruvboxLightBg0,
+    surfaceVariant = GruvboxLightBg1,
+    onSurfaceVariant = GruvboxGray,
+    outline = GruvboxGray
 )
 
 @Composable
