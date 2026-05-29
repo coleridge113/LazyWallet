@@ -43,10 +43,6 @@ import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.credentials.Credential
-import androidx.credentials.CredentialManager
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -56,19 +52,15 @@ import com.firebase.ui.auth.configuration.PasswordRule
 import com.firebase.ui.auth.configuration.authUIConfiguration
 import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
 import com.firebase.ui.auth.configuration.theme.AuthUIAsset
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import com.luna.budgetapp.BuildConfig
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.PrimaryButton
 import com.luna.budgetapp.presentation.screen.components.SecondaryButton
+import com.luna.budgetapp.presentation.screen.utils.launchCredentialManager
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
@@ -123,19 +115,15 @@ fun AuthRoute(
 
     Scaffold { innerPadding ->
         AuthContent(
-            context = currentContext,
-            state = state,
-            auth = auth,
-            configuration = configuration,
+            isUserSignedIn = auth.currentUser != null,
             onEvent = viewModel::onEvent,
             modifier = Modifier.padding(innerPadding),
             handleGoogleSignIn = {
-                lifecycleOwner.lifecycleScope.launch {
-                    launchCredentialManager(
-                        context = currentContext,
-                        auth = auth,
-                        onSuccess = { viewModel.onEvent(Event.HandleSignInSuccess) }
-                    )
+                launchCredentialManager(
+                    context = currentContext,
+                    scope = lifecycleOwner.lifecycleScope
+                ) { credential ->
+                    viewModel.onEvent(Event.SignInGoogle(credential))
                 }
             }
         )
@@ -145,15 +133,12 @@ fun AuthRoute(
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AuthContent(
-    context: Context,
-    state: UiState,
-    auth: FirebaseAuth,
-    handleGoogleSignIn: () -> Unit,
-    configuration: AuthUIConfiguration,
+    isUserSignedIn: Boolean,
     onEvent: (Event) -> Unit,
+    handleGoogleSignIn: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (auth.currentUser != null) {
+    if (isUserSignedIn) {
         LaunchedEffect(Unit) {
             onEvent(Event.HandleSignInSuccess)
         }
@@ -198,18 +183,12 @@ fun AuthContent(
             Row {
                 SecondaryButton(
                     onClick = {
-                        auth.createUserWithEmailAndPassword(
-                            usernameState.text.toString().trim(),
-                            passwordString.trim()
+                        onEvent(
+                            Event.SignUp(
+                                email = usernameState.text.toString().trim(),
+                                password = passwordString.trim()
+                            )
                         )
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    onEvent(Event.HandleSignInSuccess)
-                                }
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("createUser:Failed", "Sign up failed: ${e.message}")
-                            }
                     },
                     text = "Sign Up",
                     modifier = Modifier.padding(16.dp)
@@ -271,69 +250,6 @@ fun AuthContent(
     }
 }
 
-private suspend fun launchCredentialManager(
-    context: Context,
-    auth: FirebaseAuth,
-    onSuccess: () -> Unit
-) {
-    val googleIdOption = GetGoogleIdOption.Builder()
-        .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-        .setFilterByAuthorizedAccounts(false)
-        .build()
-    val request = GetCredentialRequest.Builder()
-        .addCredentialOption(googleIdOption)
-        .build()
-    val credentialManager: CredentialManager = CredentialManager.create(context)
-
-    try {
-        val result = credentialManager.getCredential(context, request)
-        handleSignIn(
-            credential = result.credential,
-            auth = auth,
-            onSuccess = onSuccess
-        )
-    } catch(e: Exception) {
-        Log.e("GoogleSignIn", "Error signing in: ${e.message}")
-    }
-}
-
-private fun handleSignIn(
-    credential: Credential,
-    auth: FirebaseAuth,
-    onSuccess: () -> Unit
-) {
-    if (credential is CustomCredential &&
-        credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-    ) {
-        Log.d("GoogleSignIn", "Processing credential")
-        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-        firebaseAuthWithGoogle(
-            idToken = googleIdTokenCredential.idToken,
-            auth = auth,
-            onSuccess = onSuccess
-        )
-    } else {
-        Log.e("GoogleSignIn", "Credentials not recognized")
-    }
-}
-
-private fun firebaseAuthWithGoogle(
-    idToken: String,
-    auth: FirebaseAuth,
-    onSuccess: () -> Unit
-) {
-    val credential = GoogleAuthProvider.getCredential(idToken, null)
-    auth.signInWithCredential(credential)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("GoogleSignIn", "Task Completed")
-                onSuccess()
-            } else {
-                Log.e("GoogleSignIn", "Task did not complete")
-            }
-        }
-}
-
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Preview(
     showSystemUi = true,
@@ -343,26 +259,12 @@ private fun firebaseAuthWithGoogle(
 )
 @Composable
 fun LoginScreenPreview() {
-    val context = LocalContext.current
     LazyWalletTheme {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
             AuthContent(
-                context = context,
-                state = UiState.Success(),
-                auth = FirebaseAuth.getInstance(),
-                configuration = authUIConfiguration {
-                    this.context = context
-                    providers {
-                        provider(
-                            AuthProvider.Email(
-                                emailLinkActionCodeSettings = null,
-                                passwordValidationRules = emptyList()
-                            )
-                        )
-                    }
-                },
+                isUserSignedIn = false,
                 onEvent = {},
                 modifier = Modifier,
                 handleGoogleSignIn = {}

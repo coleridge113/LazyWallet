@@ -2,6 +2,9 @@ package com.luna.budgetapp.presentation.screen.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.credentials.Credential
+import androidx.credentials.CustomCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
@@ -11,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 
 class AuthViewModel(
     private val authUseCases: AuthUseCases,
@@ -27,8 +31,9 @@ class AuthViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.HandleSignInSuccess -> { handleSignInSuccess() }
-            is Event.SignInGoogle -> signInGoogle(event.idToken)
+            is Event.SignInGoogle -> signInGoogle(event.credential)
             is Event.SignInEmailPassword -> signInEmailPassword(event.email, event.password)
+            is Event.SignUp -> signUp(event.email, event.password)
         }
     }
 
@@ -41,13 +46,20 @@ class AuthViewModel(
         }
     }
 
-    private fun signInGoogle(idToken: String) {
+    private fun signInGoogle(
+        credential: Credential
+    ) {
         viewModelScope.launch {
-            authUseCases.signInGoogle(
-                idToken = idToken,
-                onSuccess = {},
-                onFailure = {}
-            )
+            if (credential is CustomCredential &&
+                credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+            ) {
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                authUseCases.signInGoogle(
+                    idToken = googleIdTokenCredential.idToken,
+                    onSuccess = { handleSignInSuccess() },
+                    onFailure = {}
+                )
+            }
         }
     }
 
@@ -63,5 +75,11 @@ class AuthViewModel(
                 onFailure = {}
             )
         }
+    }
+
+    private fun signUp(
+        email: String,
+        password: String
+    ) {
     }
 }
