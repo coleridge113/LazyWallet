@@ -28,6 +28,7 @@ class AuthViewModel(
         when (event) {
             Event.HandleSignInSuccess -> { handleSignInSuccess() }
             is Event.SignInGoogle -> signInGoogle(event.idToken)
+            is Event.SignInEmailPassword -> signInEmailPassword(event.email, event.password)
         }
     }
 
@@ -44,6 +45,20 @@ class AuthViewModel(
         viewModelScope.launch {
             authUseCases.signInGoogle(
                 idToken = idToken,
+                onSuccess = {},
+                onFailure = {}
+            )
+        }
+    }
+
+    private fun signInEmailPassword(
+        email: String,
+        password: String
+    ) {
+        viewModelScope.launch {
+            authUseCases.signInEmailPassword(
+                email = email,
+                password = password,
                 onSuccess = {},
                 onFailure = {}
             )

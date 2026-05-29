@@ -63,6 +63,7 @@ import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -174,6 +175,7 @@ val appModule = module {
     factoryOf(::SetMigrationCompleteUseCase)
     factoryOf(::EditExpenseUseCase)
     factoryOf(::SignInGoogleUseCase)
+    factoryOf(::SignInEmailPasswordUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)

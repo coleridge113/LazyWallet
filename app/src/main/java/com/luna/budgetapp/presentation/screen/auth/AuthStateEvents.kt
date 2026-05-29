@@ -13,6 +13,7 @@ sealed interface UiState {
 sealed interface Event {
     data object HandleSignInSuccess : Event
     data class SignInGoogle(val idToken: String) : Event
+    data class SignInEmailPassword(val email: String, val password: String) : Event
 }
 
 sealed class Navigation {
