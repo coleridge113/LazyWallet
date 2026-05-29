@@ -212,3 +212,25 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
 }
+
+tasks.register("printKlsClasspath") {
+    doLast {
+        // 1. Safely grab the SDK directory bypassing AGP entirely
+        val localProps = project.rootProject.file("local.properties")
+        val properties = Properties()
+        if (localProps.exists()) {
+            properties.load(localProps.inputStream())
+        }
+        val sdkDir = properties.getProperty("sdk.dir") ?: System.getenv("ANDROID_HOME")
+
+        // 2. Safely grab the compileSdk version using the modern AGP 8+ extension
+        val androidExt = project.extensions.getByType<com.android.build.api.dsl.ApplicationExtension>()
+        val compileSdk = androidExt.compileSdk
+
+        // 3. Construct the android.jar path and fetch dependencies
+        val androidJar = "$sdkDir/platforms/android-$compileSdk/android.jar"
+        val deps = configurations.getByName("debugCompileClasspath").files.joinToString(":")
+
+        print("$androidJar:$deps")
+    }
+}
