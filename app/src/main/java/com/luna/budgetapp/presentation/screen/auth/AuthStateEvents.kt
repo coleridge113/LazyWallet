@@ -5,13 +5,13 @@ import com.firebase.ui.auth.AuthState
 
 sealed interface UiState {
     data object Loading : UiState
-    data class Error(val message: String) : UiState
     data class Success(
         val authState: AuthState = AuthState.Idle
     ) : UiState
 }
 
 sealed interface Event {
+    data object DismissDialog : Event
     data object HandleSignInSuccess : Event
     data class SignInGoogle(val credential: Credential) : Event
     data class SignInEmailPassword(val email: String, val password: String) : Event
@@ -21,4 +21,8 @@ sealed interface Event {
 sealed class Navigation {
     data object GotoAddExpenseRoute : Navigation()
     data object GotoMigrationRoute : Navigation()
+}
+
+sealed interface DialogState {
+    data class ErrorMessage(val message: String?) : DialogState
 }

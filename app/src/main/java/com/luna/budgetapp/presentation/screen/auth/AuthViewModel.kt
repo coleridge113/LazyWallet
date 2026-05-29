@@ -12,9 +12,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
     private val authUseCases: AuthUseCases,
@@ -28,12 +28,16 @@ class AuthViewModel(
     private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
 
+    private val _dialogState = MutableStateFlow<DialogState?>(null)
+    val dialogState = _dialogState.asStateFlow()
+
     fun onEvent(event: Event) {
         when (event) {
-            Event.HandleSignInSuccess -> { handleSignInSuccess() }
+            is Event.HandleSignInSuccess -> handleSignInSuccess()
             is Event.SignInGoogle -> signInGoogle(event.credential)
             is Event.SignInEmailPassword -> signInEmailPassword(event.email, event.password)
             is Event.SignUp -> signUp(event.email, event.password)
+            is Event.DismissDialog -> dismissDialog()
         }
     }
 
@@ -57,7 +61,9 @@ class AuthViewModel(
                 authUseCases.signInGoogle(
                     idToken = googleIdTokenCredential.idToken,
                     onSuccess = { handleSignInSuccess() },
-                    onFailure = {}
+                    onFailure = { error ->
+                        showError(error)
+                    }
                 )
             }
         }
@@ -71,8 +77,10 @@ class AuthViewModel(
             authUseCases.signInEmailPassword(
                 email = email,
                 password = password,
-                onSuccess = {},
-                onFailure = {}
+                onSuccess = { handleSignInSuccess() },
+                onFailure = { error ->
+                    showError(error)
+                }
             )
         }
     }
@@ -81,5 +89,15 @@ class AuthViewModel(
         email: String,
         password: String
     ) {
+    }
+
+    private fun showError(error: Exception) {
+        _dialogState.update {
+            DialogState.ErrorMessage(error.message)
+        }
+    }
+
+    private fun dismissDialog() {
+        _dialogState.update { null }
     }
 }

@@ -53,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.BuildConfig
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.components.ErrorDialog
 import com.luna.budgetapp.presentation.screen.components.PrimaryButton
 import com.luna.budgetapp.presentation.screen.components.SecondaryButton
 import com.luna.budgetapp.presentation.screen.utils.launchCredentialManager
@@ -66,32 +67,9 @@ fun AuthRoute(
     navController: NavController
 ) {
     val lifecycleOwner = rememberLifecycleOwner()
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val currentContext = LocalContext.current
     val auth = FirebaseAuth.getInstance()
-    val configuration = remember(currentContext) {
-        authUIConfiguration {
-            context = currentContext
-            logo = AuthUIAsset.Resource(R.drawable.ic_lazywallet_no_bg)
-            providers {
-                provider(AuthProvider.Email(
-                    emailLinkActionCodeSettings = null,
-                    passwordValidationRules = listOf(
-                        PasswordRule.MinimumLength(8),
-                        PasswordRule.RequireUppercase,
-                        PasswordRule.RequireLowercase,
-                        PasswordRule.RequireDigit,
-                        PasswordRule.RequireSpecialCharacter
-                    )
-                ))
-                provider(AuthProvider.Google(
-                    scopes = listOf("profile", "email"),
-                    serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                ))
-            }
-        }
-    }
-
+    val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
@@ -115,6 +93,7 @@ fun AuthRoute(
             isUserSignedIn = auth.currentUser != null,
             onEvent = viewModel::onEvent,
             modifier = Modifier.padding(innerPadding),
+            dialog = dialog,
             handleGoogleSignIn = {
                 launchCredentialManager(
                     context = currentContext,
@@ -132,9 +111,16 @@ fun AuthRoute(
 fun AuthContent(
     isUserSignedIn: Boolean,
     onEvent: (Event) -> Unit,
+    dialog: DialogState?,
     handleGoogleSignIn: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    when (val dialog = dialog) {
+        is DialogState.ErrorMessage -> ErrorDialog(dialog.message) {
+            onEvent(Event.DismissDialog)
+        }
+        null -> {}
+    }
     if (isUserSignedIn) {
         LaunchedEffect(Unit) {
             onEvent(Event.HandleSignInSuccess)
@@ -264,6 +250,7 @@ fun LoginScreenPreview() {
                 isUserSignedIn = false,
                 onEvent = {},
                 modifier = Modifier,
+                dialog = null,
                 handleGoogleSignIn = {}
             )
         }
