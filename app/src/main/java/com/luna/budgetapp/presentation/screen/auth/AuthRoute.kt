@@ -1,8 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
-import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.firebase.ui.auth.configuration.AuthUIConfiguration
 import com.firebase.ui.auth.configuration.PasswordRule
 import com.firebase.ui.auth.configuration.authUIConfiguration
 import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
@@ -143,18 +140,18 @@ fun AuthContent(
             onEvent(Event.HandleSignInSuccess)
         }
     } else {
-        val usernameState = rememberTextFieldState()
+        val emailState = rememberTextFieldState()
         var passwordString by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             OutlinedTextField(
-                state = usernameState,
-                label = { Text("Username") },
+                state = emailState,
+                label = { Text("Email") },
             )
             OutlinedTextField(
                 value = passwordString,
@@ -185,7 +182,7 @@ fun AuthContent(
                     onClick = {
                         onEvent(
                             Event.SignUp(
-                                email = usernameState.text.toString().trim(),
+                                email = emailState.text.toString().trim(),
                                 password = passwordString.trim()
                             )
                         )
@@ -197,7 +194,7 @@ fun AuthContent(
                     onClick = {
                         onEvent(
                             Event.SignInEmailPassword(
-                                email = usernameState.text.toString().trim(),
+                                email = emailState.text.toString().trim(),
                                 password = passwordString.trim()
                             )
                         )
@@ -238,7 +235,7 @@ fun AuthContent(
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.google_logo),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
