@@ -216,18 +216,12 @@ fun AuthContent(
                 )
                 PrimaryButton(
                     onClick = {
-                        auth.signInWithEmailAndPassword(
-                            usernameState.text.toString().trim(),
-                            passwordString.trim()
+                        onEvent(
+                            Event.SignInEmailPassword(
+                                email = usernameState.text.toString().trim(),
+                                password = passwordString.trim()
+                            )
                         )
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    onEvent(Event.HandleSignInSuccess)
-                                }
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("signIn:Failed", "Sign in failed: ${e.message}")
-                            }
                     },
                     text = "Sign In",
                     modifier = Modifier.padding(16.dp)

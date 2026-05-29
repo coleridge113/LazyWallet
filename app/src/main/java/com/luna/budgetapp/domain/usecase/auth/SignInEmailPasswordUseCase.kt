@@ -7,7 +7,7 @@ import com.google.firebase.auth.AuthResult
 class SignInEmailPasswordUseCase(
     private val repository: AuthRepository
 ) {
-    operator suspend fun invoke(
+    suspend operator fun invoke(
         email: String,
         password: String,
         onSuccess: (Task<AuthResult>) -> Unit,
