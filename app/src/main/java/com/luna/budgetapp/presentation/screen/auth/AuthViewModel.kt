@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
@@ -58,13 +59,21 @@ class AuthViewModel(
                 credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
             ) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                authUseCases.signInGoogle(
-                    idToken = googleIdTokenCredential.idToken,
-                    onSuccess = { handleSignInSuccess() },
-                    onFailure = { error ->
-                        showError(error)
-                    }
-                )
+                try {
+                    authUseCases.signInGoogle(
+                        idToken = googleIdTokenCredential.idToken,
+                        onSuccess = { task ->
+                            if (task.isSuccessful) {
+                                handleSignInSuccess()
+                            }
+                        },
+                        onFailure = { error ->
+                            showError(error)
+                        }
+                    )
+                } catch (e: Exception) {
+                    showError(e)
+                }
             }
         }
     }
@@ -74,14 +83,22 @@ class AuthViewModel(
         password: String
     ) {
         viewModelScope.launch {
-            authUseCases.signInEmailPassword(
-                email = email,
-                password = password,
-                onSuccess = { handleSignInSuccess() },
-                onFailure = { error ->
-                    showError(error)
-                }
-            )
+            try {
+                authUseCases.signInEmailPassword(
+                    email = email,
+                    password = password,
+                    onSuccess = { task ->
+                        if (task.isSuccessful) {
+                            handleSignInSuccess()
+                        }
+                    },
+                    onFailure = { error ->
+                        showError(error)
+                    }
+                )
+            } catch (e: Exception) {
+                showError(e)
+            }
         }
     }
 
@@ -89,11 +106,41 @@ class AuthViewModel(
         email: String,
         password: String
     ) {
+        viewModelScope.launch {
+            try {
+                authUseCases.signUp(
+                    email = email,
+                    password = password,
+                    onSuccess = { task ->
+                        if (task.isSuccessful) {
+                            handleSignInSuccess()
+                        }
+                    },
+                    onFailure = { error ->
+                        showError(error)
+                    }
+                )
+            } catch (e: Exception) {
+                showError(e)
+            }
+        }
     }
 
     private fun showError(error: Exception) {
+        val message =
+            when (error) {
+                is IllegalArgumentException ->
+                    "Please enter a valid email or password"
+
+                is FirebaseAuthInvalidCredentialsException ->
+                    "Your credentials do not belong to an existing user"
+
+
+                else -> "Something went wrong"
+            }
+
         _dialogState.update {
-            DialogState.ErrorMessage(error.message)
+            DialogState.ErrorMessage(message)
         }
     }
 
