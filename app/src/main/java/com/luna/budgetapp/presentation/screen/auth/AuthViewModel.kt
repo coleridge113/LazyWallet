@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.credentials.Credential
@@ -130,13 +131,12 @@ class AuthViewModel(
         val message =
             when (error) {
                 is IllegalArgumentException ->
-                    "Please enter a valid email or password"
+                    "Please enter a valid email or password."
 
                 is FirebaseAuthInvalidCredentialsException ->
-                    "Your credentials do not belong to an existing user"
+                    resolveInvalidAuthMessage(error.errorCode)
 
-
-                else -> "Something went wrong"
+                else -> "Something went wrong."
             }
 
         _dialogState.update {
@@ -146,5 +146,13 @@ class AuthViewModel(
 
     private fun dismissDialog() {
         _dialogState.update { null }
+    }
+
+    private fun resolveInvalidAuthMessage(errorCode: String): String {
+        return when (errorCode) {
+            "ERROR_INVALID_EMAIL" -> "Invalid email format."
+            "ERROR_USER_NOT_FUND" -> "User not found."
+            else -> "Invalid credentials"
+        }
     }
 }
