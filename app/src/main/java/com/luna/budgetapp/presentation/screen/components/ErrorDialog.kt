@@ -33,7 +33,7 @@ fun ErrorDialog(
         Surface(
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
+            tonalElevation = 2.dp
         ) {
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
