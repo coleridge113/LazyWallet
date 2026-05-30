@@ -65,6 +65,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -176,6 +177,7 @@ val appModule = module {
     factoryOf(::EditExpenseUseCase)
     factoryOf(::SignInGoogleUseCase)
     factoryOf(::SignInEmailPasswordUseCase)
+    factoryOf(::SignUpUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)

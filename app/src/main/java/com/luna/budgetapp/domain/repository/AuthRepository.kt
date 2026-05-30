@@ -9,6 +9,13 @@ interface AuthRepository {
 
     suspend fun fetchJwtToken(): String?
 
+    suspend fun signUp(
+        email: String,
+        password: String,
+        onSuccess: (Task<AuthResult>) -> Unit,
+        onFailure: (Exception) -> Unit
+    )
+
     suspend fun signInEmailPassword(
         email: String,
         password: String,

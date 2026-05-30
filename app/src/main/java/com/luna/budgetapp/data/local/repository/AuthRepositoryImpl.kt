@@ -35,6 +35,21 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun signUp(
+        email: String,
+        password: String,
+        onSuccess: (Task<AuthResult>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                onSuccess(task)
+            }
+            .addOnFailureListener { error ->
+                onFailure(error)
+            }
+    }
+
     override suspend fun signInEmailPassword(
         email: String,
         password: String,
