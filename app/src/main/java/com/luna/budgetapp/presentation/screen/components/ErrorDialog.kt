@@ -38,8 +38,10 @@ fun ErrorDialog(
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.padding(
-                    vertical = 20.dp,
-                    horizontal = 24.dp
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 32.dp,
+                    bottom = 20.dp
                 )
                     .fillMaxSize(),
             ) {
