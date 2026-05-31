@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
 import com.luna.budgetapp.ui.icons.CoffeeIcon
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
@@ -38,8 +39,9 @@ fun ExpensePresetTable(
     expensePresets: List<ExpensePreset>,
     modifier: Modifier = Modifier,
     onClickIcon: (ExpensePreset) -> Unit,
-    onLongClickIcon: (Long) -> Unit,
-    onClickItem: (ExpensePreset) -> Unit
+    onClickItem: (ExpensePreset) -> Unit,
+    onDelete: (Long) -> Unit,
+    onEdit: (ExpensePreset) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -48,14 +50,19 @@ fun ExpensePresetTable(
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(expensePresets) { expensePreset ->
-                ExpensePresetItem(
-                    item = expensePreset,
-                    icon = getIconForCategory(expensePreset.category),
-                    onClickIcon = { onClickIcon(expensePreset) },
-                    onLongClickIcon = { onLongClickIcon(expensePreset.id!!) },
-                    onClickItem = { onClickItem(expensePreset) }
-                )            
+            items (expensePresets) { expensePreset ->
+                SwipeableTableItem(
+                    onClickEdit = { onEdit(expensePreset) },
+                    onClickDelete = { onDelete(expensePreset.id!!) }
+                ) {
+                    ExpensePresetItem(
+                        item = expensePreset,
+                        icon = getIconForCategory(expensePreset.category),
+                        onClickIcon = { onClickIcon(expensePreset) },
+                        onLongClickIcon = { onDelete(expensePreset.id!!) },
+                        onClickItem = { onClickItem(expensePreset) }
+                    )
+                }
             }
         }
     } 
@@ -129,7 +136,7 @@ fun ExpensePresetItemPreview() {
 }
 
 @Preview(
-    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
 @Composable
 fun ExpensePresetTablePreview() {
@@ -160,8 +167,9 @@ fun ExpensePresetTablePreview() {
             ExpensePresetTable(
                 expensePresets = expensePresets,
                 onClickItem = {},
-                onLongClickIcon = {},
-                onClickIcon = {}
+                onClickIcon = {},
+                onEdit = {},
+                onDelete = {}
             )
         }
     }
