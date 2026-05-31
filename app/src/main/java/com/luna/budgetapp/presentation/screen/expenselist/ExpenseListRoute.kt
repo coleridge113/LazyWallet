@@ -153,7 +153,6 @@ fun MainContent(
                 ExpenseTable(
                     modifier = Modifier,
                     expenses = expenses,
-                    onClick = {},
                     onEdit = { onEvent(Event.ShowExpenseForm(it)) },
                     onDelete = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
                 )

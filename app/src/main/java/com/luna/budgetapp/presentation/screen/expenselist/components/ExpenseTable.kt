@@ -1,63 +1,42 @@
 package com.luna.budgetapp.presentation.screen.expenselist.components
 
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.luna.budgetapp.domain.model.Expense
-import com.luna.budgetapp.presentation.model.CategoryOptions
+import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.formatToDisplay
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
 import com.luna.budgetapp.presentation.screen.utils.toCurrency
-import kotlin.math.roundToInt
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @Composable
 fun ExpenseTable(
     modifier: Modifier = Modifier,
     expenses: LazyPagingItems<Expense>,
-    onClick: (Expense) -> Unit,
     onEdit: (Expense) -> Unit,
     onDelete: (Expense) -> Unit
 ) {
@@ -67,139 +46,41 @@ fun ExpenseTable(
     ) {
         items(expenses.itemCount) { index ->
             expenses[index]?.let { expense ->
-                SwipeableExpenseItem(
-                    item = expense,
-                    icon = getIconForCategory(expense.category),
-                    onClick = {},
-                    onEdit = { onEdit(expense) },
-                    onDelete = { onDelete(expense) }
-                )
+                SwipeableTableItem(
+                    onClickEdit = { onEdit(expense) },
+                    onClickDelete = { onDelete(expense) }
+                ) {
+                    ExpenseItem(
+                        item = expense,
+                        icon = getIconForCategory(expense.category)
+                    )
+                }
             }
         }
     }
 }
 
-enum class DragValue { Closed, Open }
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SwipeableExpenseItem(
-    item: Expense,
-    icon: ImageVector,
-    onDelete: (Expense) -> Unit,
-    onClick: (Expense) -> Unit,
-    onEdit: (Expense) -> Unit
+private fun ExpenseTableContent(
+    modifier: Modifier = Modifier,
+    expenses: List<Expense>,
+    onEdit: (Expense) -> Unit,
+    onDelete: (Expense) -> Unit
 ) {
-
-    val density = LocalDensity.current
-    val actionWidth = 80.dp
-    val actionWidthPx = with(density) { actionWidth.toPx() }
-    val iconSize = 32.dp
-
-    val anchors = remember(actionWidthPx) {
-        DraggableAnchors {
-            DragValue.Closed at 0f
-            DragValue.Open at -actionWidthPx
-        }
-    }
-
-    val state = remember {
-        AnchoredDraggableState(
-            initialValue = DragValue.Closed,
-            anchors = anchors
-        )
-    }
-    val scope = rememberCoroutineScope()
-
-    val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
-        state = state,
-        positionalThreshold = { distance -> distance * 0.5f },
-        animationSpec = spring()
-    )
-
-    Box {
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .matchParentSize(),
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .width(actionWidth / 2)
-                    .fillMaxHeight()
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(expenses) { expense ->
+            SwipeableTableItem(
+                onClickEdit = { onEdit(expense) },
+                onClickDelete = { onDelete(expense) }
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .clickable {
-                            onEdit(item)
-                            scope.launch {
-                                state.animateTo(DragValue.Closed)
-                            }
-                        }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .width(actionWidth / 2)
-                    .fillMaxHeight()
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer)
-                        .clickable {
-                            onDelete(item)
-                            scope.launch {
-                                state.animateTo(DragValue.Closed)
-                            }
-                        }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .offset {
-                    IntOffset(
-                        x = state.offset.roundToInt(),
-                        y = 0
-                    )
-                }
-                .anchoredDraggable(
-                    state = state,
-                    orientation = Orientation.Horizontal,
-                    flingBehavior = flingBehavior
+                ExpenseItem(
+                    item = expense,
+                    icon = getIconForCategory(expense.category)
                 )
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            ExpenseItem(
-                item = item,
-                icon = icon,
-                onClick = onClick,
-                onLongClick = onEdit
-            )
+            }
         }
     }
 }
@@ -207,18 +88,12 @@ fun SwipeableExpenseItem(
 @Composable
 fun ExpenseItem(
     item: Expense,
-    icon: ImageVector,
-    onClick: (Expense) -> Unit,
-    onLongClick: (Expense) -> Unit
+    icon: ImageVector
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = { onClick(item) },
-                onLongClick = { onLongClick(item) }
-            )
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -259,20 +134,24 @@ fun ExpenseItem(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun SwipeableExpenseItemPreview() {
-    val expense = Expense(
-        category = "Beverage",
-        type = "Coffee",
-        amount = 140.0,
+fun ExpenseTablePreview() {
+    val expenses = listOf(
+        Expense(id = 1, amount = 100.0, category = "FOOD", type = "Lunch"),
+        Expense(id = 2, amount = 50.0, category = "COMMUTE", type = "Taxi"),
+        Expense(id = 3, amount = 200.0, category = "BILLS", type = "Electricity")
     )
 
-    SwipeableExpenseItem(
-        item = expense,
-        icon = CategoryOptions.BEVERAGE.icon,
-        onClick = {},
-        onEdit = {},
-        onDelete = {},
-    )
+    LazyWalletTheme {
+        Surface {
+            ExpenseTableContent(
+                modifier = Modifier
+                    .padding(16.dp),
+                expenses = expenses,
+                onEdit = {},
+                onDelete = {}
+            )
+        }
+    }
 }
