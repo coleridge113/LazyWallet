@@ -45,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.credentials.Credential
 import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
@@ -93,8 +94,13 @@ fun AuthRoute(
                 launchCredentialManager(
                     context = currentContext,
                     scope = lifecycleOwner.lifecycleScope
-                ) { credential ->
-                    viewModel.onEvent(Event.SignInGoogle(credential))
+                ) { result ->
+                    result.onSuccess { credential ->
+                        viewModel.onEvent(Event.SignInGoogle(credential))
+                    }
+                    result.onFailure { error ->
+                        viewModel.onEvent(Event.HandleError(error as Exception))
+                    }
                 }
             }
         )

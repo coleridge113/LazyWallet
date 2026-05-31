@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
@@ -40,6 +41,7 @@ class AuthViewModel(
             is Event.SignInEmailPassword -> signInEmailPassword(event.email, event.password)
             is Event.SignUp -> signUp(event.email, event.password)
             is Event.DismissDialog -> dismissDialog()
+            is Event.HandleError -> showError(event.error)
         }
     }
 
@@ -53,14 +55,14 @@ class AuthViewModel(
     }
 
     private fun signInGoogle(
-        credential: Credential
+        credential: Credential?
     ) {
         viewModelScope.launch {
-            if (credential is CustomCredential &&
-                credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-            ) {
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                try {
+            try {
+                if (credential is CustomCredential &&
+                    credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                ) {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                     authUseCases.signInGoogle(
                         idToken = googleIdTokenCredential.idToken,
                         onSuccess = { task ->
@@ -72,9 +74,9 @@ class AuthViewModel(
                             showError(error)
                         }
                     )
-                } catch (e: Exception) {
-                    showError(e)
                 }
+            } catch (e: Exception) {
+                showError(e)
             }
         }
     }
@@ -130,6 +132,9 @@ class AuthViewModel(
     private fun showError(error: Exception) {
         val message =
             when (error) {
+                is NoCredentialException ->
+                    "Your device is not logged in to a Google account."
+
                 is IllegalArgumentException ->
                     "Please enter a valid email or password."
 

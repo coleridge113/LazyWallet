@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 fun launchCredentialManager(
     context: Context,
     scope: CoroutineScope,
-    handleGoogleSignIn: (Credential) -> Unit
+    onResult: (Result<Credential>) -> Unit
 ) {
     val googleIdOption = GetGoogleIdOption.Builder()
         .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
@@ -25,8 +25,13 @@ fun launchCredentialManager(
     val credentialManager: CredentialManager = CredentialManager.create(context)
 
     scope.launch {
-        val result = credentialManager.getCredential(context, request)
-        handleGoogleSignIn(result.credential)
+        try {
+            val result = credentialManager.getCredential(context, request)
+            onResult(Result.success(result.credential))
+        } catch (e: Exception) {
+            onResult(Result.failure(e))
+        }
+
     }
 }
 
