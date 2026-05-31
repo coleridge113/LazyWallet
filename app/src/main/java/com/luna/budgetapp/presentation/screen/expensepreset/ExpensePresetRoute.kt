@@ -218,21 +218,29 @@ fun MainContent(
 @Composable
 fun ExpenseRoutePreviewLight() {
     val totalAmount = 1234.56
-    val expensePresetFood = ExpensePreset(
-        amount = 100.0,
-        category = "FOOD",
-        type = "Lunch"
-    )
-    val expensePresetBeverage = ExpensePreset(
-        amount = 140.0,
-        category = "BEVERAGE",
-        type = "Coffee"
-    )
     val expensesState = ExpensesState(
         totalAmount = totalAmount,
         expensePresets = listOf(
-            expensePresetFood,
-            expensePresetBeverage
+            ExpensePreset(
+                amount = 100.0,
+                category = "FOOD",
+                type = "Lunch"
+            ),
+            ExpensePreset(
+                amount = 140.0,
+                category = "BEVERAGE",
+                type = "Coffee"
+            ),
+            ExpensePreset(
+                amount = 140.0,
+                category = "BEVERAGE",
+                type = "Coffee"
+            ),
+            ExpensePreset(
+                amount = 140.0,
+                category = "BEVERAGE",
+                type = "Coffee"
+            ),
         )
     )
     val uiState = UiState.Success(
