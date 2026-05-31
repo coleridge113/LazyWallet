@@ -113,6 +113,7 @@ class ExpensePresetViewModel(
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
+            is Event.EditExpensePreset -> {}
         }
     }
 
@@ -135,6 +136,34 @@ class ExpensePresetViewModel(
         if (dialog !is DialogState.ExpenseForm || dialog.isSaving) return
 
         val expensePreset = ExpensePreset(
+            amount = amount.toDoubleOrNull() ?: 0.0,
+            category = category.name,
+            type = type.ifEmpty { category.displayName }.trim()
+        )
+
+        viewModelScope.launch {
+            try {
+                presetUseCases.addExpensePreset(expensePreset)
+            } catch (_: Exception) {
+
+            } finally {
+                dismissDialog()
+            }
+        }
+    }
+
+    private fun editExpensePreset(
+        id: Long,
+        category: Category,
+        type: String,
+        amount: String
+    ) {
+        val dialog = _dialogState.value
+
+        if (dialog !is DialogState.ExpenseForm || dialog.isSaving) return
+
+        val expensePreset = ExpensePreset(
+            id = id,
             amount = amount.toDoubleOrNull() ?: 0.0,
             category = category.name,
             type = type.ifEmpty { category.displayName }.trim()

@@ -112,8 +112,9 @@ fun MainContent(
             ExpensePresetTable(
                 expensePresets = expensePresets,
                 onClickIcon = { onEvent(Event.ShowExpenseForm(it)) },
-                onLongClickIcon = { onEvent(Event.ShowConfirmationDialog(it)) },
                 onClickItem = { onEvent(Event.AddExpense(it)) },
+                onEdit = {},
+                onDelete = { onEvent(Event.ShowConfirmationDialog(it)) },
                 modifier = Modifier.weight(3f)
             )
 

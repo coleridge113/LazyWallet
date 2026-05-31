@@ -51,6 +51,12 @@ sealed interface Event {
     data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null) : Event
     data class AddCustomExpense(val selectedPreset: ExpensePreset) : Event
     data class DeleteExpensePreset(val expensePresetId: Long) : Event
+    data class EditExpensePreset(
+        val id: Long,
+        val category: Category,
+        val type: String,
+        val amount: String
+    ) : Event
 }
 
 sealed interface Navigation {
