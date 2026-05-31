@@ -40,8 +40,8 @@ fun ExpensePresetTable(
     modifier: Modifier = Modifier,
     onClickIcon: (ExpensePreset) -> Unit,
     onClickItem: (ExpensePreset) -> Unit,
-    onDelete: (Long) -> Unit,
-    onEdit: (ExpensePreset) -> Unit
+    onEdit: (ExpensePreset) -> Unit,
+    onDelete: (Long) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -59,7 +59,6 @@ fun ExpensePresetTable(
                         item = expensePreset,
                         icon = getIconForCategory(expensePreset.category),
                         onClickIcon = { onClickIcon(expensePreset) },
-                        onLongClickIcon = { onDelete(expensePreset.id!!) },
                         onClickItem = { onClickItem(expensePreset) }
                     )
                 }
@@ -73,7 +72,6 @@ fun ExpensePresetItem(
     item: ExpensePreset,
     icon: ImageVector,
     onClickIcon: (ExpensePreset) -> Unit,
-    onLongClickIcon: (Long) -> Unit,
     onClickItem: (ExpensePreset) -> Unit
 ) {
     Row(
@@ -86,10 +84,7 @@ fun ExpensePresetItem(
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
-                .combinedClickable(
-                    onClick = { onClickIcon(item) },
-                    onLongClick = { onLongClickIcon(item.id!!) }
-                ),
+                .clickable { onClickIcon(item) },
             contentAlignment = Alignment.Center
         ) {
             Icon(imageVector = icon, contentDescription = null)
@@ -128,7 +123,6 @@ fun ExpensePresetItemPreview() {
                 item = item,
                 icon = CoffeeIcon,
                 onClickIcon = {},
-                onLongClickIcon = {},
                 onClickItem = {}
             )
         }

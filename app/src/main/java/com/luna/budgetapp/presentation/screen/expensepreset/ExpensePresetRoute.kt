@@ -32,6 +32,7 @@ import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
 import com.luna.budgetapp.presentation.screen.utils.singleClick
@@ -111,9 +112,9 @@ fun MainContent(
 
             ExpensePresetTable(
                 expensePresets = expensePresets,
-                onClickIcon = { onEvent(Event.ShowExpenseForm(it)) },
+                onClickIcon = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
                 onClickItem = { onEvent(Event.AddExpense(it)) },
-                onEdit = {},
+                onEdit = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.EDIT)) },
                 onDelete = { onEvent(Event.ShowConfirmationDialog(it)) },
                 modifier = Modifier.weight(3f)
             )
@@ -132,14 +133,26 @@ fun MainContent(
                     ExpensePresetDialog(
                         selectedPreset = dialog.selectedPreset,
                         onDismissRequest = { onEvent(Event.DismissDialog) },
-                        onConfirm = { category, type, amount ->
-                            if (dialog.selectedPreset == null) {
-                                onEvent(Event.ConfirmExpenseFormDialog(category, type, amount))
-                            } else {
-                                onEvent(Event.AddExpense(dialog.selectedPreset, amount, type))
+                        isSaving = dialog.isSaving,
+                        action = dialog.action,
+                        onConfirm = { id, category, type, amount ->
+                            when (dialog.action) {
+                                ExpenseFormAction.ADD ->
+                                    onEvent(
+                                        Event.ConfirmExpenseFormDialog(
+                                            null, category, type, amount
+                                        )
+                                    )
+                                ExpenseFormAction.EDIT ->
+                                    onEvent(
+                                        Event.ConfirmExpenseFormDialog(
+                                            id, category, type, amount
+                                        )
+                                    )
+                                else ->
+                                    onEvent(Event.AddExpense(dialog.selectedPreset!!, amount, type))
                             }
-                        },
-                        isSaving = dialog.isSaving
+                        }
                     )
                 }
                 is DialogState.ConfirmDeleteExpensePreset -> {
@@ -162,7 +175,7 @@ fun MainContent(
             verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
             FloatingActionButton(
-                onClick = { onEvent(Event.ShowExpenseForm()) },
+                onClick = { onEvent(Event.AddExpensePreset(action = ExpenseFormAction.ADD)) },
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.secondary
             ) {

@@ -1,23 +1,20 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -42,21 +39,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
 import com.luna.budgetapp.common.Constants.EMPTY
-import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpensePresetDialog(
     selectedPreset: ExpensePreset?,
     onDismissRequest: () -> Unit,
-    onConfirm: (Category, String, String) -> Unit,
+    onConfirm: (Long?, Category, String, String) -> Unit,
     isSaving: Boolean,
+    action: ExpenseFormAction,
     modifier: Modifier = Modifier
 ) {
 
@@ -91,7 +90,11 @@ fun ExpensePresetDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = if (selectedPreset == null) "Add Expense Preset" else "Add Custom Expense",
+                    text = when (action) {
+                        ExpenseFormAction.EDIT -> "Edit Expense Preset"
+                        ExpenseFormAction.ADD -> "Add Expense Preset"
+                        else -> "Add Custom Expense"
+                    },
                     style = MaterialTheme.typography.headlineSmall
                 )
 
@@ -196,11 +199,7 @@ fun ExpensePresetDialog(
                                 amountState.text.ifBlank {
                                     selectedPreset?.amount
                                 }.toString()
-                            onConfirm(
-                                selectedOption,
-                                type,
-                                amount
-                            )
+                            onConfirm(selectedPreset?.id, selectedOption, type, amount)
                         },
                         enabled = !isSaving
                     ) {
@@ -212,20 +211,28 @@ fun ExpensePresetDialog(
     }
 }
 
+enum class ExpenseFormAction {
+    EDIT,
+    ADD,
+    CUSTOM
+}
+
 @Preview(
-    showBackground = true,
-    showSystemUi = true,
     device = Devices.PIXEL_7
 )
 @Composable
 fun ExpensePresetDialogPreview() {
-    Spacer(modifier = Modifier.height(50.dp))
-    Box(modifier = Modifier.fillMaxSize()){
-        ExpensePresetDialog(
-            selectedPreset = null,
-            onDismissRequest = {},
-            onConfirm = { _, _, _ -> },
-            isSaving = false,
-        )
+    LazyWalletTheme {
+        Surface (
+            modifier = Modifier.fillMaxSize()
+        ) {
+            ExpensePresetDialog(
+                selectedPreset = null,
+                onDismissRequest = {},
+                onConfirm = { id, category, type, amount -> },
+                isSaving = false,
+                action = ExpenseFormAction.ADD
+            )
+        }
     }
 }

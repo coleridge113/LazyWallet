@@ -3,6 +3,7 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 
 sealed interface UiState {
     data object Loading : UiState
@@ -35,7 +36,8 @@ sealed interface DialogState {
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
         val selectedPreset: ExpensePreset? = null,
-        val isSaving: Boolean = false
+        val isSaving: Boolean = false,
+        val action: ExpenseFormAction = ExpenseFormAction.ADD
     ) : DialogState
 }
 
@@ -45,17 +47,26 @@ sealed interface Event {
     data object ShowDeleteConfirmationDialog : Event
     data object Logout : Event
     data object DeleteLatestExpense : Event
-    data class ShowExpenseForm(val selectedPreset: ExpensePreset? = null) : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
-    data class ConfirmExpenseFormDialog(val category: Category, val type: String, val amount: String) : Event
-    data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null) : Event
-    data class AddCustomExpense(val selectedPreset: ExpensePreset) : Event
-    data class DeleteExpensePreset(val expensePresetId: Long) : Event
-    data class EditExpensePreset(
-        val id: Long,
+    data class ConfirmExpenseFormDialog(
+        val id: Long?,
         val category: Category,
         val type: String,
         val amount: String
+    ) : Event
+    data class DeleteExpensePreset(val expensePresetId: Long) : Event
+    data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null) : Event
+    data class AddCustomExpense(
+        val selectedPreset: ExpensePreset,
+        val action: ExpenseFormAction
+    ) : Event
+    data class AddExpensePreset(
+        val selectedPreset: ExpensePreset? = null,
+        val action: ExpenseFormAction
+    ) : Event
+    data class EditExpensePreset(
+        val selectedPreset: ExpensePreset,
+        val action: ExpenseFormAction
     ) : Event
 }
 
