@@ -18,6 +18,8 @@ kls_database.db
 kls_database.db
 .kotlin/
 backup/
-google-services.json
-lazywallet.jks
+*google-services.json
+*.jks
+*keystore*
 keystore.properties
+gradle/*

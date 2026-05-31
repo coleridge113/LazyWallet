@@ -63,6 +63,9 @@ import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -172,6 +175,9 @@ val appModule = module {
     factoryOf(::GetMigrationStatusUseCase)
     factoryOf(::SetMigrationCompleteUseCase)
     factoryOf(::EditExpenseUseCase)
+    factoryOf(::SignInGoogleUseCase)
+    factoryOf(::SignInEmailPasswordUseCase)
+    factoryOf(::SignUpUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)

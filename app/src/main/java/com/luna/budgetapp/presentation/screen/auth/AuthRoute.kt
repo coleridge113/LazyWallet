@@ -1,128 +1,318 @@
 package com.luna.budgetapp.presentation.screen.auth
-import android.content.Context
-import android.util.Log
-import android.widget.Toast
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.firebase.ui.auth.FirebaseAuthUI
-import com.firebase.ui.auth.configuration.AuthUIConfiguration
-import com.firebase.ui.auth.configuration.authUIConfiguration
-import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
-import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
-import com.luna.budgetapp.presentation.nav.Routes
-import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.AndroidUiModes
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.firebase.ui.auth.configuration.PasswordRule
-import com.firebase.ui.auth.configuration.theme.AuthUIAsset
-import com.luna.budgetapp.BuildConfig
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.rememberLifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.credentials.Credential
+import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
+import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.components.ErrorDialog
+import com.luna.budgetapp.presentation.screen.components.PrimaryButton
+import com.luna.budgetapp.presentation.screen.components.SecondaryButton
+import com.luna.budgetapp.presentation.screen.utils.launchCredentialManager
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import kotlinx.coroutines.flow.collectLatest
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AuthRoute(
     viewModel: AuthViewModel,
     navController: NavController
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = rememberLifecycleOwner()
     val currentContext = LocalContext.current
-    val authUI = FirebaseAuthUI.getInstance()
-    val configuration = remember(currentContext) {
-        authUIConfiguration {
-            context = currentContext
-            logo = AuthUIAsset.Resource(R.drawable.ic_lazywallet_no_bg)
-            providers {
-                provider(AuthProvider.Email(
-                    emailLinkActionCodeSettings = null,
-                    passwordValidationRules = listOf(
-                        PasswordRule.MinimumLength(8),
-                        PasswordRule.RequireUppercase,
-                        PasswordRule.RequireLowercase,
-                        PasswordRule.RequireDigit,
-                        PasswordRule.RequireSpecialCharacter
-                    )
-                ))
-                provider(AuthProvider.Google(
-                    scopes = listOf("profile", "email"),
-                    serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                ))
+    val auth = FirebaseAuth.getInstance()
+    val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
+    val onEvent = viewModel::onEvent
+
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collectLatest { navigation ->
+            when (navigation) {
+                Navigation.GotoAddExpenseRoute -> {
+                    navController.navigate(Routes.AddExpensesRoute) {
+                        popUpTo(Routes.AuthRoute) { inclusive = true }
+                    }
+                }
+                Navigation.GotoMigrationRoute -> {
+                    navController.navigate(Routes.MigrationRoute) {
+                        popUpTo(Routes.AuthRoute) { inclusive = true }
+                    }
+                }
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-                when (navigation) {
-                    Navigation.GotoAddExpenseRoute -> {
-                        navController.navigate(Routes.AddExpensesRoute) {
-                            popUpTo(Routes.AuthRoute) { inclusive = true }
-                        }
+    Scaffold { innerPadding ->
+        AuthContent(
+            isUserSignedIn = auth.currentUser != null,
+            onEvent = onEvent,
+            modifier = Modifier.padding(innerPadding),
+            dialog = dialog,
+            handleGoogleSignIn = {
+                launchCredentialManager(
+                    context = currentContext,
+                    scope = lifecycleOwner.lifecycleScope
+                ) { result ->
+                    result.onSuccess { credential ->
+                        onEvent(Event.SignInGoogle(credential))
                     }
-                    Navigation.GotoMigrationRoute -> {
-                        navController.navigate(Routes.MigrationRoute) {
-                            popUpTo(Routes.AuthRoute) { inclusive = true }
-                        }
+                    result.onFailure { error ->
+                        onEvent(Event.HandleError(error as Exception))
                     }
                 }
             }
-    }
-
-    Scaffold { innerPadding ->
-        AuthContent(
-            context = currentContext,
-            state = state,
-            authUI = authUI,
-            configuration = configuration,
-            onEvent = viewModel::onEvent,
-            modifier = Modifier.padding(innerPadding)
         )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AuthContent(
-    context: Context,
-    state: UiState,
-    authUI: FirebaseAuthUI,
-    configuration: AuthUIConfiguration,
+    isUserSignedIn: Boolean,
     onEvent: (Event) -> Unit,
+    dialog: DialogState?,
+    handleGoogleSignIn: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (authUI.isSignedIn()) {
-        onEvent(Event.HandleSignInSuccess)
+    when (val dialog = dialog) {
+        is DialogState.ErrorMessage -> ErrorDialog(dialog.message) {
+            onEvent(Event.DismissDialog)
+        }
+        null -> {}
+    }
+    if (isUserSignedIn) {
+        LaunchedEffect(Unit) {
+            onEvent(Event.HandleSignInSuccess)
+        }
     } else {
-        FirebaseAuthScreen(
-            modifier = modifier
-                .padding(top = 132.dp)
-                .wrapContentSize(Alignment.Center),
-            configuration = configuration,
-            onSignInSuccess = {
-                Toast.makeText(
-                    context,
-                    "Signed in successfully!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                Log.d("AuthRoute", "Signed in successfully!")
-            },
-            onSignInFailure = {
-                Toast.makeText(
-                    context,
-                    "Failed to sign in...",
-                    Toast.LENGTH_SHORT
-                ).show()
-            },
-            onSignInCancelled = {},
-            authenticatedContent = { _, _ ->
-                onEvent(Event.HandleSignInSuccess)
+        val emailState = rememberTextFieldState()
+        var passwordString by remember { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.lazy_wallet_logo),
+                contentDescription = null,
+                modifier = Modifier.size(254.dp)
+            )
+            OutlinedTextField(
+                state = emailState,
+                label = { Text("Email") },
+            )
+            OutlinedTextField(
+                value = passwordString,
+                onValueChange = { passwordString = it },
+                label = { Text("Password") },
+                trailingIcon = {
+                    Icon(
+                        imageVector =
+                            if (passwordVisible)
+                                Icons.Default.Visibility
+                            else
+                                Icons.Default.VisibilityOff,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            passwordVisible = !passwordVisible
+                        }
+                    )
+                },
+                visualTransformation =
+                    if (passwordVisible)
+                        VisualTransformation.None
+                    else
+                        PasswordVisualTransformation()
+            )
+
+            Row {
+                SecondaryButton(
+                    onClick = {
+                        onEvent(
+                            Event.SignUp(
+                                email = emailState.text.toString().trim(),
+                                password = passwordString.trim()
+                            )
+                        )
+                    },
+                    text = "Sign Up",
+                    modifier = Modifier.padding(16.dp)
+                )
+                PrimaryButton(
+                    onClick = {
+                        onEvent(
+                            Event.SignInEmailPassword(
+                                email = emailState.text.toString().trim(),
+                                password = passwordString.trim()
+                            )
+                        )
+                    },
+                    text = "Sign In",
+                    modifier = Modifier.padding(16.dp)
+                )
             }
-        )
+
+            Row(
+                modifier = Modifier.padding(
+                    horizontal = 32.dp,
+                    vertical = 16.dp
+                ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "Or continue with",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(top = 20.dp)
+            ) {
+                Button(
+                    onClick = handleGoogleSignIn
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.google_logo),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Sign in with Google"
+                    )
+                }
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .height(200.dp)
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@Preview(
+    showSystemUi = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+fun LoginScreenPreviewLight() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            AuthContent(
+                isUserSignedIn = false,
+                onEvent = {},
+                modifier = Modifier,
+                dialog = null,
+                handleGoogleSignIn = {}
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@Preview(
+    showSystemUi = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
+@Composable
+fun LoginScreenPreviewDark() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            AuthContent(
+                isUserSignedIn = false,
+                onEvent = {},
+                modifier = Modifier,
+                dialog = null,
+                handleGoogleSignIn = {}
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@Preview(
+    showSystemUi = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+fun LoginScreenPreviewDialog() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val dialog = DialogState.ErrorMessage("Something went wrong")
+            AuthContent(
+                isUserSignedIn = false,
+                onEvent = {},
+                modifier = Modifier,
+                dialog = dialog,
+                handleGoogleSignIn = {}
+            )
+        }
     }
 }
