@@ -125,7 +125,49 @@ fun MainContent(
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
 @Composable
-private fun MainContentPreview() {
+private fun MainContentPreviewLight() {
+    val now = LocalDateTime.now()
+    val dummyExpenses = listOf(
+        Expense(1L, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
+        Expense(2L, "Lunch", 150.0, "Food", "Expense", now.minusDays(6)),
+        Expense(3L, "Grab", 200.0, "Transport", "Expense", now.minusDays(5)),
+        Expense(4L, "Dinner", 180.0, "Food", "Expense", now.minusDays(4)),
+        Expense(5L, "Snacks", 70.0, "Food", "Expense", now.minusDays(4)),
+        Expense(6L, "Groceries", 500.0, "Groceries", "Expense", now.minusDays(3)),
+        Expense(7L, "Coffee", 95.0, "Food", "Expense", now.minusDays(2)),
+        Expense(8L, "Taxi", 180.0, "Transport", "Expense", now.minusDays(2)),
+        Expense(9L, "Lunch", 160.0, "Food", "Expense", now.minusDays(1)),
+        Expense(10L, "Breakfast", 80.0, "Food", "Expense", now),
+        Expense(11L, "Dinner", 200.0, "Food", "Expense", now)
+    )
+
+    val successState = UiState.Success(
+        expensesState = ExpensesState(
+            expenses = dummyExpenses,
+            filteredExpenses = dummyExpenses
+        )
+    )
+
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            MainContent(
+                modifier = Modifier,
+                uiState = successState,
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun MainContentPreviewDark() {
     val now = LocalDateTime.now()
     val dummyExpenses = listOf(
         Expense(1L, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
