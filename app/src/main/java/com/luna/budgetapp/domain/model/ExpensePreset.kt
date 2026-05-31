@@ -8,4 +8,4 @@ data class ExpensePreset(
     val category: String,
     val type: String,
     val createdAt: LocalDateTime = LocalDateTime.now()
-)
+) : TableItem
