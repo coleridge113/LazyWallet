@@ -231,7 +231,6 @@ fun AuthContent(
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
@@ -255,7 +254,6 @@ fun LoginScreenPreviewLight() {
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
 )
@@ -279,7 +277,6 @@ fun LoginScreenPreviewDark() {
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )

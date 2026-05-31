@@ -198,7 +198,6 @@ fun MainContent(
 
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
@@ -241,7 +240,6 @@ fun ExpenseRoutePreviewLight() {
 
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
 )
@@ -264,7 +262,6 @@ fun ExpenseRoutePreviewDark() {
 
 @Preview(
     showSystemUi = true,
-    showBackground = true,
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
 )
