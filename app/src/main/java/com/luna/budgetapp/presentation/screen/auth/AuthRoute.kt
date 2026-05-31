@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,28 +68,29 @@ fun AuthRoute(
     val currentContext = LocalContext.current
     val auth = FirebaseAuth.getInstance()
     val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
+    val onEvent = viewModel::onEvent
 
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
-                when (navigation) {
-                    Navigation.GotoAddExpenseRoute -> {
-                        navController.navigate(Routes.AddExpensesRoute) {
-                            popUpTo(Routes.AuthRoute) { inclusive = true }
-                        }
+            when (navigation) {
+                Navigation.GotoAddExpenseRoute -> {
+                    navController.navigate(Routes.AddExpensesRoute) {
+                        popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
-                    Navigation.GotoMigrationRoute -> {
-                        navController.navigate(Routes.MigrationRoute) {
-                            popUpTo(Routes.AuthRoute) { inclusive = true }
-                        }
+                }
+                Navigation.GotoMigrationRoute -> {
+                    navController.navigate(Routes.MigrationRoute) {
+                        popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }
             }
+        }
     }
 
     Scaffold { innerPadding ->
         AuthContent(
             isUserSignedIn = auth.currentUser != null,
-            onEvent = viewModel::onEvent,
+            onEvent = onEvent,
             modifier = Modifier.padding(innerPadding),
             dialog = dialog,
             handleGoogleSignIn = {
@@ -96,10 +99,10 @@ fun AuthRoute(
                     scope = lifecycleOwner.lifecycleScope
                 ) { result ->
                     result.onSuccess { credential ->
-                        viewModel.onEvent(Event.SignInGoogle(credential))
+                        onEvent(Event.SignInGoogle(credential))
                     }
                     result.onFailure { error ->
-                        viewModel.onEvent(Event.HandleError(error as Exception))
+                        onEvent(Event.HandleError(error as Exception))
                     }
                 }
             }
@@ -136,6 +139,11 @@ fun AuthContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.lazy_wallet_logo),
+                contentDescription = null,
+                modifier = Modifier.size(254.dp)
+            )
             OutlinedTextField(
                 state = emailState,
                 label = { Text("Email") },
@@ -230,6 +238,11 @@ fun AuthContent(
                     )
                 }
             }
+
+            Spacer(
+                modifier = Modifier
+                    .height(200.dp)
+            )
         }
     }
 }
