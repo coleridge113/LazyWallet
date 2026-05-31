@@ -126,7 +126,7 @@ class ExpensePresetViewModelTest {
         val initial = viewModel.uiState.value
         assertThat(initial.dialogState).isNull()
 
-        viewModel.onEvent(Event.ShowExpenseForm(null))
+        viewModel.onEvent(Event.AddExpensePreset(null))
 
         advanceUntilIdle()
 
@@ -140,7 +140,7 @@ class ExpensePresetViewModelTest {
             viewModel.expensePresets.collect {}
         }
 
-        viewModel.onEvent(Event.ShowExpenseForm(null))
+        viewModel.onEvent(Event.AddExpensePreset(null))
         advanceUntilIdle()
 
         viewModel.onEvent(

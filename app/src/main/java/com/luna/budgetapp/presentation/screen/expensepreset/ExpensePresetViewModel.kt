@@ -8,6 +8,7 @@ import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,19 +109,26 @@ class ExpensePresetViewModel(
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
             is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType)
-            is Event.ShowExpenseForm -> showExpenseForm(event.selectedPreset)
+            is Event.AddExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
+            is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset, event.action)
+            is Event.EditExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
-            is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
-            is Event.ConfirmExpenseFormDialog -> saveExpensePreset(event.category, event.type, event.amount)
+            is Event.ConfirmExpenseFormDialog -> saveExpensePreset(
+                event.id, event.category, event.type, event.amount
+            )
         }
     }
 
-    private fun showExpenseForm(selectedPreset: ExpensePreset?) {
+    private fun showExpenseForm(
+        selectedPreset: ExpensePreset?,
+        action: ExpenseFormAction
+    ) {
         _dialogState.update {
             DialogState.ExpenseForm(
                 selectedPreset = selectedPreset,
-                isSaving = false
+                isSaving = false,
+                action = action
             )
         }
     }
@@ -129,12 +137,13 @@ class ExpensePresetViewModel(
         _dialogState.update { null }
     }
 
-    private fun saveExpensePreset(category: Category, type: String, amount: String) {
+    private fun saveExpensePreset(id: Long?, category: Category, type: String, amount: String) {
         val dialog = _dialogState.value
 
         if (dialog !is DialogState.ExpenseForm || dialog.isSaving) return
 
         val expensePreset = ExpensePreset(
+            id = id,
             amount = amount.toDoubleOrNull() ?: 0.0,
             category = category.name,
             type = type.ifEmpty { category.displayName }.trim()
