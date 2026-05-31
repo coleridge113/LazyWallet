@@ -162,7 +162,8 @@ fun MainContent(
         ) {
             FloatingActionButton(
                 onClick = { onEvent(Event.ShowExpenseForm()) },
-                shape = CircleShape
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
                 Icon(
                     imageVector = CirclePlusIcon,
@@ -171,7 +172,8 @@ fun MainContent(
             }
             FloatingActionButton(
                 onClick = { onEvent(Event.ShowDeleteConfirmationDialog) },
-                shape = CircleShape
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
                 Icon(
                     imageVector = UndoIcon,
@@ -181,7 +183,8 @@ fun MainContent(
             }
             FloatingActionButton(
                 onClick = { onEvent(Event.Logout) },
-                shape = CircleShape
+                shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Logout,
