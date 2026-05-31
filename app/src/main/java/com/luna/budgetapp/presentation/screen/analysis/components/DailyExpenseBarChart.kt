@@ -6,24 +6,19 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -33,11 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.toLast7DaysExpenses
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -72,8 +68,10 @@ fun DailyExpenseBarChart(
 
         animateColorAsState(
             targetValue =
-            if (isSelected) Color(0xFFE53935)
-            else dBarColor,
+                if (isSelected)
+                    Color(0xFFE53935)
+                else
+                    dBarColor,
             animationSpec = tween(250),
             label = "bar-color"
         ).value
@@ -87,8 +85,9 @@ fun DailyExpenseBarChart(
     val barPositions = remember { mutableStateListOf<Pair<Rect, LocalDate>>() }
     barPositions.clear()
 
-    Column(modifier = modifier.padding(16.dp)) {
+    val labelColor = MaterialTheme.colorScheme.onBackground.toArgb()
 
+    Column(modifier = modifier.padding(16.dp)) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,7 +102,6 @@ fun DailyExpenseBarChart(
                     }
                 }
         ) {
-
             if (dailyData.isEmpty()) return@Canvas
 
             val barWidth = size.width / (dailyData.size * 1.65f)
@@ -114,9 +112,7 @@ fun DailyExpenseBarChart(
                 val ratio = (item.total / maxValue).toFloat()
 
                 val barHeight =
-                    (size.height * 0.85f) *
-                            ratio *
-                            animationProgress   // 👈 animation here
+                    (size.height * 0.85f) * ratio * animationProgress
 
                 val x = index * (barWidth + spacing) + barWidth
                 val y = size.height - barHeight
@@ -144,7 +140,7 @@ fun DailyExpenseBarChart(
                         textAlign = android.graphics.Paint.Align.CENTER
                         textSize = 28f
                         isAntiAlias = true
-                        color = Color.White.toArgb()
+                        color = labelColor
                     }
                 )
             }
@@ -159,32 +155,28 @@ fun DailyExpenseBarChart(
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true, backgroundColor = 0xFFFFFFFF)
+@Preview(
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
 @Composable
-private fun PreviewContent() {
-
-    val now = LocalDateTime.of(2024, 1, 7, 12, 0)
-
-    val dummyExpenses = listOf(
-        Expense(1, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
-        Expense(2, "Lunch", 150.0, "Food", "Expense", now.minusDays(6)),
-        Expense(3, "Grab", 200.0, "Transport", "Expense", now.minusDays(5)),
-        Expense(4, "Dinner", 180.0, "Food", "Expense", now.minusDays(4)),
-        Expense(5, "Snacks", 70.0, "Food", "Expense", now.minusDays(4)),
-        Expense(6, "Groceries", 500.0, "Groceries", "Expense", now.minusDays(3)),
-        Expense(7, "Coffee", 95.0, "Food", "Expense", now.minusDays(2)),
-        Expense(8, "Taxi", 180.0, "Transport", "Expense", now.minusDays(2)),
-        Expense(9, "Lunch", 160.0, "Food", "Expense", now.minusDays(1)),
-        Expense(10, "Breakfast", 80.0, "Food", "Expense", now),
-        Expense(11, "Dinner", 200.0, "Food", "Expense", now)
-    )
-
-    MaterialTheme {
-        DailyExpenseBarChart(
-            modifier = Modifier,
-            expenses = dummyExpenses,
-            selectedDate = LocalDate.now(),
-            onClickBar = {}
-        )
+private fun DailyExpenseBarChartPreview() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            DailyExpenseBarChart(
+                expenses = listOf(
+                    Expense(amount = 100.0, category = "Food", type = "Lunch", date = LocalDateTime.now()),
+                    Expense(amount = 50.0, category = "Transport", type = "Bus", date = LocalDateTime.now().minusDays(1)),
+                    Expense(amount = 200.0, category = "Shopping", type = "Clothes", date = LocalDateTime.now().minusDays(2)),
+                    Expense(amount = 150.0, category = "Food", type = "Dinner", date = LocalDateTime.now().minusDays(3)),
+                    Expense(amount = 80.0, category = "Transport", type = "Taxi", date = LocalDateTime.now().minusDays(4)),
+                    Expense(amount = 120.0, category = "Entertainment", type = "Movie", date = LocalDateTime.now().minusDays(5)),
+                    Expense(amount = 300.0, category = "Bills", type = "Rent", date = LocalDateTime.now().minusDays(6))
+                ),
+                selectedDate = LocalDate.now(),
+                onClickBar = {}
+            )
+        }
     }
 }
