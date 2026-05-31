@@ -12,21 +12,6 @@ val Pink40 = Color(0xFF7D5260)
 
 val MaterialBlue = Color(0xFF1976D2)
 
-/* ---------------------------------------------------
-   Expense Category Chart Colors
-   --------------------------------------------------- */
-
-val FoodChartColor = Color(0xFFE57373)        // Soft Red
-val BeverageChartColor = Color(0xFF64B5F6)    // Soft Blue
-val DateChartColor = Color(0xFFF06292)        // Soft Pink
-val HouseChartColor = Color(0xFF81C784)       // Soft Green
-val CommuteChartColor = Color(0xFFFFB74D)     // Soft Orange
-val BillsChartColor = Color(0xFFBA68C8)       // Muted Purple
-val GroceryChartColor = Color(0xFF4CAF50)     // Fresh Green
-val FitnessChartColor = Color(0xFFFF8F00)     // Amber 800
-val PersonalChartColor = Color(0xFF4DD0E1)    // Cyan 300
-val OthersChartColor = Color(0xFF616161)      // Grey
-
 // Gruvbox Material Colors
 val GruvboxBg0 = Color(0xFF282828)
 val GruvboxBg1 = Color(0xFF32302f)
@@ -53,3 +38,18 @@ val GruvboxLightGreen = Color(0xFF6c782e)
 val GruvboxLightAqua = Color(0xFF4c7a5d)
 val GruvboxLightBlue = Color(0xFF45707a)
 val GruvboxLightPurple = Color(0xFF945e80)
+
+/* ---------------------------------------------------
+   Expense Category Chart Colors
+   --------------------------------------------------- */
+
+val FoodChartColor = GruvboxRed
+val BeverageChartColor = GruvboxBlue
+val DateChartColor = GruvboxPurple
+val HouseChartColor = GruvboxAqua
+val CommuteChartColor = GruvboxOrange
+val BillsChartColor = GruvboxLightPurple
+val GroceryChartColor = GruvboxGreen
+val FitnessChartColor = GruvboxYellow
+val PersonalChartColor = GruvboxLightBlue
+val OthersChartColor = GruvboxGray
