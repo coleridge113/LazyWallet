@@ -45,12 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import com.firebase.ui.auth.configuration.PasswordRule
-import com.firebase.ui.auth.configuration.authUIConfiguration
-import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
-import com.firebase.ui.auth.configuration.theme.AuthUIAsset
 import com.google.firebase.auth.FirebaseAuth
-import com.luna.budgetapp.BuildConfig
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ErrorDialog
@@ -241,7 +236,7 @@ fun AuthContent(
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
 @Composable
-fun LoginScreenPreview() {
+fun LoginScreenPreviewLight() {
     LazyWalletTheme {
         Surface(
             color = MaterialTheme.colorScheme.background
@@ -251,6 +246,55 @@ fun LoginScreenPreview() {
                 onEvent = {},
                 modifier = Modifier,
                 dialog = null,
+                handleGoogleSignIn = {}
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
+@Composable
+fun LoginScreenPreviewDark() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            AuthContent(
+                isUserSignedIn = false,
+                onEvent = {},
+                modifier = Modifier,
+                dialog = null,
+                handleGoogleSignIn = {}
+            )
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+fun LoginScreenPreviewDialog() {
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            val dialog = DialogState.ErrorMessage("Something went wrong")
+            AuthContent(
+                isUserSignedIn = false,
+                onEvent = {},
+                modifier = Modifier,
+                dialog = dialog,
                 handleGoogleSignIn = {}
             )
         }

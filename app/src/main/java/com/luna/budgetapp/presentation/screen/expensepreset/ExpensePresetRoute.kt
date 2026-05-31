@@ -12,17 +12,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.AndroidUiModes
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
@@ -31,6 +37,7 @@ import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePr
 import com.luna.budgetapp.presentation.screen.utils.singleClick
 import com.luna.budgetapp.ui.icons.CirclePlusIcon
 import com.luna.budgetapp.ui.icons.UndoIcon
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -182,6 +189,98 @@ fun MainContent(
                     modifier = Modifier.size(18.dp)
                 )
             }
+        }
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+fun ExpenseRoutePreviewLight() {
+    val totalAmount = 1234.56
+    val expensePresetFood = ExpensePreset(
+        amount = 100.0,
+        category = "FOOD",
+        type = "Lunch"
+    )
+    val expensePresetBeverage = ExpensePreset(
+        amount = 140.0,
+        category = "BEVERAGE",
+        type = "Coffee"
+    )
+    val expensesState = ExpensesState(
+        totalAmount = totalAmount,
+        expensePresets = listOf(
+            expensePresetFood,
+            expensePresetBeverage
+        )
+    )
+    val uiState = UiState.Success(
+        expensesState = expensesState
+    )
+
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            MainContent(
+                uiState = uiState,
+                modifier = Modifier.fillMaxSize(),
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
+@Composable
+fun ExpenseRoutePreviewDark() {
+    val uiState = UiState.Success()
+
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            MainContent(
+                uiState = uiState,
+                modifier = Modifier.fillMaxSize(),
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    showBackground = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
+)
+@Composable
+fun ExpenseRoutePreviewDialog() {
+    val expenseFormDialog = DialogState.ExpenseForm()
+    val uiState = UiState.Success(
+        dialogState = expenseFormDialog
+    )
+
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            MainContent(
+                uiState = uiState,
+                modifier = Modifier.fillMaxSize(),
+                onEvent = {}
+            )
         }
     }
 }
