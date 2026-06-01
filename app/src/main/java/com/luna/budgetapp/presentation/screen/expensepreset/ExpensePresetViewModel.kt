@@ -151,7 +151,11 @@ class ExpensePresetViewModel(
 
         viewModelScope.launch {
             try {
-                presetUseCases.addExpensePreset(expensePreset)
+                if (id == null) {
+                    presetUseCases.addExpensePreset(expensePreset)
+                } else {
+                    presetUseCases.updateExpensePreset(expensePreset)
+                }
             } catch (_: Exception) {
 
             } finally {
