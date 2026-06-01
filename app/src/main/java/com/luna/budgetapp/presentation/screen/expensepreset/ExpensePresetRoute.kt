@@ -1,5 +1,12 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +17,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,7 +29,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.AndroidUiModes
@@ -36,8 +49,6 @@ import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFo
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
 import com.luna.budgetapp.presentation.screen.utils.singleClick
-import com.luna.budgetapp.ui.icons.CirclePlusIcon
-import com.luna.budgetapp.ui.icons.UndoIcon
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
@@ -96,6 +107,8 @@ fun MainContent(
     onEvent: (Event) -> Unit
 ) {
     val (expensePresets, totalAmount) = uiState.expensesState
+    var isMenuExpanded by remember { mutableStateOf(true) }
+
     Box(
         modifier = modifier.fillMaxSize()
             .padding(16.dp)
@@ -168,42 +181,97 @@ fun MainContent(
             }
         }
 
-        Column(
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+                .padding(bottom = 72.dp),
+            contentAlignment = Alignment.BottomEnd
         ) {
-            FloatingActionButton(
-                onClick = { onEvent(Event.AddExpensePreset(action = ExpenseFormAction.ADD)) },
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondary
+            val iconSize = 24.dp
+            val noElevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp,
+                focusedElevation = 0.dp,
+                hoveredElevation = 0.dp
+            )
+
+            AnimatedVisibility(
+                visible = isMenuExpanded,
+                enter = slideInVertically(
+                    initialOffsetY = { it + 18 },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ) + expandVertically(expandFrom = Alignment.Bottom),
+                exit = slideOutVertically(
+                    targetOffsetY = { it }
+                ) + shrinkVertically(shrinkTowards = Alignment.Bottom)
             ) {
-                Icon(
-                    imageVector = CirclePlusIcon,
-                    contentDescription = null
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.padding(top = 18.dp, bottom = 54.dp)
+                ) {
+                    FloatingActionButton(
+                        shape = CircleShape,
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        elevation = noElevation,
+                        onClick = {
+                            onEvent(Event.AddExpensePreset(action = ExpenseFormAction.ADD))
+                            isMenuExpanded = false
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddCircleOutline,
+                            contentDescription = "Add",
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
+                    FloatingActionButton(
+                        shape = CircleShape,
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        elevation = noElevation,
+                        onClick = {
+                            onEvent(Event.ShowDeleteConfirmationDialog)
+                            isMenuExpanded = false
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                            contentDescription = "Undo",
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
+                    FloatingActionButton(
+                        shape = CircleShape,
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        elevation = noElevation,
+                        onClick = {
+                            onEvent(Event.Logout)
+                            isMenuExpanded = false
+                        },
+                        modifier = Modifier.padding(bottom = 18.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Logout",
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
+                }
             }
+
             FloatingActionButton(
-                onClick = { onEvent(Event.ShowDeleteConfirmationDialog) },
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondary
+                containerColor = MaterialTheme.colorScheme.secondary,
+                elevation = noElevation,
+                onClick = { isMenuExpanded = !isMenuExpanded }
             ) {
                 Icon(
-                    imageVector = UndoIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            FloatingActionButton(
-                onClick = { onEvent(Event.Logout) },
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondary
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Logout,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    modifier = Modifier.size(iconSize)
                 )
             }
         }
