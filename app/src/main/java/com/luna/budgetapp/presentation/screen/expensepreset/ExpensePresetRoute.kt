@@ -4,14 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -34,9 +39,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -107,7 +115,7 @@ fun MainContent(
     onEvent: (Event) -> Unit
 ) {
     val (expensePresets, totalAmount) = uiState.expensesState
-    var isMenuExpanded by remember { mutableStateOf(true) }
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -188,6 +196,8 @@ fun MainContent(
             contentAlignment = Alignment.BottomEnd
         ) {
             val iconSize = 24.dp
+            val fabSize = 56.dp
+            val offset = fabSize / 2
             val noElevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp,
@@ -198,20 +208,17 @@ fun MainContent(
             AnimatedVisibility(
                 visible = isMenuExpanded,
                 enter = slideInVertically(
-                    initialOffsetY = { it + 18 },
                     animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessLow
+                        dampingRatio = Spring.DampingRatioLowBouncy
                     )
-                ) + expandVertically(expandFrom = Alignment.Bottom),
-                exit = slideOutVertically(
-                    targetOffsetY = { it }
-                ) + shrinkVertically(shrinkTowards = Alignment.Bottom)
+                ) { it },
+                exit = slideOutVertically { it } + shrinkVertically(),
+                modifier = Modifier.padding(bottom = offset)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.End,
-                    modifier = Modifier.padding(top = 18.dp, bottom = 54.dp)
+                    modifier = Modifier.padding(top = 18.dp, bottom = 28.dp)
                 ) {
                     FloatingActionButton(
                         shape = CircleShape,
