@@ -101,7 +101,7 @@ fun ExpensePresetItem(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = null,
+                contentDescription = "Expense Preset Icon",
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -110,7 +110,7 @@ fun ExpensePresetItem(
             modifier = Modifier
                 .weight(1.5f)
                 .height(size)
-                .clip(RoundedCornerShape(32.dp))
+                .clip(RoundedCornerShape(24.dp))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .clickable { onClickItem(item) },
             contentAlignment = Alignment.Center
@@ -120,7 +120,6 @@ fun ExpensePresetItem(
             ) {
                 Text(
                     text = item.type,
-                    fontFamily = FontFamily.Default,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
