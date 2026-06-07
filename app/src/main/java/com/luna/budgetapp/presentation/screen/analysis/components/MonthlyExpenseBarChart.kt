@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.analysis.components
 
+import android.graphics.Paint
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -31,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.luna.budgetapp.domain.model.DateRange
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.toLast7DaysExpenses
 import com.luna.budgetapp.domain.model.toLast7MonthsExpenses
@@ -39,20 +41,17 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Composable
-fun DailyExpenseBarChart(
+fun MonthlyExpenseBarChart(
     modifier: Modifier = Modifier,
     expenses: List<Expense>,
     dBarColor: Color = MaterialTheme.colorScheme.primary,
-    selectedDate: LocalDate,
-    onClickBar: (LocalDate) -> Unit,
+    selectedMonth: DateRange,
+    onClickBar: (LocalDate) -> Unit
 ) {
-
-    val dailyData = remember(expenses) {
-        expenses.toLast7DaysExpenses()
+    val monthlyData = remember(expenses) {
+        expenses.toLast7MonthsExpenses()
     }
-
-    val maxValue = dailyData.maxOfOrNull { it.total } ?: 1.0
-
+    val maxValue = monthlyData.maxOfOrNull { it.total } ?: 1.0
     var animationTarget by remember { mutableFloatStateOf(0f) }
     val animationProgress by animateFloatAsState(
         targetValue = animationTarget,
@@ -62,17 +61,17 @@ fun DailyExpenseBarChart(
         ),
         label = "bar-rise"
     )
-
-    val animatedColors = dailyData.map { item ->
-
-        val isSelected = item.date == selectedDate
-
+    val animatedColors = monthlyData.map { item ->
+        val isSelected =
+            item.date >= selectedMonth.start.toLocalDate() &&
+            item.date <= selectedMonth.end.toLocalDate()
+        
         animateColorAsState(
             targetValue =
-                if (isSelected)
-                    Color(0xFFE53935)
-                else
-                    dBarColor,
+            if (isSelected)
+                Color(0xFFE53935)
+            else
+                dBarColor,
             animationSpec = tween(250),
             label = "bar-color"
         ).value
@@ -93,7 +92,7 @@ fun DailyExpenseBarChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
-                .pointerInput(dailyData) {
+                .pointerInput(monthlyData) {
                     detectTapGestures { offset ->
                         barPositions.forEach { (rect, date) ->
                             if (rect.contains(offset)) {
@@ -103,16 +102,14 @@ fun DailyExpenseBarChart(
                     }
                 }
         ) {
-            if (dailyData.isEmpty()) return@Canvas
+            if (monthlyData.isEmpty()) return@Canvas
 
-            val barWidth = size.width / (dailyData.size * 1.65f)
+            val barWidth = size.width / (monthlyData.size * 1.65f)
             val spacing = barWidth / 2
 
-            dailyData.forEachIndexed { index, item ->
-
+            monthlyData.forEachIndexed { index, item ->
                 val ratio = (item.total / maxValue).toFloat()
-
-                val barHeight =
+                val barHeight = 
                     (size.height * 0.85f) * ratio * animationProgress
 
                 val x = index * (barWidth + spacing) + barWidth
@@ -137,8 +134,8 @@ fun DailyExpenseBarChart(
                     "₱${item.total.toInt()}",
                     x + barWidth / 2,
                     y - 10,
-                    android.graphics.Paint().apply {
-                        textAlign = android.graphics.Paint.Align.CENTER
+                    Paint().apply {
+                        textAlign = Paint.Align.CENTER
                         textSize = 28f
                         isAntiAlias = true
                         color = labelColor
@@ -151,32 +148,6 @@ fun DailyExpenseBarChart(
                 start = Offset(0f, size.height),
                 end = Offset(size.width, size.height),
                 strokeWidth = 2f
-            )
-        }
-    }
-}
-
-@Preview(
-    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun DailyExpenseBarChartPreview() {
-    LazyWalletTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
-            DailyExpenseBarChart(
-                expenses = listOf(
-                    Expense(amount = 100.0, category = "Food", type = "Lunch", date = LocalDateTime.now()),
-                    Expense(amount = 50.0, category = "Transport", type = "Bus", date = LocalDateTime.now().minusDays(1)),
-                    Expense(amount = 200.0, category = "Shopping", type = "Clothes", date = LocalDateTime.now().minusDays(2)),
-                    Expense(amount = 150.0, category = "Food", type = "Dinner", date = LocalDateTime.now().minusDays(3)),
-                    Expense(amount = 80.0, category = "Transport", type = "Taxi", date = LocalDateTime.now().minusDays(4)),
-                    Expense(amount = 120.0, category = "Entertainment", type = "Movie", date = LocalDateTime.now().minusDays(5)),
-                    Expense(amount = 300.0, category = "Bills", type = "Rent", date = LocalDateTime.now().minusDays(6))
-                ),
-                selectedDate = LocalDate.now(),
-                onClickBar = {}
             )
         }
     }

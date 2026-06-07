@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
+import com.luna.budgetapp.presentation.screen.analysis.components.MonthlyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.components.CategoryProfileSelectorDropdown
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDateTime
@@ -103,13 +104,11 @@ fun MainContent(
         modifier = modifier.fillMaxSize()
             .padding(16.dp)
     ) {
-        DailyExpenseBarChart(
+        MonthlyExpenseBarChart(
             modifier = Modifier,
             expenses = uiState.expensesState.expenses,
-            selectedDate = uiState.dateState.selectedDate,
-            onClickBar = { date ->
-                onEvent(Event.SelectBar(date)) 
-            }
+            selectedMonth = uiState.dateState.selectedMonth.resolve(),
+            onClickBar = {}
         )
 
         ExpenseTable(
