@@ -12,5 +12,7 @@ interface ExpensePresetRepository {
 
     suspend fun addExpensePreset(expensePreset: ExpensePreset)
 
+    suspend fun updateExpensePreset(expensePreset: ExpensePreset)
+
     suspend fun deleteExpensePreset(expensePresetId: Long)
 }

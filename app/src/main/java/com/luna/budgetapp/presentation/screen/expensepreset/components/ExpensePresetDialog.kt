@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -111,12 +113,12 @@ fun ExpensePresetDialog(
                             if (!isLocked) {
                                 Icon(
                                     Icons.Default.KeyboardArrowDown,
-                                    contentDescription = null
+                                    contentDescription = "Dropdown Arrow"
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Lock,
-                                    contentDescription = null
+                                    contentDescription = "Lock"
                                 )
                             }
                         },
@@ -218,7 +220,8 @@ enum class ExpenseFormAction {
 }
 
 @Preview(
-    device = Devices.PIXEL_7
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
 )
 @Composable
 fun ExpensePresetDialogPreview() {

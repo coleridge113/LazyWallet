@@ -2,20 +2,21 @@ package com.luna.budgetapp.presentation.screen.expensepreset.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -47,8 +48,8 @@ fun ExpensePresetTable(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2)
         ) {
             items (expensePresets) { expensePreset ->
                 SwipeableTableItem(
@@ -64,7 +65,7 @@ fun ExpensePresetTable(
                 }
             }
         }
-    } 
+    }
 }
 
 @Composable
@@ -74,6 +75,7 @@ fun ExpensePresetItem(
     onClickIcon: (ExpensePreset) -> Unit,
     onClickItem: (ExpensePreset) -> Unit
 ) {
+    val size = 72.dp
     Row(
         modifier = Modifier.fillMaxWidth()
             .padding(2.dp),
@@ -81,24 +83,43 @@ fun ExpensePresetItem(
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .weight(1f)
+                .height(size)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
                 .clickable { onClickIcon(item) },
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = icon, contentDescription = null)
+            Icon(
+                imageVector = icon,
+                contentDescription = "Expense Preset Icon",
+                modifier = Modifier.size(24.dp)
+            )
         }
         Spacer(Modifier.width(4.dp))
         Box(
-            modifier = Modifier.weight(3f)
-                .size(48.dp)
-                .clip(CircleShape)
+            modifier = Modifier
+                .weight(1.5f)
+                .height(size)
+                .clip(RoundedCornerShape(24.dp))
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .clickable { onClickItem(item) },
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "${item.type} - P${item.amount}")
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = item.type,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "${item.amount}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -137,7 +158,7 @@ fun ExpensePresetTablePreview() {
     val expensePresets = listOf(
         ExpensePreset(
             id = 1L,
-            amount = 4.50,
+            amount = 140.00,
             category = "BEVERAGE",
             type = "Coffee"
         ),
@@ -149,7 +170,7 @@ fun ExpensePresetTablePreview() {
         ),
         ExpensePreset(
             id = 3L,
-            amount = 65.00,
+            amount = 3500.00,
             category = "COMMUTE",
             type = "Angkas"
         ),

@@ -57,6 +57,25 @@ class ExpensePresetRepositoryImpl(
         }
     }
 
+    override suspend fun updateExpensePreset(expensePreset: ExpensePreset) {
+        val userId = auth.currentUser?.uid
+        val existingEntity = expensePreset.id?. let { dao.getExpensePresetByIdOnce(it) }
+        val remoteId = existingEntity?.remoteId
+        val entity = expensePreset.toEntity().copy(remoteId = remoteId)
+        dao.addExpensePreset(entity)
+
+        if (userId != null && remoteId != null) {
+            try {
+                val firestoreModel = entity.toFirestoreModel()
+                firestore.collection("users").document(userId)
+                    .collection("expense_presets").document(remoteId)
+                    .set(firestoreModel)
+            } catch (e: Exception) {
+                Log.e("Sync", "Failed to sync updated expense preset", e)
+            }
+        }
+    }
+
     override suspend fun deleteExpensePreset(expensePresetId: Long) {
         val preset = dao.getExpensePresetByIdOnce(expensePresetId)
         val remoteId = preset?.remoteId
