@@ -21,7 +21,7 @@ data class ExpensesState(
 )
 
 data class DateState(
-    val dateFilter: DateFilter = DateFilter.Last7Days,
+    val dateFilter: DateFilter = DateFilter.Last7Months,
     val selectedDate: LocalDate = LocalDate.now(),
 ) {
     val dateRange = dateFilter.resolve()

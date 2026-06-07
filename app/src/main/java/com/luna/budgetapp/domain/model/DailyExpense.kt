@@ -34,3 +34,17 @@ fun List<Expense>.toLast7DaysExpenses(): List<DailyExpense> {
         )
     }
 }
+
+fun List<Expense>.toLast7MonthsExpenses(): List<DailyExpense> {
+    val today = LocalDate.now()
+    val grouped = this.groupBy { it.date.toLocalDate() }
+    return (6 downTo 0).map { offset ->
+        val date = today.minusMonths(offset.toLong())
+        val expenses = grouped[date].orEmpty()
+
+        DailyExpense(
+            date = date,
+            total = expenses.sumOf { it.amount }
+        )
+    }
+}

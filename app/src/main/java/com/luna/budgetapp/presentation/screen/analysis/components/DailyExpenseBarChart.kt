@@ -33,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.toLast7DaysExpenses
+import com.luna.budgetapp.domain.model.toLast7MonthsExpenses
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -47,7 +48,7 @@ fun DailyExpenseBarChart(
 ) {
 
     val dailyData = remember(expenses) {
-        expenses.toLast7DaysExpenses()
+        expenses.toLast7MonthsExpenses()
     }
 
     val maxValue = dailyData.maxOfOrNull { it.total } ?: 1.0
