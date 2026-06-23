@@ -29,6 +29,12 @@ class ExpensePresetViewModel(
     private val profileUseCases: ProfileUseCases
 ): ViewModel() {
 
+    init {
+        viewModelScope.launch {
+            presetUseCases.getRemotePresets()
+        }
+    }
+
     private val _errorState = MutableStateFlow<String?>(null)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())

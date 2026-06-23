@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.data.datastore.SettingsDataStore
+import com.luna.budgetapp.data.firebase.toEntity
 import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.ExpensePresetDao
 import com.luna.budgetapp.data.mapper.toEntity
@@ -13,11 +14,11 @@ import com.luna.budgetapp.domain.repository.ExpensePresetRepository
 import com.luna.budgetapp.network.ExpenseService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
+import kotlin.collections.map
 
 class ExpensePresetRepositoryImpl(
     private val dao: ExpensePresetDao,
@@ -27,12 +28,32 @@ class ExpensePresetRepositoryImpl(
     private val settingsDataStore: SettingsDataStore
 ): ExpensePresetRepository {
     
-    override fun getAllExpensePresets(): Flow<List<ExpensePreset>> =
-        dao.getAllExpensePresets()
+    override fun getAllExpensePresets(): Flow<List<ExpensePreset>> {
+        return dao.getAllExpensePresets()
             .map { local ->
                 local.map { it.toModel() }
             }
             .flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun getAllPresetsOnce() {
+        val userId = auth.currentUser?.uid
+
+        if (userId != null) {
+            try {
+                val snapshot = firestore.collection("users").document(userId)
+                    .collection("expense_presets").get()
+                    .await()
+
+                val presets = snapshot.toObjects(com.luna.budgetapp.data.firebase.models.ExpensePreset::class.java)
+                    .map { it.toEntity() }
+                dao.addExpensePresets(presets)
+            } catch(e: Exception) {
+                Log.e("ExpensePresetRepo", "Failed to fetch Expense Presets!")
+                Log.e("ExpensePresetRepo", "${e.localizedMessage}")
+            }
+        }
+    }
 
     override suspend fun addExpensePresets(expensePresets: List<ExpensePreset>) {
         dao.addExpensePresets(expensePresets.map { it.toEntity() })

@@ -67,6 +67,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.expensepreset.GetRemotePresetsUseCase
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -162,6 +163,7 @@ val appModule = module {
     factoryOf(::GetAllExpensePresetsUseCase)
     factoryOf(::GetCategoryTotalsByDateRange)
     factoryOf(::AddExpensePresetUseCase)
+    factoryOf(::GetRemotePresetsUseCase)
     factoryOf(::UpdateExpensePresetUseCase)
     factoryOf(::GetPagingExpensesByDateRangeUseCase)
     factoryOf(::DeleteExpensePresetUseCase)
