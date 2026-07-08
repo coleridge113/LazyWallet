@@ -20,7 +20,7 @@ sealed interface Event {
 }
 
 sealed class Navigation {
-    data object GotoAddExpenseRoute : Navigation()
+    data object GotoExpensePresetRoute : Navigation()
     data object GotoMigrationRoute : Navigation()
 }
 

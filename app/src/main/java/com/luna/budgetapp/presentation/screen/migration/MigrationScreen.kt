@@ -34,7 +34,7 @@ fun MigrationRoute(
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
                 MigrationNavigation.GotoAddExpenseRoute -> {
-                    navController.navigate(Routes.AddExpensesRoute) {
+                    navController.navigate(Routes.ExpensePresetRoute) {
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }

@@ -49,8 +49,10 @@ class AuthViewModel(
         viewModelScope.launch {
             try {
                 migrationRepository.syncFromCloud()
-            } catch (_: Exception) { }
-            _navigation.send(Navigation.GotoAddExpenseRoute)
+            } catch (e: Exception) {
+                Log.e("FirebaseSync", "${e.message}")
+            }
+            _navigation.send(Navigation.GotoExpensePresetRoute)
         }
     }
 

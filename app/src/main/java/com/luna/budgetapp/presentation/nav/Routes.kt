@@ -12,7 +12,7 @@ sealed interface Routes {
     data object MigrationRoute : Routes
 
     @Serializable
-    data object AddExpensesRoute : Routes
+    data object ExpensePresetRoute : Routes
 
     @Serializable
     data object ExpensesRoute : Routes

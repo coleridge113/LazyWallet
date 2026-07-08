@@ -1,6 +1,7 @@
 package com.luna.budgetapp.presentation.screen.auth
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -73,8 +74,8 @@ fun AuthRoute(
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
-                Navigation.GotoAddExpenseRoute -> {
-                    navController.navigate(Routes.AddExpensesRoute) {
+                Navigation.GotoExpensePresetRoute -> {
+                    navController.navigate(Routes.ExpensePresetRoute) {
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }

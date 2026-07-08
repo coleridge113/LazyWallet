@@ -70,7 +70,7 @@ fun NavGraphSetup(
                     viewModel = viewModel
                 )
             }
-            composable<Routes.AddExpensesRoute> {
+            composable<Routes.ExpensePresetRoute> {
                 val viewModel: ExpensePresetViewModel = koinViewModel()
                 ExpensePresetRoute(
                     navController = navController,
