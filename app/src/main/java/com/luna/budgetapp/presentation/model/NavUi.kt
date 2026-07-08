@@ -10,6 +10,6 @@ enum class NavOptions(
     val icon: ImageVector
 ) {
     HOME(Icons.Default.Home),
-    ANALYSIS(Icons.Default.BarChart),
-    LIST(Icons.AutoMirrored.Filled.ListAlt)
+    LIST(Icons.AutoMirrored.Filled.ListAlt),
+    ANALYSIS(Icons.Default.BarChart)
 }
