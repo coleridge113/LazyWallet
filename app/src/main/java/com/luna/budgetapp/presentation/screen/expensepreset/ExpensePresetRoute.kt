@@ -47,6 +47,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.model.NavOptions
 import com.luna.budgetapp.presentation.nav.Routes
+import com.luna.budgetapp.presentation.screen.components.BottomNavBar
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
@@ -71,6 +72,11 @@ fun ExpensePresetRoute(
             when (navigation) {
                 Navigation.GotoExpenseRoute -> {
                     navController.navigate(Routes.ExpensesRoute) {
+                        launchSingleTop = true
+                    }
+                }
+                Navigation.GotoAnalysisRoute -> {
+                    navController.navigate(Routes.AnalysisRoute) {
                         launchSingleTop = true
                     }
                 }
@@ -104,26 +110,14 @@ fun ExpensePresetScreen(
     uiState: UiState.Success,
     onEvent: (Event) -> Unit
 ) {
-    var selectedItem by remember { mutableIntStateOf(0) }
-    val items = NavOptions.entries
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ) {
-                items.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.name) },
-                        selected = selectedItem == index,
-                        onClick = { selectedItem = index },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = MaterialTheme.colorScheme.surface
-                        )
-                    )
+            BottomNavBar(NavOptions.HOME) { option ->
+                when (option) {
+                    NavOptions.LIST -> { onEvent(Event.GotoExpenseRoute) }
+                    NavOptions.ANALYSIS -> { onEvent(Event.GotoAnalysisRoute) }
+                    else -> {}
                 }
             }
         }
