@@ -13,7 +13,8 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -21,6 +22,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.AndroidUiModes
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -36,6 +40,7 @@ import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdo
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,49 +69,46 @@ fun ExpenseListRoute(
         is UiState.Loading -> {}
         is UiState.Error -> {}
         is UiState.Success -> {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
-                    TopAppBar(
-                        modifier = Modifier,
-                        title = {},
-                        navigationIcon = {
-                            IconButton(
-                                onClick = {
-                                    navController.popBackStack()
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowBackIosNew,
-                                    contentDescription = null
-                                )
+            Column(modifier = Modifier.fillMaxSize()) {
+                TopAppBar(
+                    modifier = Modifier,
+                    title = {},
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
                             }
-                        },
-                        actions = {
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.BarChart,
-                                contentDescription = null,
-                                modifier = Modifier.clickable {
-                                    viewModel.onEvent(Event.GotoBarGraph)
-                                }
-                            )
-                            DateRangeSelectorDropdown(
-                                selected = state.dateState.dateFilter,
-                                onSelectedChange = {
-                                    when (it) {
-                                        DateFilter.Daily,
-                                        DateFilter.Weekly,
-                                        DateFilter.Monthly -> viewModel.onEvent(Event.SelectDateRange(it))
-                                        else -> viewModel.onEvent(Event.ShowCalendarForm)
-                                    }
-                                }
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = null
                             )
                         }
-                    )
-                }
-            ) { innerPadding ->
+                    },
+                    actions = {
+                        Icon(
+                            imageVector = Icons.Default.BarChart,
+                            contentDescription = null,
+                            modifier = Modifier.clickable {
+                                viewModel.onEvent(Event.GotoBarGraph)
+                            }
+                        )
+                        DateRangeSelectorDropdown(
+                            selected = state.dateState.dateFilter,
+                            onSelectedChange = {
+                                when (it) {
+                                    DateFilter.Daily,
+                                    DateFilter.Weekly,
+                                    DateFilter.Monthly -> viewModel.onEvent(Event.SelectDateRange(it))
+                                    else -> viewModel.onEvent(Event.ShowCalendarForm)
+                                }
+                            }
+                        )
+                    }
+                )
+
                 MainContent(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     uiState = state,
                     onEvent = viewModel::onEvent,
                     totalAmount = state.expensesState.totalAmount,
@@ -210,6 +212,25 @@ fun MainContent(
                 )
 
             else -> {}
+        }
+    }
+}
+
+@Preview(
+    showSystemUi = true,
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+private fun MainContentPreviewLight() {
+    val successState = UiState.Success()
+
+    LazyWalletTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            // Preview simplified to avoid paging data issues
+            Text("Preview of MainContent")
         }
     }
 }

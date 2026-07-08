@@ -23,15 +23,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,9 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.domain.model.ExpensePreset
-import com.luna.budgetapp.presentation.model.NavOptions
 import com.luna.budgetapp.presentation.nav.Routes
-import com.luna.budgetapp.presentation.screen.components.BottomNavBar
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
@@ -97,36 +90,12 @@ fun ExpensePresetRoute(
         is UiState.Loading -> {}
         is UiState.Error -> {}
         is UiState.Success -> {
-            ExpensePresetScreen(
+            MainContent(
                 uiState = state,
-                onEvent = viewModel::onEvent
+                modifier = Modifier,
+                onEvent = viewModel::onEvent,
             )
         }
-    }
-}
-
-@Composable
-fun ExpensePresetScreen(
-    uiState: UiState.Success,
-    onEvent: (Event) -> Unit
-) {
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            BottomNavBar(NavOptions.HOME) { option ->
-                when (option) {
-                    NavOptions.LIST -> { onEvent(Event.GotoExpenseRoute) }
-                    NavOptions.ANALYSIS -> { onEvent(Event.GotoAnalysisRoute) }
-                    else -> {}
-                }
-            }
-        }
-    ) { innerPadding ->
-        MainContent(
-            uiState = uiState,
-            modifier = Modifier.padding(innerPadding),
-            onEvent = onEvent,
-        )
     }
 }
 
@@ -348,7 +317,7 @@ fun ExpenseRoutePreviewLight() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            ExpensePresetScreen(
+            MainContent(
                 uiState = uiState,
                 onEvent = {}
             )
@@ -369,7 +338,7 @@ fun ExpenseRoutePreviewDark() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            ExpensePresetScreen(
+            MainContent(
                 uiState = uiState,
                 onEvent = {}
             )
@@ -393,7 +362,7 @@ fun ExpenseRoutePreviewDialog() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            ExpensePresetScreen(
+            MainContent(
                 uiState = uiState,
                 onEvent = {}
             )
