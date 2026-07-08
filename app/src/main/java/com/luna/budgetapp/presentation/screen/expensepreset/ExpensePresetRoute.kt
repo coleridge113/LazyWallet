@@ -3,20 +3,14 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -29,7 +23,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,12 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -78,6 +68,11 @@ fun ExpensePresetRoute(
                         launchSingleTop = true
                     }
                 }
+                Navigation.GotoAnalysisRoute -> {
+                    navController.navigate(Routes.AnalysisRoute) {
+                        launchSingleTop = true
+                    }
+                }
                 Navigation.Logout -> {
                     auth.signOut()
                     navController.navigate(Routes.AuthRoute) {
@@ -95,15 +90,11 @@ fun ExpensePresetRoute(
         is UiState.Loading -> {}
         is UiState.Error -> {}
         is UiState.Success -> {
-            Scaffold(
-                modifier = Modifier.fillMaxSize()
-            ) { innerPadding ->
-                MainContent(
-                    uiState = state,
-                    modifier = Modifier.padding(innerPadding),
-                    onEvent = viewModel::onEvent,
-                )
-            }
+            MainContent(
+                uiState = state,
+                modifier = Modifier,
+                onEvent = viewModel::onEvent,
+            )
         }
     }
 }
@@ -328,7 +319,6 @@ fun ExpenseRoutePreviewLight() {
         ) {
             MainContent(
                 uiState = uiState,
-                modifier = Modifier.fillMaxSize(),
                 onEvent = {}
             )
         }
@@ -350,7 +340,6 @@ fun ExpenseRoutePreviewDark() {
         ) {
             MainContent(
                 uiState = uiState,
-                modifier = Modifier.fillMaxSize(),
                 onEvent = {}
             )
         }
@@ -375,7 +364,6 @@ fun ExpenseRoutePreviewDialog() {
         ) {
             MainContent(
                 uiState = uiState,
-                modifier = Modifier.fillMaxSize(),
                 onEvent = {}
             )
         }

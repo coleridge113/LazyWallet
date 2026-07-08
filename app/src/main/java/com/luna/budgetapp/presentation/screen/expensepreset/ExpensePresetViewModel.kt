@@ -104,7 +104,8 @@ class ExpensePresetViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.Logout -> logoutUser()
-            Event.GotoExpenseRoute -> gotoExpenseRoute()
+            Event.GotoExpenseRoute -> gotoExpenseRoute(Navigation.GotoExpenseRoute)
+            Event.GotoAnalysisRoute -> gotoExpenseRoute(Navigation.GotoAnalysisRoute)
             Event.DismissDialog -> dismissDialog()
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
@@ -214,9 +215,9 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun gotoExpenseRoute() {
+    private fun gotoExpenseRoute(navigation: Navigation) {
         viewModelScope.launch {
-            _navigation.send(Navigation.GotoExpenseRoute)
+            _navigation.send(navigation)
         }
     }
 
