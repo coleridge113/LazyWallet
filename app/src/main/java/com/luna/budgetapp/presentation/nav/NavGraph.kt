@@ -72,65 +72,65 @@ fun NavGraphSetup(
                 startDestination = Routes.AuthRoute,
                 modifier = Modifier.padding(innerPadding),
                 enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                )
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                )
-            }
-        ) {
-            composable<Routes.AuthRoute> {
-                val viewModel: AuthViewModel = koinViewModel() 
-                AuthRoute(
-                    navController = navController,
-                    viewModel = viewModel
-                )
-            }
-            composable<Routes.MigrationRoute> {
-                val viewModel: MigrationViewModel = koinViewModel()
-                MigrationRoute(
-                    navController = navController,
-                    viewModel = viewModel
-                )
-            }
-            composable<Routes.AddExpensesRoute> {
-                val viewModel: ExpensePresetViewModel = koinViewModel()
-                ExpensePresetRoute(
-                    navController = navController,
-                    viewModel = viewModel
-                )
-            }
-            composable<Routes.ExpensesRoute> {
-                val viewModel: ExpenseListViewModel = koinViewModel()
-                ExpenseListRoute(
-                    navController = navController,
-                    viewModel = viewModel
-                )
-            }
-            composable<Routes.AnalysisRoute> {
-                val viewModel: AnalysisViewModel = koinViewModel()
-                AnalysisRoute(
-                    navController = navController,
-                    viewModel = viewModel
-                ) 
-            }
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(300)
+                    )
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(300)
+                    )
+                },
+                popEnterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(300)
+                    )
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(300)
+                    )
+                }
+            ) {
+                composable<Routes.AuthRoute> {
+                    val viewModel: AuthViewModel = koinViewModel()
+                    AuthRoute(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Routes.MigrationRoute> {
+                    val viewModel: MigrationViewModel = koinViewModel()
+                    MigrationRoute(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Routes.AddExpensesRoute> {
+                    val viewModel: ExpensePresetViewModel = koinViewModel()
+                    ExpensePresetRoute(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Routes.ExpensesRoute> {
+                    val viewModel: ExpenseListViewModel = koinViewModel()
+                    ExpenseListRoute(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
+                composable<Routes.AnalysisRoute> {
+                    val viewModel: AnalysisViewModel = koinViewModel()
+                    AnalysisRoute(
+                        navController = navController,
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
