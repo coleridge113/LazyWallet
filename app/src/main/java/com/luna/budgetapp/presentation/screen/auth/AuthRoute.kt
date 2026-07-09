@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,7 +46,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.credentials.Credential
 import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.nav.Routes
@@ -74,7 +72,7 @@ fun AuthRoute(
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
                 Navigation.GotoAddExpenseRoute -> {
-                    navController.navigate(Routes.AddExpensesRoute) {
+                    navController.navigate(Routes.ExpensePresetRoute) {
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }

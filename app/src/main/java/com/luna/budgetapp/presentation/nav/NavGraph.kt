@@ -38,7 +38,7 @@ fun NavGraphSetup(
     val currentDestination = navBackStackEntry?.destination
 
     val selectedOption = when {
-        currentDestination?.hasRoute<Routes.AddExpensesRoute>() == true -> NavOptions.HOME
+        currentDestination?.hasRoute<Routes.ExpensePresetRoute>() == true -> NavOptions.HOME
         currentDestination?.hasRoute<Routes.ExpensesRoute>() == true -> NavOptions.LIST
         currentDestination?.hasRoute<Routes.AnalysisRoute>() == true -> NavOptions.ANALYSIS
         else -> null
@@ -50,7 +50,7 @@ fun NavGraphSetup(
                 if (selectedOption != null) {
                     BottomNavBar(selectedItem = selectedOption) { option ->
                         val route = when (option) {
-                            NavOptions.HOME -> Routes.AddExpensesRoute
+                            NavOptions.HOME -> Routes.ExpensePresetRoute
                             NavOptions.LIST -> Routes.ExpensesRoute
                             NavOptions.ANALYSIS -> Routes.AnalysisRoute
                         }
@@ -101,7 +101,7 @@ fun NavGraphSetup(
                         viewModel = viewModel
                     )
                 }
-                composable<Routes.AddExpensesRoute> {
+                composable<Routes.ExpensePresetRoute> {
                     val viewModel: ExpensePresetViewModel = koinViewModel()
                     ExpensePresetRoute(
                         navController = navController,
