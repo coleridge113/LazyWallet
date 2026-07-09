@@ -24,8 +24,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetRoute
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthRoute
-import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
-import com.luna.budgetapp.presentation.screen.migration.MigrationRoute
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListRoute
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
@@ -99,13 +97,6 @@ fun NavGraphSetup(
                 composable<Routes.AuthRoute> {
                     val viewModel: AuthViewModel = koinViewModel()
                     AuthRoute(
-                        navController = navController,
-                        viewModel = viewModel
-                    )
-                }
-                composable<Routes.MigrationRoute> {
-                    val viewModel: MigrationViewModel = koinViewModel()
-                    MigrationRoute(
                         navController = navController,
                         viewModel = viewModel
                     )
