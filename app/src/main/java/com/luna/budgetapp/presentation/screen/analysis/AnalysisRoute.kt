@@ -3,11 +3,7 @@ package com.luna.budgetapp.presentation.screen.analysis
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
@@ -19,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
 import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
@@ -30,7 +25,6 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalysisRoute(
-    navController: NavController,
     viewModel: AnalysisViewModel
 ) {
 
@@ -45,18 +39,6 @@ fun AnalysisRoute(
                 TopAppBar(
                     modifier = Modifier,
                     title = {},
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBackIosNew,
-                                contentDescription = null
-                            )
-                        }
-                    },
                     actions = {
                         CategoryProfileSelectorDropdown(
                             selectedProfile = state.categoryProfileState.activeProfile,

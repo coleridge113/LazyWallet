@@ -8,17 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,12 +24,10 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
-import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.components.DateRangePickerDialog
@@ -41,29 +36,15 @@ import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChar
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
-import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseListRoute(
-    navController: NavController,
     viewModel: ExpenseListViewModel
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
-
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-            when (navigation) {
-                Navigation.GotoAnalysisRoute -> {
-                    navController.navigate(Routes.AnalysisRoute) {
-                        launchSingleTop = true
-                    }
-                }
-            }
-        }
-    }
 
     when (val state = uiState) {
         is UiState.Loading -> {}
@@ -73,18 +54,6 @@ fun ExpenseListRoute(
                 TopAppBar(
                     modifier = Modifier,
                     title = {},
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBackIosNew,
-                                contentDescription = null
-                            )
-                        }
-                    },
                     actions = {
                         Icon(
                             imageVector = Icons.Default.BarChart,
