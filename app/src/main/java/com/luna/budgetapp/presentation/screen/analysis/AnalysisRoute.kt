@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -58,6 +59,7 @@ fun AnalysisRoute(
                 TopAppBar(
                     modifier = Modifier,
                     title = {},
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     actions = {
                         CategoryProfileSelectorDropdown(
                             selectedProfile = state.categoryProfileState.activeProfile,
