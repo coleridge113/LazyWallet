@@ -1,10 +1,16 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
@@ -94,7 +101,16 @@ fun MainContent(
             }
         )
 
-        if (isExpanded) {
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = slideInVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy
+                )
+            ) { -it },
+            exit = slideOutVertically { -it },
+            modifier = Modifier.clipToBounds()
+        ) {
             Column (
                 modifier = Modifier.padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -103,6 +119,7 @@ fun MainContent(
                     modifier = Modifier,
                     expenses = uiState.expensesState.filteredExpenses
                 )
+
                 Button(
                     onClick = { isExpanded = false },
                     colors = ButtonDefaults.buttonColors(
@@ -110,16 +127,16 @@ fun MainContent(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowUpward,
+                        imageVector = Icons.Default.KeyboardArrowUp,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 164.dp),
-                    color = MaterialTheme.colorScheme.outline
-                )
+//                HorizontalDivider(
+//                    modifier = Modifier.padding(horizontal = 164.dp),
+//                    color = MaterialTheme.colorScheme.outline
+//                )
             }
         }
     }
