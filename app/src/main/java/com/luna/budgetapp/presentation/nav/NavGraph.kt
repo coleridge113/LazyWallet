@@ -111,14 +111,12 @@ fun NavGraphSetup(
                 composable<Routes.ExpensesRoute> {
                     val viewModel: ExpenseListViewModel = koinViewModel()
                     ExpenseListRoute(
-                        navController = navController,
                         viewModel = viewModel
                     )
                 }
                 composable<Routes.AnalysisRoute> {
                     val viewModel: AnalysisViewModel = koinViewModel()
                     AnalysisRoute(
-                        navController = navController,
                         viewModel = viewModel
                     )
                 }

@@ -63,16 +63,6 @@ fun ExpensePresetRoute(
     LaunchedEffect(Unit) {
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
-                Navigation.GotoExpenseRoute -> {
-                    navController.navigate(Routes.ExpensesRoute) {
-                        launchSingleTop = true
-                    }
-                }
-                Navigation.GotoAnalysisRoute -> {
-                    navController.navigate(Routes.AnalysisRoute) {
-                        launchSingleTop = true
-                    }
-                }
                 Navigation.Logout -> {
                     auth.signOut()
                     navController.navigate(Routes.AuthRoute) {
@@ -82,6 +72,7 @@ fun ExpensePresetRoute(
                         launchSingleTop = true
                     }
                 }
+                else -> {}
             }
         }
     }
