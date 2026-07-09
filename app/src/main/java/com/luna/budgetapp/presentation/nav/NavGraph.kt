@@ -1,15 +1,17 @@
 package com.luna.budgetapp.presentation.nav
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -36,11 +38,12 @@ fun NavGraphSetup(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
 
     val selectedOption = when {
-        currentDestination?.hasRoute<Routes.ExpensePresetRoute>() == true -> NavOptions.HOME
-        currentDestination?.hasRoute<Routes.ExpensesRoute>() == true -> NavOptions.LIST
-        currentDestination?.hasRoute<Routes.AnalysisRoute>() == true -> NavOptions.ANALYSIS
+        currentRoute?.contains("ExpensePresetRoute") == true -> NavOptions.HOME
+        currentRoute?.contains("ExpensesRoute") == true -> NavOptions.LIST
+        currentRoute?.contains("AnalysisRoute") == true -> NavOptions.ANALYSIS
         else -> null
     }
 
@@ -49,6 +52,8 @@ fun NavGraphSetup(
             bottomBar = {
                 if (selectedOption != null) {
                     BottomNavBar(selectedItem = selectedOption) { option ->
+                        if (option == selectedOption) return@BottomNavBar
+
                         val route = when (option) {
                             NavOptions.HOME -> Routes.ExpensePresetRoute
                             NavOptions.LIST -> Routes.ExpensesRoute
@@ -69,27 +74,36 @@ fun NavGraphSetup(
                 navController = navController,
                 startDestination = Routes.AuthRoute,
                 modifier = Modifier.padding(innerPadding),
+
                 enterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
+                    val srcIndex = getTabIndex(initialState.destination)
+                    val dstIndex = getTabIndex(targetState.destination)
+                    val offsetMultiplier = if (srcIndex != -1 && dstIndex != -1 && dstIndex < srcIndex) -1 else 1
+
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> fullWidth * offsetMultiplier },
                         animationSpec = tween(300)
                     )
                 },
                 exitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
+                    val srcIndex = getTabIndex(initialState.destination)
+                    val dstIndex = getTabIndex(targetState.destination)
+                    val offsetMultiplier = if (srcIndex != -1 && dstIndex != -1 && dstIndex < srcIndex) 1 else -1
+
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> fullWidth * offsetMultiplier },
                         animationSpec = tween(300)
                     )
                 },
                 popEnterTransition = {
-                    slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> -fullWidth },
                         animationSpec = tween(300)
                     )
                 },
                 popExitTransition = {
-                    slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> fullWidth },
                         animationSpec = tween(300)
                     )
                 }
@@ -122,5 +136,14 @@ fun NavGraphSetup(
                 }
             }
         }
+    }
+}
+
+private fun getTabIndex(destination: NavDestination?): Int {
+    return when {
+        destination?.hasRoute<Routes.ExpensePresetRoute>() == true -> 0
+        destination?.hasRoute<Routes.ExpensesRoute>() == true -> 1
+        destination?.hasRoute<Routes.AnalysisRoute>() == true -> 2
+        else -> -1
     }
 }
