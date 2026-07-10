@@ -1,11 +1,12 @@
 package com.luna.budgetapp.data.local
 
 import androidx.room.TypeConverter
-import java.math.BigDecimal
+import com.luna.budgetapp.domain.model.BudgetFrequency
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import com.luna.budgetapp.domain.model.Category
+import java.time.LocalDate
 
 object Converters {
 
@@ -31,4 +32,16 @@ object Converters {
 
     @TypeConverter
     fun toCategory(name: String): Category = Category.valueOf(name)
+
+    @TypeConverter
+    fun fromEpochDay(value: Long?): LocalDate? = value?.let { LocalDate.ofEpochDay(it) }
+
+    @TypeConverter
+    fun dateToEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
+
+    @TypeConverter
+    fun fromBudgetFrequency(frequency: BudgetFrequency): String = frequency.name
+
+    @TypeConverter
+    fun toBudgetFrequency(value: String): BudgetFrequency = BudgetFrequency.valueOf(value)
 }
