@@ -118,7 +118,7 @@ fun MainContent(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
                         contentDescription = "Logout",
-                        modifier = Modifier.singleClick { onEvent(Event.Logout) }
+                        modifier = Modifier.singleClick { onEvent(Event.ShowSignOutDialog) }
                     )
                 }
             )
@@ -140,6 +140,15 @@ fun MainContent(
             )
 
             when (val dialog = uiState.dialogState) {
+                DialogState.ConfirmLogout -> {
+                    ConfirmationDialog(
+                        message = "Are you sure you want to sign out?",
+                        confirmText = "Yes",
+                        isDestructive = true,
+                        onDismiss = { onEvent(Event.DismissDialog) },
+                        onConfirm = { onEvent(Event.SignOut) }
+                    )
+                }
                 DialogState.ConfirmDeleteExpense -> {
                     ConfirmationDialog(
                         message = "Delete the last expense?",
@@ -196,7 +205,7 @@ fun MainContent(
         ) {
             val iconSize = 24.dp
             val fabSize = 56.dp
-            val offset = fabSize / 2
+            val offset = fabSize / 2 + 16.dp
             val noElevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp,
@@ -205,7 +214,7 @@ fun MainContent(
             )
 
             AnimatedVisibility(
-                visible = isMenuExpanded,
+                visible = true,
                 enter = slideInVertically(
                     animationSpec = spring(
                         dampingRatio = Spring.DampingRatioLowBouncy

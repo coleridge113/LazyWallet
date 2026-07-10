@@ -33,6 +33,7 @@ data class CategoryProfileState(
 
 sealed interface DialogState {
     data object ConfirmDeleteExpense : DialogState
+    data object ConfirmLogout : DialogState
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
         val selectedPreset: ExpensePreset? = null,
@@ -46,7 +47,8 @@ sealed interface Event {
     data object GotoAnalysisRoute : Event
     data object DismissDialog : Event
     data object ShowDeleteConfirmationDialog : Event
-    data object Logout : Event
+    data object SignOut : Event
+    data object ShowSignOutDialog : Event
     data object DeleteLatestExpense : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
     data class ConfirmExpenseFormDialog(

@@ -103,7 +103,8 @@ class ExpensePresetViewModel(
 
     fun onEvent(event: Event) {
         when (event) {
-            Event.Logout -> logoutUser()
+            Event.SignOut -> signOutUser()
+            Event.ShowSignOutDialog -> showSignOutDialog()
             Event.GotoExpenseRoute -> gotoExpenseRoute(Navigation.GotoExpenseRoute)
             Event.GotoAnalysisRoute -> gotoExpenseRoute(Navigation.GotoAnalysisRoute)
             Event.DismissDialog -> dismissDialog()
@@ -227,7 +228,13 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun logoutUser() {
+    private fun showSignOutDialog() {
+        _dialogState.update {
+            DialogState.ConfirmLogout
+        }
+    }
+
+    private fun signOutUser() {
         viewModelScope.launch {
             _navigation.send(Navigation.Logout)
         }
