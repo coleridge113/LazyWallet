@@ -9,7 +9,6 @@ import androidx.room.Query
 import androidx.room.Update
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
-import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 

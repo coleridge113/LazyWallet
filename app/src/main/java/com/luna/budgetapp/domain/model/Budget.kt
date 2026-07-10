@@ -7,8 +7,9 @@ data class Budget(
     val limit: Double,
     val name: String,
     val frequency: BudgetFrequency,
+    val interactors: List<Category>,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null
+    val endDate: LocalDate? = null,
 )
 
 enum class BudgetFrequency {
