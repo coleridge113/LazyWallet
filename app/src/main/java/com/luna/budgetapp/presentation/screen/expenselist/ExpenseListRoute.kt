@@ -152,9 +152,6 @@ fun MainContent(
                     },
                     onSave = { newProfileName, filters ->
                         onEvent(Event.SaveCategoryProfile(newProfileName, filters))
-                    },
-                    onDelete = { profileName ->
-                        onEvent(Event.DeleteCategoryProfile(profileName))
                     }
                 )
 
