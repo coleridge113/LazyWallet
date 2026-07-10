@@ -9,6 +9,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,11 +20,13 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,6 +93,7 @@ fun ExpensePresetRoute(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     uiState: UiState.Success,
@@ -101,11 +105,24 @@ fun MainContent(
 
     Box(
         modifier = modifier.fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ){
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
+            TopAppBar(
+                modifier = Modifier,
+                title = {},
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                actions = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = "Logout",
+                        modifier = Modifier.singleClick { onEvent(Event.Logout) }
+                    )
+                }
+            )
+
             ExpenseAmountDisplay(
                 totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
@@ -229,22 +246,6 @@ fun MainContent(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Undo,
                             contentDescription = "Undo",
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.Logout)
-                            isMenuExpanded = false
-                        },
-                        modifier = Modifier.padding(bottom = 18.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
                             modifier = Modifier.size(iconSize)
                         )
                     }
