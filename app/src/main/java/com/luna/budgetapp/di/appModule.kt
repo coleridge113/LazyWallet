@@ -63,6 +63,7 @@ import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.data.local.migrations.MIGRATION_3_4
 import com.luna.budgetapp.data.local.repository.BudgetRepositoryImpl
 import com.luna.budgetapp.domain.repository.BudgetRepository
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
@@ -120,7 +121,7 @@ val databaseModule = module {
             AppDatabase::class.java, 
             "budget_db"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
         .build()
     }
     single { get<AppDatabase>().expenseDao() }
