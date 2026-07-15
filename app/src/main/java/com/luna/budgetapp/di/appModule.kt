@@ -66,9 +66,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.data.local.migrations.MIGRATION_3_4
 import com.luna.budgetapp.data.local.repository.BudgetRepositoryImpl
 import com.luna.budgetapp.domain.repository.BudgetRepository
+import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetBudgetByName
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -185,12 +187,14 @@ val appModule = module {
     factoryOf(::SignInEmailPasswordUseCase)
     factoryOf(::SignUpUseCase)
     factoryOf(::GetBudgetByName)
+    factoryOf(::SaveBudgetUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
     factoryOf(::ProfileUseCases)
     factoryOf(::PresetUseCases)
     factoryOf(::SettingsUseCases)
+    factoryOf(::BudgetUseCases)
 
     // ViewModels
     viewModelOf(::AuthViewModel)
