@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
+import com.luna.budgetapp.domain.model.BudgetFrequency
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
@@ -34,6 +35,7 @@ data class CategoryProfileState(
 sealed interface DialogState {
     data object ConfirmDeleteExpense : DialogState
     data object ConfirmLogout : DialogState
+    data object BudgetDialog : DialogState
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
         val selectedPreset: ExpensePreset? = null,
@@ -50,7 +52,14 @@ sealed interface Event {
     data object SignOut : Event
     data object ShowSignOutDialog : Event
     data object DeleteLatestExpense : Event
+    data object ShowBudgetDialog : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
+    data class ConfirmBudgetFormDialog(
+        val name: String,
+        val amount: String,
+        val frequency: BudgetFrequency,
+        val categoryMap: Map<Category, Boolean>
+    ) : Event
     data class ConfirmExpenseFormDialog(
         val id: Long?,
         val category: Category,

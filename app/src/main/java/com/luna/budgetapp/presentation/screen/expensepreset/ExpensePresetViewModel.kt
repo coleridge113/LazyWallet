@@ -2,11 +2,15 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.luna.budgetapp.domain.model.Budget
+import com.luna.budgetapp.domain.model.BudgetFrequency
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
+import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,12 +25,14 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
     private val presetUseCases: PresetUseCases,
     private val expenseUseCases: ExpenseUseCases,
-    private val profileUseCases: ProfileUseCases
+    private val profileUseCases: ProfileUseCases,
+    private val budgetUseCases: BudgetUseCases
 ): ViewModel() {
 
     private val _errorState = MutableStateFlow<String?>(null)
@@ -107,6 +113,7 @@ class ExpensePresetViewModel(
             Event.ShowSignOutDialog -> showSignOutDialog()
             Event.GotoExpenseRoute -> gotoExpenseRoute(Navigation.GotoExpenseRoute)
             Event.GotoAnalysisRoute -> gotoExpenseRoute(Navigation.GotoAnalysisRoute)
+            Event.ShowBudgetDialog -> showBudgetDialog()
             Event.DismissDialog -> dismissDialog()
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
@@ -118,6 +125,9 @@ class ExpensePresetViewModel(
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(
                 event.id, event.category, event.type, event.amount
+            )
+            is Event.ConfirmBudgetFormDialog -> saveBudget(
+                event.name, event.amount, event.frequency, event.categoryMap
             )
         }
     }
@@ -237,6 +247,33 @@ class ExpensePresetViewModel(
     private fun signOutUser() {
         viewModelScope.launch {
             _navigation.send(Navigation.Logout)
+        }
+    }
+
+    private fun showBudgetDialog() {
+        _dialogState.update {
+            DialogState.BudgetDialog
+        }
+    }
+
+    private fun saveBudget(
+        name: String,
+        amount: String,
+        frequency: BudgetFrequency,
+        categoryMap: Map<Category, Boolean>
+    ) {
+        viewModelScope.launch {
+            dismissDialog()
+
+            val budget = Budget(
+                name = name,
+                limit = amount.toDoubleOrNull() ?: 0.0,
+                frequency = frequency,
+                interactors = categoryMap.filter { it.value }.keys.toList(),
+                startDate = LocalDate.now()
+            )
+
+            budgetUseCases.saveBudget(budget)
         }
     }
 }
