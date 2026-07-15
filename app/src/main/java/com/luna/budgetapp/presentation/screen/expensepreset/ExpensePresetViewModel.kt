@@ -10,7 +10,6 @@ import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
-import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,19 +52,25 @@ class ExpensePresetViewModel(
 
     private val _expensesState = combine(
         _dateState,
-        presetUseCases.getAllExpensePresets()
-    ) { dateState, expensePresets ->
-        dateState to expensePresets
+        presetUseCases.getAllExpensePresets(),
+        _categoryProfileState
+    ) { dateState, expensePresets, categoryProfileState ->
+        Triple(dateState, expensePresets, categoryProfileState)
     }
-        .flatMapLatest { (dateState, expensePresets) ->
+        .flatMapLatest { (dateState, expensePresets, categoryProfileState) ->
             val (start, end) = dateState.dateRange
-            expenseUseCases.getTotalAmountByDateRange(
+            expenseUseCases.getExpensesByDateRange(
                 start = start,
-                end = end
-            ).map { totalAmount ->
+                end = end,
+                categories = categoryProfileState.selectedCategoryMap
+                    .filter { it.value }
+                    .keys
+                    .map { it.name }
+                    .toList()
+            ).map { expenses ->
                 ExpensesState(
                     expensePresets = expensePresets,
-                    totalAmount = totalAmount
+                    expenses = expenses
                 )
             }
         }

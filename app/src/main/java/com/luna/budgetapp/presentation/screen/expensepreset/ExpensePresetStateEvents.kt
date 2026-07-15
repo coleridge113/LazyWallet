@@ -4,6 +4,7 @@ import com.luna.budgetapp.domain.model.BudgetFrequency
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 
 sealed interface UiState {
@@ -19,8 +20,10 @@ sealed interface UiState {
 
 data class ExpensesState(
     val expensePresets: List<ExpensePreset> = emptyList(),
-    val totalAmount: Double = 0.0
-)
+    val expenses: List<Expense> = emptyList()
+) {
+    val totalAmount = expenses.sumOf { it.amount }
+}
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily

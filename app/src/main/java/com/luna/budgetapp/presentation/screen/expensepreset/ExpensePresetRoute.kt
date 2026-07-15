@@ -102,7 +102,10 @@ fun MainContent(
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
-    val (expensePresets, totalAmount) = uiState.expensesState
+    val expensePresets = uiState.expensesState.expensePresets
+    val expenses = uiState.expensesState.expenses
+    val totalAmount = uiState.expensesState.totalAmount
+
     var isMenuExpanded by remember { mutableStateOf(false) }
 
     Box(
@@ -316,9 +319,7 @@ fun MainContent(
 )
 @Composable
 fun ExpenseRoutePreviewLight() {
-    val totalAmount = 1234.56
     val expensesState = ExpensesState(
-        totalAmount = totalAmount,
         expensePresets = listOf(
             ExpensePreset(
                 amount = 100.0,
