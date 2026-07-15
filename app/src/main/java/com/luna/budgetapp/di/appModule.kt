@@ -70,6 +70,7 @@ import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.budget.GetBudgetByIdUseCase
 import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetBudgetByName
 import okhttp3.OkHttpClient
@@ -188,6 +189,7 @@ val appModule = module {
     factoryOf(::SignUpUseCase)
     factoryOf(::GetBudgetByName)
     factoryOf(::SaveBudgetUseCase)
+    factoryOf(::GetBudgetByIdUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
