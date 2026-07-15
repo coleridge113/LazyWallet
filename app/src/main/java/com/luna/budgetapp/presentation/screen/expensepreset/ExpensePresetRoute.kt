@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
@@ -321,36 +322,22 @@ fun MainContent(
 fun ExpenseRoutePreviewLight() {
     val expensesState = ExpensesState(
         expensePresets = listOf(
-            ExpensePreset(
-                amount = 100.0,
-                category = "FOOD",
-                type = "Lunch"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
+            ExpensePreset(amount = 100.0, category = "FOOD", type = "Lunch"),
+            ExpensePreset(amount = 140.0, category = "BEVERAGE", type = "Coffee")
+        ),
+        expenses = listOf(
+            Expense(id = 1, amount = 50.0, category = "FOOD", type = "Lunch"),
+            Expense(id = 2, amount = 15.0, category = "BEVERAGE", type = "Coffee"),
+            Expense(id = 3, amount = 200.0, category = "SHOPPING", type = "Groceries")
         )
     )
+
     val uiState = UiState.Success(
         expensesState = expensesState
     )
 
     LazyWalletTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             MainContent(
                 uiState = uiState,
                 onEvent = {}
