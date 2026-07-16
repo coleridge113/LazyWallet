@@ -18,8 +18,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -49,6 +51,10 @@ fun LocalDateTime.formatToDisplay(): String {
         Locale.getDefault()
     )
     return this.format(formatter)
+}
+
+fun LocalDate.formatToDay(): String {
+    return this.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
 }
 
 fun Modifier.singleClick(

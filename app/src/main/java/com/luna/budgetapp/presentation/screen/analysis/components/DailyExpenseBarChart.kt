@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.toLast7DaysExpenses
+import com.luna.budgetapp.presentation.screen.utils.formatToDay
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -104,6 +106,10 @@ fun DailyExpenseBarChart(
         ) {
             if (dailyData.isEmpty()) return@Canvas
 
+            val bottomPadding = 40f
+            val topPadding = 60f
+            val usableHeight = size.height - bottomPadding - topPadding
+
             val barWidth = size.width / (dailyData.size * 1.65f)
             val spacing = barWidth / 2
 
@@ -111,11 +117,10 @@ fun DailyExpenseBarChart(
 
                 val ratio = (item.total / maxValue).toFloat()
 
-                val barHeight =
-                    (size.height * 0.85f) * ratio * animationProgress
+                val barHeight = usableHeight * ratio * animationProgress
 
                 val x = index * (barWidth + spacing) + barWidth
-                val y = size.height - barHeight
+                val y = size.height - bottomPadding - barHeight
 
                 val rect = Rect(
                     offset = Offset(x, y),
@@ -135,7 +140,19 @@ fun DailyExpenseBarChart(
                 drawContext.canvas.nativeCanvas.drawText(
                     "₱${item.total.toInt()}",
                     x + barWidth / 2,
-                    y - 10,
+                    y - 15f,
+                    android.graphics.Paint().apply {
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        textSize = 28f
+                        isAntiAlias = true
+                        color = labelColor
+                    }
+                )
+
+                drawContext.canvas.nativeCanvas.drawText(
+                    item.date.formatToDay(),
+                    x + barWidth / 2,
+                    size.height - 5f,
                     android.graphics.Paint().apply {
                         textAlign = android.graphics.Paint.Align.CENTER
                         textSize = 28f
@@ -147,8 +164,8 @@ fun DailyExpenseBarChart(
 
             drawLine(
                 color = Color.LightGray,
-                start = Offset(0f, size.height),
-                end = Offset(size.width, size.height),
+                start = Offset(0f, size.height - bottomPadding),
+                end = Offset(size.width, size.height - bottomPadding),
                 strokeWidth = 2f
             )
         }
