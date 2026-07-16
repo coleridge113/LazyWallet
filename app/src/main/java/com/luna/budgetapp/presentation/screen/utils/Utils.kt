@@ -33,6 +33,13 @@ fun getIconForCategory(category: String): ImageVector {
         ?: Icons.Default.AttachMoney
 }
 
+fun getIconForCategory(category: Category): ImageVector {
+    return CategoryOptions.entries
+        .firstOrNull { it.name == category.name }
+        ?.icon
+        ?: Icons.Default.AttachMoney
+}
+
 fun Double.toCurrency(): String {
     return if (this >= 0)
         "%,.2f".format(this)
