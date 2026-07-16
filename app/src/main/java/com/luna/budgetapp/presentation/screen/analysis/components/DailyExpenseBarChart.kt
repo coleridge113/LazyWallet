@@ -131,7 +131,7 @@ fun DailyExpenseBarChart(
 
                 val barColor = animatedColors[index]
                 drawRoundRect(
-                    color = barColor ?: dBarColor,
+                    color = barColor,
                     topLeft = rect.topLeft,
                     size = rect.size,
                     cornerRadius = CornerRadius(14f, 14f)
