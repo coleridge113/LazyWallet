@@ -99,12 +99,13 @@ class AnalysisViewModel (
 
     fun onEvent(event: Event) {
         when (event) {
+            Event.DeselectBar -> setSelectedDate(null)
             is Event.SelectBar -> setSelectedDate(event.date)
             is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
         }
     }
 
-    private fun setSelectedDate(date: LocalDate) {
+    private fun setSelectedDate(date: LocalDate?) {
         _dateState.update {
             it.copy(
                 selectedDate = date

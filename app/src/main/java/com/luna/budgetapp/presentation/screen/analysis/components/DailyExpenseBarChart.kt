@@ -42,7 +42,7 @@ fun DailyExpenseBarChart(
     modifier: Modifier = Modifier,
     expenses: List<Expense>,
     dBarColor: Color = MaterialTheme.colorScheme.primary,
-    selectedDate: LocalDate,
+    selectedDate: LocalDate?,
     onClickBar: (LocalDate) -> Unit,
 ) {
 
@@ -126,7 +126,7 @@ fun DailyExpenseBarChart(
 
                 val barColor = animatedColors[index]
                 drawRoundRect(
-                    color = barColor,
+                    color = barColor ?: dBarColor,
                     topLeft = rect.topLeft,
                     size = rect.size,
                     cornerRadius = CornerRadius(14f, 14f)

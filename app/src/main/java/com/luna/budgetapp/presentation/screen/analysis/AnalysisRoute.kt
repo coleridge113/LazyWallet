@@ -123,7 +123,10 @@ fun MainContent(
                 )
 
                 Button(
-                    onClick = { isExpanded = false },
+                    onClick = {
+                        isExpanded = false
+                        onEvent(Event.DeselectBar)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent
                     )
