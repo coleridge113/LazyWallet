@@ -3,6 +3,7 @@ package com.luna.budgetapp.presentation.screen.budget.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,7 +45,7 @@ fun BudgetCard(
     onEdit: (Budget) -> Unit
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         shape = RoundedCornerShape(16.dp),
         modifier = modifier.fillMaxWidth()
             .height(200.dp),
@@ -52,7 +53,7 @@ fun BudgetCard(
         val remaining = budget.limit - spent
 
         Column(
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -71,75 +72,79 @@ fun BudgetCard(
                         .singleClick { onEdit(budget) }
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Text(
-                    text = "Amount: ",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Amount: ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Php ${budget.limit.toCurrency()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Spent: ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Php ${spent.toCurrency()}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Remaining: ",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Php ${remaining.toCurrency()}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
-                Text(
-                    text = "Php ${budget.limit.toCurrency()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Spent: ",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "Php ${spent.toCurrency()}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Remaining: ",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "Php ${remaining.toCurrency()}",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3)
-            ) {
-                items(budget.interactors) { category ->
-                   Row(
-                       modifier = Modifier,
-                       verticalAlignment = Alignment.CenterVertically
-                   ) {
-                       Icon(
-                           imageVector = getIconForCategory(category),
-                           contentDescription = null,
-                           modifier = Modifier.size(12.dp)
-                       )
-                       Text(
-                           text = category.displayName,
-                           style = MaterialTheme.typography.bodySmall,
-                           modifier = Modifier.padding(start = 8.dp)
-                       )
-                   }
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(3)
+                ) {
+                    items(budget.interactors) { category ->
+                        Row(
+                            modifier = Modifier,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = getIconForCategory(category),
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = category.displayName,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -161,11 +166,15 @@ fun BudgetCardPreview() {
     )
 
     LazyWalletTheme {
-        BudgetCard(
-            modifier = Modifier,
-            budget = budget,
-            spent = 432.00,
-            onEdit = { }
-        )
+        Surface(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            BudgetCard(
+                modifier = Modifier,
+                budget = budget,
+                spent = 432.00,
+                onEdit = { }
+            )
+        }
     }
 }
