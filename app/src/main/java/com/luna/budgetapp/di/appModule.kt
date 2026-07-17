@@ -56,6 +56,7 @@ import com.luna.budgetapp.network.AuthService
 import com.luna.budgetapp.network.ExpenseService
 import com.luna.budgetapp.network.interceptors.AuthInterceptor
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
+import com.luna.budgetapp.presentation.screen.budget.BudgetViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
@@ -70,6 +71,7 @@ import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.budget.GetAllBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetBudgetByIdUseCase
 import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.UpdateBudgetUseCase
@@ -192,6 +194,7 @@ val appModule = module {
     factoryOf(::SaveBudgetUseCase)
     factoryOf(::GetBudgetByIdUseCase)
     factoryOf(::UpdateBudgetUseCase)
+    factoryOf(::GetAllBudgetUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
@@ -206,4 +209,5 @@ val appModule = module {
     viewModelOf(::ExpensePresetViewModel)
     viewModelOf(::ExpenseListViewModel)
     viewModelOf(::AnalysisViewModel)
+    viewModelOf(::BudgetViewModel)
 }
