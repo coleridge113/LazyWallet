@@ -132,6 +132,7 @@ sealed class DateFilter {
         override fun resolve(now: LocalDate, locale: Locale): DateRange {
             val start = now.withDayOfYear(1)
             val end = now.withDayOfYear(now.lengthOfYear())
+
             return DateRange(
                 start = start.atStartOfDay(),
                 end = end.atTime(LocalTime.MAX)
