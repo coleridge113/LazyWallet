@@ -3,7 +3,7 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Budget
-import com.luna.budgetapp.domain.model.BudgetFrequency
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
@@ -264,7 +264,7 @@ class ExpensePresetViewModel(
     private fun saveBudget(
         name: String,
         amount: String,
-        frequency: BudgetFrequency,
+        frequency: DateFilter,
         categoryMap: Map<Category, Boolean>
     ) {
         viewModelScope.launch {

@@ -1,6 +1,5 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
-import com.luna.budgetapp.domain.model.BudgetFrequency
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
@@ -60,7 +59,7 @@ sealed interface Event {
     data class ConfirmBudgetFormDialog(
         val name: String,
         val amount: String,
-        val frequency: BudgetFrequency,
+        val frequency: DateFilter,
         val categoryMap: Map<Category, Boolean>
     ) : Event
     data class ConfirmExpenseFormDialog(

@@ -15,6 +15,20 @@ sealed class DateFilter {
         locale: Locale = Locale.getDefault()
     ): DateRange
 
+    fun getFriendlyName(): String {
+        return when (this) {
+            Daily -> "Daily"
+            Weekly -> "Weekly"
+            BiWeekly -> "Every 2 weeks"
+            Monthly -> "Monthly"
+            Quarterly -> "Quarterly"
+            BiYearly -> "Every 6 months"
+            Yearly -> "Yearly"
+            Last7Days -> "Last 7 days"
+            is Custom -> "Custom"
+        }
+    }
+
     data object Daily : DateFilter() {
         override fun resolve(now: LocalDate, locale: Locale) =
             DateRange(
@@ -29,6 +43,32 @@ sealed class DateFilter {
 
             val start = now.with(weekFields.dayOfWeek(), 1)
             val end = now.with(weekFields.dayOfWeek(), 7)
+
+            return DateRange(
+                start = start.atStartOfDay(),
+                end = end.atTime(LocalTime.MAX)
+            )
+        }
+    }
+
+    data object BiWeekly : DateFilter() {
+        override fun resolve(now: LocalDate, locale: Locale): DateRange {
+            val weekFields = WeekFields.of(locale)
+            val weekOfYear = now.get(weekFields.weekOfWeekBasedYear())
+            
+            val isFirstWeekOfPeriod = (weekOfYear - 1) % 2 == 0
+            
+            val start = if (isFirstWeekOfPeriod) {
+                now.with(weekFields.dayOfWeek(), 1)
+            } else {
+                now.minusWeeks(1).with(weekFields.dayOfWeek(), 1)
+            }
+            
+            val end = if (isFirstWeekOfPeriod) {
+                now.plusWeeks(1).with(weekFields.dayOfWeek(), 7)
+            } else {
+                now.with(weekFields.dayOfWeek(), 7)
+            }
 
             return DateRange(
                 start = start.atStartOfDay(),
@@ -56,6 +96,47 @@ sealed class DateFilter {
                 start = now.withDayOfMonth(1).atStartOfDay(),
                 end = now.withDayOfMonth(now.lengthOfMonth()).atTime(LocalTime.MAX)
             )
+    }
+
+    data object Quarterly : DateFilter() {
+        override fun resolve(now: LocalDate, locale: Locale): DateRange {
+            val quarter = (now.monthValue - 1) / 3
+            val startMonth = quarter * 3 + 1
+            val start = now.withMonth(startMonth).withDayOfMonth(1)
+            val end = start.plusMonths(2).let { 
+                it.withDayOfMonth(it.lengthOfMonth())
+            }
+            return DateRange(
+                start = start.atStartOfDay(),
+                end = end.atTime(LocalTime.MAX)
+            )
+        }
+    }
+
+    data object BiYearly : DateFilter() {
+        override fun resolve(now: LocalDate, locale: Locale): DateRange {
+            val half = (now.monthValue - 1) / 6
+            val startMonth = half * 6 + 1
+            val start = now.withMonth(startMonth).withDayOfMonth(1)
+            val end = start.plusMonths(5).let {
+                it.withDayOfMonth(it.lengthOfMonth())
+            }
+            return DateRange(
+                start = start.atStartOfDay(),
+                end = end.atTime(LocalTime.MAX)
+            )
+        }
+    }
+
+    data object Yearly : DateFilter() {
+        override fun resolve(now: LocalDate, locale: Locale): DateRange {
+            val start = now.withDayOfYear(1)
+            val end = now.withDayOfYear(now.lengthOfYear())
+            return DateRange(
+                start = start.atStartOfDay(),
+                end = end.atTime(LocalTime.MAX)
+            )
+        }
     }
 
     data class Custom(
@@ -90,5 +171,18 @@ sealed class DateFilter {
                 end = endDateTime
             )
         }
+    }
+
+    companion object {
+        val budgetFrequencies = listOf(
+            Daily,
+            Weekly,
+            BiWeekly,
+            Monthly,
+            Quarterly,
+            BiYearly,
+            Yearly,
+            Custom()
+        )
     }
 }

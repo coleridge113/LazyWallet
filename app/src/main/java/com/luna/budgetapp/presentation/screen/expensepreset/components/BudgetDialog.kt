@@ -38,7 +38,7 @@ import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_7
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.luna.budgetapp.domain.model.BudgetFrequency
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.presentation.screen.components.CategoryFilter
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
@@ -47,12 +47,12 @@ import com.luna.budgetapp.ui.theme.LazyWalletTheme
 @Composable
 fun BudgetDialog(
     onDismissRequest: () -> Unit,
-    onSave: (String, String, BudgetFrequency, Map<Category, Boolean>) -> Unit,
+    onSave: (String, String, DateFilter, Map<Category, Boolean>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val nameState = rememberTextFieldState()
     val amountState = rememberTextFieldState()
-    val frequencyOptions = BudgetFrequency.entries
+    val frequencyOptions = DateFilter.budgetFrequencies
     var selectedOption by remember { mutableStateOf(frequencyOptions.first()) }
     var expanded by remember { mutableStateOf(false) }
     var tempMap by remember {

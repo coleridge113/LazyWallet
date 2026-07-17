@@ -7,7 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.luna.budgetapp.domain.model.BudgetFrequency
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Category
 import java.time.LocalDate
 
@@ -17,7 +17,7 @@ data class BudgetEntity(
     @ColumnInfo(name = "remote_id") val remoteId: String? = null,
     @ColumnInfo(name = "limit") val limit: Double,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "frequency") val frequency: BudgetFrequency,
+    @ColumnInfo(name = "frequency") val frequency: DateFilter,
     @ColumnInfo(name = "start_date") val startDate: LocalDate,
     @ColumnInfo(name = "end_date") val endDate: LocalDate? = null
 )

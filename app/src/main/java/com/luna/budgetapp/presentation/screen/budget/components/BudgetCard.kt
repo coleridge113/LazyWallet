@@ -27,7 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Budget
-import com.luna.budgetapp.domain.model.BudgetFrequency
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
 import com.luna.budgetapp.presentation.screen.utils.singleClick
@@ -155,7 +155,7 @@ fun BudgetCardPreview() {
     val budget = Budget(
         limit = 500.0,
         name = "Daily Budget",
-        frequency = BudgetFrequency.DAILY,
+        frequency = DateFilter.Daily,
         interactors = Category.entries,
         startDate = LocalDate.now()
     )

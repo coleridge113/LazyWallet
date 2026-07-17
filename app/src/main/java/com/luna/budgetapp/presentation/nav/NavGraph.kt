@@ -29,6 +29,8 @@ import com.luna.budgetapp.presentation.screen.auth.AuthRoute
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListRoute
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
+import com.luna.budgetapp.presentation.screen.budget.BudgetRoute
+import com.luna.budgetapp.presentation.screen.budget.BudgetViewModel
 
 @ExperimentalMaterial3Api
 @ExperimentalSharedTransitionApi

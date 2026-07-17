@@ -7,14 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
 import org.koin.compose.viewmodel.koinViewModel
 import com.luna.budgetapp.domain.model.Budget
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
 
 @Composable
 fun BudgetRoute(
-    navController: NavController,
     viewModel: BudgetViewModel = koinViewModel()
 ) {
 
