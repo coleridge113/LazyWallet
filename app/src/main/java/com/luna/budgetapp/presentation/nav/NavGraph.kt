@@ -134,6 +134,12 @@ fun NavGraphSetup(
                         viewModel = viewModel
                     )
                 }
+                composable<Routes.BudgetRoute> {
+                    val viewModel: BudgetViewModel = koinViewModel()
+                    BudgetRoute(
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
