@@ -2,7 +2,9 @@ package com.luna.budgetapp.presentation.screen.budget
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.domain.model.Budget
+import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +16,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BudgetViewModel(
@@ -42,11 +47,13 @@ class BudgetViewModel(
 
     private val _successState = combine(
         _budgets,
-        _expenses
-    ) { budgets, expenses ->
+        _expenses,
+        _dialogState
+    ) { budgets, expenses, dialog ->
         UiState.Success(
             budgets = budgets,
-            expenses = expenses
+            expenses = expenses,
+            dialog = dialog
         )
     }
 
@@ -57,4 +64,45 @@ class BudgetViewModel(
             initialValue = UiState.Loading
         )
 
+
+    fun onEvent(event: Event) {
+        when (event) {
+            Event.DismissDialog -> dismissDialog()
+            Event.ShowBudgetDialog -> showBudgetDialog()
+            is Event.ConfirmBudgetFormDialog -> saveBudget(
+                event.name, event.amount, event.frequency, event.categoryMap
+            )
+        }
+    }
+
+    private fun dismissDialog() {
+        _dialogState.update { null }
+    }
+
+    private fun showBudgetDialog() {
+        _dialogState.update {
+            DialogState.BudgetDialog
+        }
+    }
+
+    private fun saveBudget(
+        name: String,
+        amount: String,
+        frequency: DateFilter,
+        categoryMap: Map<Category, Boolean>
+    ) {
+        viewModelScope.launch {
+            dismissDialog()
+
+            val budget = Budget(
+                name = name,
+                limit = amount.toDoubleOrNull() ?: 0.0,
+                frequency = frequency,
+                interactors = categoryMap.filter { it.value }.keys.toList(),
+                startDate = LocalDate.now()
+            )
+
+            budgetUseCases.saveBudget(budget)
+        }
+    }
 }

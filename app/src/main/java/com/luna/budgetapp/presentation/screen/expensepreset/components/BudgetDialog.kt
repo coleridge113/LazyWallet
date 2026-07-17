@@ -53,7 +53,9 @@ fun BudgetDialog(
     val nameState = rememberTextFieldState()
     val amountState = rememberTextFieldState()
     val frequencyOptions = DateFilter.budgetFrequencies
-    var selectedOption by remember { mutableStateOf(frequencyOptions.first()) }
+    var selectedOption by remember {
+        mutableStateOf(frequencyOptions.firstOrNull() ?: DateFilter.Daily)
+    }
     var expanded by remember { mutableStateOf(false) }
     var tempMap by remember {
         mutableStateOf(Category.entries.associateWith { false })

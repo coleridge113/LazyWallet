@@ -279,21 +279,6 @@ fun MainContent(
                             modifier = Modifier.size(iconSize)
                         )
                     }
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.ShowBudgetDialog)
-                            isMenuExpanded = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CurrencyBitcoin,
-                            contentDescription = "Undo",
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
                 }
             }
 

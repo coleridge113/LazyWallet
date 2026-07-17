@@ -175,15 +175,17 @@ sealed class DateFilter {
     }
 
     companion object {
-        val budgetFrequencies = listOf(
-            Daily,
-            Weekly,
-            BiWeekly,
-            Monthly,
-            Quarterly,
-            BiYearly,
-            Yearly,
-            Custom()
-        )
+        val budgetFrequencies by lazy {
+            listOf(
+                Daily,
+                Weekly,
+                BiWeekly,
+                Monthly,
+                Quarterly,
+                BiYearly,
+                Yearly,
+                Custom()
+            )
+        }
     }
 }
