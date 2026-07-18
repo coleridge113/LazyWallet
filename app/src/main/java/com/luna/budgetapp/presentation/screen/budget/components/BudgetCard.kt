@@ -137,7 +137,7 @@ fun BudgetCard(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(0.80f)
                     .align(Alignment.CenterHorizontally)
             ) {
                 items(budget.interactors) { category ->

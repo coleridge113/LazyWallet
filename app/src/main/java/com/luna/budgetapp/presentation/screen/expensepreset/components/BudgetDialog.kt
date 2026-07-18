@@ -3,10 +3,12 @@ package com.luna.budgetapp.presentation.screen.expensepreset.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
@@ -14,6 +16,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -38,6 +41,7 @@ import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices.PIXEL_7
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.luna.budgetapp.domain.model.Budget
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.presentation.screen.components.CategoryFilter
@@ -46,19 +50,20 @@ import com.luna.budgetapp.ui.theme.LazyWalletTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetDialog(
+    modifier: Modifier = Modifier,
+    budget: Budget? = null,
     onDismissRequest: () -> Unit,
     onSave: (String, String, DateFilter, Map<Category, Boolean>) -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    val nameState = rememberTextFieldState()
-    val amountState = rememberTextFieldState()
+    val nameState = rememberTextFieldState(budget?.name ?: "")
+    val amountState = rememberTextFieldState(budget?.limit?.toString() ?: "")
     val frequencyOptions = DateFilter.budgetFrequencies
     var selectedOption by remember {
-        mutableStateOf(frequencyOptions.firstOrNull() ?: DateFilter.Daily)
+        mutableStateOf(budget?.frequency ?: frequencyOptions.firstOrNull() ?: DateFilter.Daily)
     }
     var expanded by remember { mutableStateOf(false) }
     var tempMap by remember {
-        mutableStateOf(Category.entries.associateWith { false })
+        mutableStateOf(Category.entries.associateWith { budget?.interactors?.contains(it) == true  })
     }
 
     BasicAlertDialog(
@@ -169,8 +174,8 @@ fun BudgetDialog(
                     ) {
                         Text("Cancel")
                     }
-
-                    TextButton(
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
                         onClick = {
                             onSave(
                                 nameState.text.toString(),
@@ -180,7 +185,9 @@ fun BudgetDialog(
                             )
                         }
                     ) {
-                        Text("Save")
+                        Text(
+                            if (budget == null) "Save" else "Update"
+                        )
                     }
                 }
             }

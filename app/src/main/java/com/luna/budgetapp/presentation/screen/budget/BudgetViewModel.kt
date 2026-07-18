@@ -68,7 +68,7 @@ class BudgetViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
-            Event.ShowBudgetDialog -> showBudgetDialog()
+            is Event.ShowBudgetDialog -> showBudgetDialog(event.budget)
             is Event.ConfirmBudgetFormDialog -> saveBudget(
                 event.name, event.amount, event.frequency, event.categoryMap
             )
@@ -79,9 +79,9 @@ class BudgetViewModel(
         _dialogState.update { null }
     }
 
-    private fun showBudgetDialog() {
+    private fun showBudgetDialog(budget: Budget?) {
         _dialogState.update {
-            DialogState.BudgetDialog
+            DialogState.BudgetDialog(budget)
         }
     }
 

@@ -19,7 +19,7 @@ sealed interface UiState {
 
 sealed interface Event {
     data object DismissDialog : Event
-    data object ShowBudgetDialog : Event
+    data class ShowBudgetDialog(val budget: Budget? = null) : Event
     data class ConfirmBudgetFormDialog(
         val name: String,
         val amount: String,
@@ -29,5 +29,5 @@ sealed interface Event {
 }
 
 sealed interface DialogState {
-    data object BudgetDialog : DialogState
+    data class BudgetDialog(val budget: Budget?) : DialogState
 }

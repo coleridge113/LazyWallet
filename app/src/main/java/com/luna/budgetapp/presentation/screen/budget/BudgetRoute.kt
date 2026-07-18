@@ -66,8 +66,9 @@ fun MainContent(
             .padding(horizontal = 16.dp)
     ){
         when (val dialog = dialog) {
-            DialogState.BudgetDialog -> {
+            is DialogState.BudgetDialog -> {
                 BudgetDialog(
+                    budget = dialog.budget,
                     onDismissRequest = { onEvent(Event.DismissDialog) },
                     onSave = { name, amount, frequency, categoryMap ->
                         onEvent(
@@ -91,7 +92,7 @@ fun MainContent(
                     modifier = Modifier.padding(4.dp),
                     budget = budget,
                     spent = spent ?: 0.0,
-                    onEdit = { }
+                    onEdit = { onEvent(Event.ShowBudgetDialog(it)) }
                 )
             }
         }
@@ -114,7 +115,7 @@ fun MainContent(
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.secondary,
                 elevation = noElevation,
-                onClick = { onEvent(Event.ShowBudgetDialog) }
+                onClick = { onEvent(Event.ShowBudgetDialog()) }
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircleOutline,
