@@ -70,7 +70,7 @@ class BudgetViewModel(
             Event.DismissDialog -> dismissDialog()
             is Event.ShowBudgetDialog -> showBudgetDialog(event.budget)
             is Event.ConfirmBudgetFormDialog -> saveBudget(
-                event.name, event.amount, event.frequency, event.categoryMap
+                event.id, event.name, event.amount, event.frequency, event.categoryMap
             )
         }
     }
@@ -86,6 +86,7 @@ class BudgetViewModel(
     }
 
     private fun saveBudget(
+        id: Long = 0,
         name: String,
         amount: String,
         frequency: DateFilter,
@@ -95,6 +96,7 @@ class BudgetViewModel(
             dismissDialog()
 
             val budget = Budget(
+                id = id,
                 name = name,
                 limit = amount.toDoubleOrNull() ?: 0.0,
                 frequency = frequency,
@@ -102,7 +104,11 @@ class BudgetViewModel(
                 startDate = LocalDate.now()
             )
 
-            budgetUseCases.saveBudget(budget)
+            if (budget.id != 0L) {
+                budgetUseCases.updateBudget(budget)
+            } else {
+                budgetUseCases.saveBudget(budget)
+            }
         }
     }
 }

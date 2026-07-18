@@ -70,9 +70,10 @@ fun MainContent(
                 BudgetDialog(
                     budget = dialog.budget,
                     onDismissRequest = { onEvent(Event.DismissDialog) },
-                    onSave = { name, amount, frequency, categoryMap ->
+                    onSave = { id, name, amount, frequency, categoryMap ->
                         onEvent(
                             Event.ConfirmBudgetFormDialog(
+                                id = id,
                                 name = name,
                                 amount = amount,
                                 frequency = frequency,

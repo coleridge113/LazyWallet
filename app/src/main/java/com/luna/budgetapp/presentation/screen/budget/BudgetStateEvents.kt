@@ -21,6 +21,7 @@ sealed interface Event {
     data object DismissDialog : Event
     data class ShowBudgetDialog(val budget: Budget? = null) : Event
     data class ConfirmBudgetFormDialog(
+        val id: Long,
         val name: String,
         val amount: String,
         val frequency: DateFilter,
