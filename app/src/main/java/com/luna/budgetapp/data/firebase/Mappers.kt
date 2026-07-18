@@ -9,6 +9,7 @@ import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.DateFilter
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -88,10 +89,22 @@ fun CategoryFilter.toEntity(): CategoryFilterEntity {
 }
 
 fun BudgetEntity.toFirestoreModel(interactors: List<Category>): Budget {
+    val frequencyString = when (val filter = this.frequency) {
+        DateFilter.Daily -> "DAILY"
+        DateFilter.Weekly -> "WEEKLY"
+        DateFilter.BiWeekly -> "BI_WEEKLY"
+        DateFilter.Monthly -> "MONTHLY"
+        DateFilter.Quarterly -> "QUARTERLY"
+        DateFilter.BiYearly -> "BI_YEARLY"
+        DateFilter.Yearly -> "YEARLY"
+        DateFilter.Last7Days -> "LAST_7_DAYS"
+        is DateFilter.Custom -> "CUSTOM|${filter.start}|${filter.end}"
+    }
+
     return Budget(
         limit = this.limit,
         name = this.name,
-        frequency = this.frequency,
+        frequency = frequencyString,
         interactors = interactors,
         startDate = this.startDate.toDate(),
         endDate = this.endDate?.toDate()
@@ -99,11 +112,50 @@ fun BudgetEntity.toFirestoreModel(interactors: List<Category>): Budget {
 }
 
 fun Budget.toEntity(): BudgetEntity {
+    val frequencyFilter = when (val freq = this.frequency) {
+        is String -> {
+            val parts = freq.split("|")
+            when (parts[0]) {
+                "DAILY" -> DateFilter.Daily
+                "WEEKLY" -> DateFilter.Weekly
+                "BI_WEEKLY" -> DateFilter.BiWeekly
+                "MONTHLY" -> DateFilter.Monthly
+                "QUARTERLY" -> DateFilter.Quarterly
+                "BI_YEARLY" -> DateFilter.BiYearly
+                "YEARLY" -> DateFilter.Yearly
+                "LAST_7_DAYS" -> DateFilter.Last7Days
+                "CUSTOM" -> DateFilter.Custom(
+                    start = parts.getOrNull(1)?.toLongOrNull() ?: 0L,
+                    end = parts.getOrNull(2)?.toLongOrNull()
+                )
+                else -> DateFilter.Monthly
+            }
+        }
+        is Map<*, *> -> {
+            // Smart Recovery for legacy Map data
+            when {
+                freq.containsKey("start") -> {
+                    DateFilter.Custom(
+                        start = (freq["start"] as? Number)?.toLong() ?: 0L,
+                        end = (freq["end"] as? Number)?.toLong()
+                    )
+                }
+                this.name.contains("Daily", ignoreCase = true) -> DateFilter.Daily
+                this.name.contains("Weekly", ignoreCase = true) -> DateFilter.Weekly
+                this.name.contains("Groceries", ignoreCase = true) || 
+                this.name.contains("Bi-Weekly", ignoreCase = true) -> DateFilter.BiWeekly
+                this.name.contains("Yearly", ignoreCase = true) -> DateFilter.Yearly
+                else -> DateFilter.Monthly
+            }
+        }
+        else -> DateFilter.Monthly
+    }
+
     return BudgetEntity(
         remoteId = this.id.ifBlank { null },
         limit = this.limit,
         name = this.name,
-        frequency = this.frequency,
+        frequency = frequencyFilter,
         startDate = this.startDate.toLocalDate(),
         endDate = this.endDate?.toLocalDate()
     )
