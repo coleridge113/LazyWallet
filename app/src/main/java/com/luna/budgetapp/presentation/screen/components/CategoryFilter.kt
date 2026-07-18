@@ -212,7 +212,7 @@ fun CategoryFilter(
                     )
                 )
 
-                Text(text = item.displayName)
+                Text(text = item.getDisplayName())
             }
         }
     }

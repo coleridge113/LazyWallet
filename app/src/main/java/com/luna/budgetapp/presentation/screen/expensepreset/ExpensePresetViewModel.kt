@@ -156,7 +156,7 @@ class ExpensePresetViewModel(
             id = id,
             amount = amount.toDoubleOrNull() ?: 0.0,
             category = category.name,
-            type = type.ifEmpty { category.displayName }.trim()
+            type = type.ifEmpty { category.getDisplayName() }.trim()
         )
 
         viewModelScope.launch {

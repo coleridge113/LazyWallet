@@ -74,7 +74,7 @@ fun ExpensePreset.toEntity(): ExpensePresetEntity {
 fun CategoryFilterEntity.toFirestoreModel(): CategoryFilter {
     return CategoryFilter(
         profileName = this.profileName,
-        category = this.category.displayName,
+        category = this.category.getDisplayName(),
         active = this.isActive
     )
 }
@@ -82,7 +82,7 @@ fun CategoryFilterEntity.toFirestoreModel(): CategoryFilter {
 fun CategoryFilter.toEntity(): CategoryFilterEntity {
     return CategoryFilterEntity(
         profileName = this.profileName,
-        category = Category.entries.first { it.displayName == this.category },
+        category = Category.entries.first { it.getDisplayName() == this.category },
         isActive = this.active
     )
 }

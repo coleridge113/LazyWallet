@@ -179,7 +179,7 @@ fun BudgetCard(
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
-                            text = category.displayName,
+                            text = category.getDisplayName(),
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp)
                         )

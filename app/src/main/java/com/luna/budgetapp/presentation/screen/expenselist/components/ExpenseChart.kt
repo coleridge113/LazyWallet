@@ -175,7 +175,7 @@ fun ExpenseChartLegends(
                 Spacer(modifier = Modifier.width(6.dp))
 
                 Text(
-                    text = "${portion.formatToPercentage()} ${item.category.displayName}",
+                    text = "${portion.formatToPercentage()} ${item.category.getDisplayName()}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
