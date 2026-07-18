@@ -39,7 +39,7 @@ interface BudgetDao {
 
     @Transaction
     @Query("SELECT * FROM budget where id = :budgetId")
-    fun getBudgetWithInteractorsByIdOnce(budgetId: Long): BudgetWithInteractors?
+    suspend fun getBudgetWithInteractorsByIdOnce(budgetId: Long): BudgetWithInteractors?
 
     @Transaction
     @Query("SELECT * FROM budget where name = :name")
