@@ -27,7 +27,7 @@ interface BudgetDao {
     fun getBudgetById(budgetId: Long): Flow<BudgetEntity>
 
     @Query("SELECT * FROM budget where id = :budgetId")
-    suspend fun getBudgetByIdOnce(budgetId: Long): BudgetEntity
+    suspend fun getBudgetByIdOnce(budgetId: Long): BudgetEntity?
 
     @Transaction
     @Query("SELECT * FROM budget")

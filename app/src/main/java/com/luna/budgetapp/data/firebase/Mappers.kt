@@ -1,12 +1,15 @@
 package com.luna.budgetapp.data.firebase
 
+import com.luna.budgetapp.data.firebase.models.Budget
 import com.luna.budgetapp.data.firebase.models.CategoryFilter
 import com.luna.budgetapp.data.firebase.models.Expense
 import com.luna.budgetapp.data.firebase.models.ExpensePreset
+import com.luna.budgetapp.data.local.entity.BudgetEntity
 import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
 import com.luna.budgetapp.domain.model.Category
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
@@ -17,6 +20,14 @@ fun LocalDateTime.toDate(): Date {
 
 fun Date.toLocalDateTime(): LocalDateTime {
     return this.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+}
+
+fun LocalDate.toDate(): Date {
+    return Date.from(this.atStartOfDay(ZoneId.systemDefault()).toInstant())
+}
+
+fun Date.toLocalDate(): LocalDate {
+    return this.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 }
 
 fun ExpenseEntity.toFirestoreModel(): Expense {
@@ -73,5 +84,27 @@ fun CategoryFilter.toEntity(): CategoryFilterEntity {
         profileName = this.profileName,
         category = Category.entries.first { it.displayName == this.category },
         isActive = this.active
+    )
+}
+
+fun BudgetEntity.toFirestoreModel(interactors: List<Category>): Budget {
+    return Budget(
+        limit = this.limit,
+        name = this.name,
+        frequency = this.frequency,
+        interactors = interactors,
+        startDate = this.startDate.toDate(),
+        endDate = this.endDate?.toDate()
+    )
+}
+
+fun Budget.toEntity(): BudgetEntity {
+    return BudgetEntity(
+        remoteId = this.id.ifBlank { null },
+        limit = this.limit,
+        name = this.name,
+        frequency = this.frequency,
+        startDate = this.startDate.toLocalDate(),
+        endDate = this.endDate?.toLocalDate()
     )
 }

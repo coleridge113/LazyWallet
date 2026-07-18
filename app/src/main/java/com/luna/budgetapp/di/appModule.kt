@@ -149,7 +149,7 @@ val appModule = module {
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ExpensePresetRepository> { ExpensePresetRepositoryImpl(get(), get(), get(), get(), get()) }
     single<CategoryRepository> { CategoryFilterRepositoryImpl(get(), get(), get(), get()) }
-    single<BudgetRepository> { BudgetRepositoryImpl(get()) }
+    single<BudgetRepository> { BudgetRepositoryImpl(get(), get(), get()) }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     singleOf(::SettingsRepositoryImpl) { bind<SettingsRepository>() }
     singleOf(::AuthRemoteDataSource)
