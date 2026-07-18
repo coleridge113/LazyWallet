@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -47,7 +46,6 @@ import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
-import com.luna.budgetapp.presentation.screen.expensepreset.components.BudgetDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
@@ -146,21 +144,6 @@ fun MainContent(
             )
 
             when (val dialog = uiState.dialogState) {
-                DialogState.BudgetDialog -> {
-                    BudgetDialog(
-                        onDismissRequest = { onEvent(Event.DismissDialog) },
-                        onSave = { name, amount, frequency, categoryMap ->
-                            onEvent(
-                                Event.ConfirmBudgetFormDialog(
-                                    name = name,
-                                    amount = amount,
-                                    frequency = frequency,
-                                    categoryMap = categoryMap
-                                )
-                            )
-                        }
-                    )
-                }
                 DialogState.ConfirmLogout -> {
                     ConfirmationDialog(
                         message = "Are you sure you want to sign out?",
