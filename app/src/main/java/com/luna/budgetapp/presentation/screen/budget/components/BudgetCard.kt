@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,7 +49,8 @@ fun BudgetCard(
     modifier: Modifier,
     budget: Budget,
     spent: Double,
-    onEdit: (Budget) -> Unit
+    onEdit: (Budget) -> Unit,
+    onDelete: (Budget) -> Unit
 ) {
     Surface(
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
@@ -91,8 +91,9 @@ fun BudgetCard(
                         onClick = { option ->
                             when (option) {
                                 Options.EDIT -> onEdit(budget)
-                                Options.DELETE -> {}
+                                Options.DELETE -> onDelete(budget)
                             }
+                            expanded = false
                         }
                     )
                 }
@@ -245,7 +246,8 @@ fun BudgetCardPreview() {
                 modifier = Modifier,
                 budget = budget,
                 spent = 432.00,
-                onEdit = { }
+                onEdit = {},
+                onDelete = {}
             )
         }
     }

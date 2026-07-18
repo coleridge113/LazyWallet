@@ -68,10 +68,12 @@ class BudgetViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
-            is Event.ShowBudgetDialog -> showBudgetDialog(event.budget)
+            is Event.ShowDeleteDialog -> showDeleteConfirmationDialog(event.budget)
+            is Event.ShowBudgetFormDialog -> showBudgetDialog(event.budget)
             is Event.ConfirmBudgetFormDialog -> saveBudget(
                 event.id, event.name, event.amount, event.frequency, event.categoryMap
             )
+            is Event.ConfirmDeleteBudget -> deleteBudget(event.budget)
         }
     }
 
@@ -109,6 +111,19 @@ class BudgetViewModel(
             } else {
                 budgetUseCases.saveBudget(budget)
             }
+        }
+    }
+
+    fun showDeleteConfirmationDialog(budget: Budget) {
+        _dialogState.update {
+            DialogState.DeleteDialog(budget)
+        }
+    }
+
+    fun deleteBudget(budget: Budget) {
+        viewModelScope.launch {
+            dismissDialog()
+            budgetUseCases.deleteBudget(budget)
         }
     }
 }

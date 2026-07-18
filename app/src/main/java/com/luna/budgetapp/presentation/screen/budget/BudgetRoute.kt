@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
+import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -55,6 +56,14 @@ fun MainContent(
             .padding(horizontal = 16.dp)
     ){
         when (val dialog = dialog) {
+            is DialogState.DeleteDialog -> {
+                ConfirmationDialog(
+                    message = "Are you sure you want to delete?",
+                    isDestructive = true,
+                    onDismiss = { onEvent(Event.DismissDialog) },
+                    onConfirm = { onEvent(Event.ConfirmDeleteBudget(dialog.budget)) }
+                )
+            }
             is DialogState.BudgetDialog -> {
                 BudgetDialog(
                     budget = dialog.budget,
@@ -82,7 +91,8 @@ fun MainContent(
                     modifier = Modifier.padding(4.dp),
                     budget = budget,
                     spent = spent ?: 0.0,
-                    onEdit = { onEvent(Event.ShowBudgetDialog(it)) }
+                    onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
+                    onDelete = { onEvent(Event.ShowDeleteDialog(it)) }
                 )
             }
         }
@@ -105,7 +115,7 @@ fun MainContent(
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.secondary,
                 elevation = noElevation,
-                onClick = { onEvent(Event.ShowBudgetDialog()) }
+                onClick = { onEvent(Event.ShowBudgetFormDialog()) }
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircleOutline,

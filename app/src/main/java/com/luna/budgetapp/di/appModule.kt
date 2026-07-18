@@ -71,6 +71,7 @@ import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.budget.DeleteBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetAllBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetBudgetByIdUseCase
 import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
@@ -195,6 +196,7 @@ val appModule = module {
     factoryOf(::GetBudgetByIdUseCase)
     factoryOf(::UpdateBudgetUseCase)
     factoryOf(::GetAllBudgetUseCase)
+    factoryOf(::DeleteBudgetUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
