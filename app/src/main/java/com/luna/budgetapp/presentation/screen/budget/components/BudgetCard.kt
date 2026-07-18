@@ -55,6 +55,7 @@ fun BudgetCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
+            // Header sections
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -68,12 +69,17 @@ fun BudgetCard(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .size(18.dp)
                         .singleClick { onEdit(budget) }
                 )
             }
+
+            // Financials section
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .align(Alignment.CenterHorizontally)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -125,25 +131,29 @@ fun BudgetCard(
                 Spacer(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3)
-                ) {
-                    items(budget.interactors) { category ->
-                        Row(
-                            modifier = Modifier,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = getIconForCategory(category),
-                                contentDescription = null,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = category.displayName,
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
+            }
+
+            // Categories section
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                items(budget.interactors) { category ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = getIconForCategory(category),
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = category.displayName,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
                 }
             }
