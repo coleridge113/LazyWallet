@@ -7,7 +7,7 @@ class EditExpenseUseCase(
 ) {
     suspend operator fun invoke(
         id: Long,
-        amount: Double,
+        amount: Long,
         type: String
     ) {
         repository.editExpenseById(id, amount, type)

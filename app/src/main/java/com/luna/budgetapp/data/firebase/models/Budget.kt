@@ -6,7 +6,7 @@ import java.util.Date
 
 data class Budget(
     @DocumentId val id: String = "",
-    val limit: Double = 0.0,
+    val limit: Long = 0L,
     val name: String = "",
     val frequency: String = "Monthly",
     val interactors: List<Category> = emptyList(),

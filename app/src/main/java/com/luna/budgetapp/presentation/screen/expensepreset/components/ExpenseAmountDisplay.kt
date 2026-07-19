@@ -15,9 +15,9 @@ import com.luna.budgetapp.presentation.screen.utils.toCurrency
 @Composable
 fun ExpenseAmountDisplay(
     modifier: Modifier = Modifier,
-    totalAmount: Double,
+    totalAmount: Long,
 ) {
-    val displayAmount = if (totalAmount == 0.0) "-" else totalAmount.toCurrency()
+    val displayAmount = if (totalAmount == 0L) "-" else totalAmount.toCurrency()
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -48,7 +48,7 @@ fun ExpenseAmountDisplay(
 fun ExpenseAmountDisplayPreview() {
     ExpenseAmountDisplay(
         modifier = Modifier.fillMaxSize(),
-        totalAmount = 1234.0,
+        totalAmount = 123400L,
     )
 }
 

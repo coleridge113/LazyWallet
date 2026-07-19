@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class ExpensePreset(
     val id: Long? = null,
-    val amount: Double,
+    val amount: Long,
     val category: String,
     val type: String,
     val createdAt: LocalDateTime = LocalDateTime.now()

@@ -76,7 +76,7 @@ interface ExpenseDao {
     fun getTotalAmountByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double>
+    ): Flow<Long>
 
     @Query("""
         SELECT COALESCE(SUM(amount), 0)
@@ -88,7 +88,7 @@ interface ExpenseDao {
         categories: List<String>,
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double>
+    ): Flow<Long>
 
     @Query("""
         SELECT category, SUM(amount) AS total
@@ -145,7 +145,7 @@ interface ExpenseDao {
     """)
     suspend fun editExpenseById(
         expenseId: Long,
-        amount: Double,
+        amount: Long,
         type: String
     )
 

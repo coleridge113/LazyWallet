@@ -5,7 +5,7 @@ import java.util.Date
 
 data class ExpensePreset(
     @DocumentId val id: String = "",
-    val amount: Double = 0.0,
+    val amount: Long = 0L,
     val category: String = "",
     val type: String = "",
     val createdAt: Date = Date()

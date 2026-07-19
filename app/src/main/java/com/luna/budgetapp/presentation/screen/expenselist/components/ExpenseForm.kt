@@ -66,7 +66,7 @@ fun ExpenseForm(
         var selectedOption by remember { mutableStateOf(options.first()) }
         val typeState = rememberTextFieldState(selectedExpense.type)
         val amountState = rememberTextFieldState(
-            selectedExpense.amount.toString()
+            "%.2f".format(selectedExpense.amount / 100.0)
         )
 
         LaunchedEffect(Unit) {
@@ -145,7 +145,7 @@ fun ExpenseForm(
                         keyboardType = KeyboardType.Decimal
                     ),
                     placeholder = {
-                        Text(selectedExpense.amount.toString())
+                        Text("%.2f".format(selectedExpense.amount / 100.0))
                     },
                     inputTransformation = InputTransformation {
                         val text = asCharSequence().toString()
@@ -178,7 +178,7 @@ fun ExpenseForm(
                             }.toString()
                         val amount =
                             amountState.text.ifBlank {
-                                selectedExpense.amount
+                                "%.2f".format(selectedExpense.amount / 100.0)
                             }.toString()
                         onConfirm(
                             selectedExpense.id!!,
@@ -205,7 +205,7 @@ fun ExpenseForm(
 fun ExpensePresetDialogPreview() {
     val dummyExpense = Expense(
         id = 1L,
-        amount = 140.0,
+        amount = 14000,
         category = "Food",
         type = "Lunch",
     )

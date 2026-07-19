@@ -2,5 +2,5 @@ package com.luna.budgetapp.domain.model
 
 data class CategoryTotalProjection(
     val category: Category,
-    val total: Double
+    val total: Long
 )

@@ -115,7 +115,7 @@ fun ExpensePresetItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${item.amount}",
+                    text = "%.2f".format(item.amount / 100.0),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -131,7 +131,7 @@ fun ExpensePresetItem(
 fun ExpensePresetItemPreview() {
     val item = ExpensePreset(
             id = 1L,
-            amount = 4.50,
+            amount = 450,
             category = "Coffee",
             type = "Food & Drink"
         )
@@ -158,19 +158,19 @@ fun ExpensePresetTablePreview() {
     val expensePresets = listOf(
         ExpensePreset(
             id = 1L,
-            amount = 140.00,
+            amount = 14000,
             category = "BEVERAGE",
             type = "Coffee"
         ),
         ExpensePreset(
             id = 2L,
-            amount = 12.00,
+            amount = 1200,
             category = "FOOD",
             type = "Lunch"
         ),
         ExpensePreset(
             id = 3L,
-            amount = 3500.00,
+            amount = 350000,
             category = "COMMUTE",
             type = "Angkas"
         ),

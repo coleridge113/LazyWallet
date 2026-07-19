@@ -58,7 +58,9 @@ fun BudgetDialog(
     onSave: SaveAction,
 ) {
     val nameState = rememberTextFieldState(budget?.name ?: "")
-    val amountState = rememberTextFieldState(budget?.limit?.toString() ?: "")
+    val amountState = rememberTextFieldState(
+        budget?.limit?.let { "%.2f".format(it / 100.0) } ?: ""
+    )
     val frequencyOptions = DateFilter.budgetFrequencies
     var selectedOption by remember {
         mutableStateOf(budget?.frequency ?: frequencyOptions.firstOrNull() ?: DateFilter.Daily)

@@ -39,7 +39,7 @@ interface ExpenseRepository {
     fun getTotalAmountByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double>
+    ): Flow<Long>
 
     fun getCategoryTotalsByDateRange(
         start: LocalDateTime,
@@ -56,7 +56,7 @@ interface ExpenseRepository {
         categories: List<String>,
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double>
+    ): Flow<Long>
 
     suspend fun addExpense(expense: Expense)
 
@@ -70,7 +70,7 @@ interface ExpenseRepository {
 
     suspend fun editExpenseById(
         expenseId: Long,
-        amount: Double,
+        amount: Long,
         type: String
     )
 }

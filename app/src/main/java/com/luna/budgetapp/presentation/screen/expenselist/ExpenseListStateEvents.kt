@@ -18,7 +18,7 @@ sealed interface UiState {
 }
 
 data class ExpensesState(
-    val totalAmount: Double = 0.0
+    val totalAmount: Long = 0L
 )
 
 data class DateState(

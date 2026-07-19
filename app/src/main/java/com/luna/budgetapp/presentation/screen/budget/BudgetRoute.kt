@@ -90,7 +90,7 @@ fun MainContent(
                 BudgetCard(
                     modifier = Modifier.padding(4.dp),
                     budget = budget,
-                    spent = spent ?: 0.0,
+                    spent = spent ?: 0L,
                     onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
                     onDelete = { onEvent(Event.ShowDeleteDialog(it)) }
                 )

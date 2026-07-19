@@ -11,7 +11,7 @@ class GetTotalAmountByDateRangeUseCase(
         categories: List<String>? = null,
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double> {
+    ): Flow<Long> {
         return if (categories == null) {
             repository.getTotalAmountByDateRange(start, end)
         } else {

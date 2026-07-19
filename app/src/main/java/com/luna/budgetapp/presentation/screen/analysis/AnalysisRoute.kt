@@ -153,8 +153,8 @@ fun MainContent(
 private fun MainContentPreviewLight() {
     val now = LocalDateTime.now()
     val dummyExpenses = listOf(
-        Expense(1L, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
-        Expense(2L, "Lunch", 150.0, "Food", "Expense", now.minusDays(6)),
+        Expense(1L, "Coffee", 9000, "Food", "Expense", now.minusDays(6)),
+        Expense(2L, "Lunch", 15000, "Food", "Expense", now.minusDays(6)),
     )
 
     val successState = UiState.Success(
@@ -186,17 +186,17 @@ private fun MainContentPreviewLight() {
 private fun MainContentPreviewDark() {
     val now = LocalDateTime.now()
     val dummyExpenses = listOf(
-        Expense(1L, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
-        Expense(2L, "Lunch", 150.0, "Food", "Expense", now.minusDays(6)),
-        Expense(3L, "Grab", 200.0, "Transport", "Expense", now.minusDays(5)),
-        Expense(4L, "Dinner", 180.0, "Food", "Expense", now.minusDays(4)),
-        Expense(5L, "Snacks", 70.0, "Food", "Expense", now.minusDays(4)),
-        Expense(6L, "Groceries", 500.0, "Groceries", "Expense", now.minusDays(3)),
-        Expense(7L, "Coffee", 95.0, "Food", "Expense", now.minusDays(2)),
-        Expense(8L, "Taxi", 180.0, "Transport", "Expense", now.minusDays(2)),
-        Expense(9L, "Lunch", 160.0, "Food", "Expense", now.minusDays(1)),
-        Expense(10L, "Breakfast", 80.0, "Food", "Expense", now),
-        Expense(11L, "Dinner", 200.0, "Food", "Expense", now)
+        Expense(1L, "Coffee", 9000, "Food", "Expense", now.minusDays(6)),
+        Expense(2L, "Lunch", 15000, "Food", "Expense", now.minusDays(6)),
+        Expense(3L, "Grab", 20000, "Transport", "Expense", now.minusDays(5)),
+        Expense(4L, "Dinner", 18000, "Food", "Expense", now.minusDays(4)),
+        Expense(5L, "Snacks", 7000, "Food", "Expense", now.minusDays(4)),
+        Expense(6L, "Groceries", 50000, "Groceries", "Expense", now.minusDays(3)),
+        Expense(7L, "Coffee", 9500, "Food", "Expense", now.minusDays(2)),
+        Expense(8L, "Taxi", 18000, "Transport", "Expense", now.minusDays(2)),
+        Expense(9L, "Lunch", 16000, "Food", "Expense", now.minusDays(1)),
+        Expense(10L, "Breakfast", 8000, "Food", "Expense", now),
+        Expense(11L, "Dinner", 20000, "Food", "Expense", now)
     )
 
     val successState = UiState.Success(

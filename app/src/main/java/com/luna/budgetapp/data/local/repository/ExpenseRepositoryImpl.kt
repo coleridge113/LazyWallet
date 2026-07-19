@@ -154,7 +154,7 @@ class ExpenseRepositoryImpl(
     override fun getTotalAmountByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double> =
+    ): Flow<Long> =
         dao.getTotalAmountByDateRange(start, end)
             .flowOn(Dispatchers.IO)
 
@@ -162,7 +162,7 @@ class ExpenseRepositoryImpl(
         categories: List<String>,
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double> =
+    ): Flow<Long> =
         dao.getTotalAmountByCategories(categories, start, end)
             .flowOn(Dispatchers.IO)
 
@@ -240,7 +240,7 @@ class ExpenseRepositoryImpl(
 
     override suspend fun editExpenseById(
         expenseId: Long,
-        amount: Double,
+        amount: Long,
         type: String
     ) {
         dao.editExpenseById(expenseId, amount, type)

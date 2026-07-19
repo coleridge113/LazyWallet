@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class DailyExpense(
     val date: LocalDate,
-    val total: Double
+    val total: Long
 )
 
 fun List<Expense>.toDailyExpenses(): List<DailyExpense> {

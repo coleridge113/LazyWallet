@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 data class Budget(
     val id: Long = 0,
-    val limit: Double,
+    val limit: Long,
     val name: String,
     val frequency: DateFilter,
     val interactors: List<Category>,

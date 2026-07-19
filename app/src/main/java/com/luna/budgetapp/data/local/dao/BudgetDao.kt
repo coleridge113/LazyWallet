@@ -107,5 +107,5 @@ interface BudgetDao {
               WHERE budgetId = :budgetId
           )
     """)
-    fun getSpentAmountForBudgetOnDate(budgetId: Long, targetDate: LocalDate): Flow<Double>
+    fun getSpentAmountForBudgetOnDate(budgetId: Long, targetDate: LocalDate): Flow<Long>
 }
