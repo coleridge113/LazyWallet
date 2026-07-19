@@ -2,7 +2,6 @@ package com.luna.budgetapp.data.firebase.models
 
 import com.google.firebase.firestore.DocumentId
 import com.luna.budgetapp.domain.model.Category
-import com.luna.budgetapp.domain.model.DateFilter
 import java.util.Date
 
 data class Budget(
