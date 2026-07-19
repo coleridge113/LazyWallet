@@ -189,3 +189,18 @@ sealed class DateFilter {
         }
     }
 }
+
+fun String.getDateFilter(): DateFilter {
+    return when (this) {
+        "Daily" -> DateFilter.Daily
+        "Weekly" -> DateFilter.Weekly
+        "Every 2 weeks", "BiWeekly" -> DateFilter.BiWeekly
+        "Monthly" -> DateFilter.Monthly
+        "Quarterly" -> DateFilter.Quarterly
+        "Every 6 months", "BiYearly" -> DateFilter.BiYearly
+        "Yearly" -> DateFilter.Yearly
+        "Last 7 days" -> DateFilter.Last7Days
+        "Custom" -> DateFilter.Custom()
+        else -> DateFilter.Monthly
+    }
+}

@@ -9,7 +9,7 @@ data class Budget(
     @DocumentId val id: String = "",
     val limit: Double = 0.0,
     val name: String = "",
-    val frequency: Any? = "MONTHLY",
+    val frequency: String = "Monthly",
     val interactors: List<Category> = emptyList(),
     val startDate: Date = Date(),
     val endDate: Date? = null,
