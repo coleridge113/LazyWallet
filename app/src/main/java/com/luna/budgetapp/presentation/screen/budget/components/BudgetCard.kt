@@ -48,7 +48,7 @@ import java.util.Locale
 fun BudgetCard(
     modifier: Modifier,
     budget: Budget,
-    spent: Double,
+    spent: Long,
     onEdit: (Budget) -> Unit,
     onDelete: (Budget) -> Unit
 ) {
@@ -246,7 +246,7 @@ private enum class Options {
 @Composable
 fun BudgetCardPreview() {
     val budget = Budget(
-        limit = 500.0,
+        limit = 50000,
         name = "Daily Budget",
         frequency = DateFilter.Daily,
         interactors = Category.entries,
@@ -260,7 +260,7 @@ fun BudgetCardPreview() {
             BudgetCard(
                 modifier = Modifier,
                 budget = budget,
-                spent = 432.00,
+                spent = 43200,
                 onEdit = {},
                 onDelete = {}
             )

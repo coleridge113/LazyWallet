@@ -35,6 +35,16 @@ class FakeExpenseRepository : ExpenseRepository {
         }
     }
 
+    override fun getExpensesByCategories(
+        categories: List<String>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Flow<List<Expense>> {
+        return expensesFlow.map { expenses ->
+            expenses.filter { it.category in categories && it.date in start..end }
+        }
+    }
+
     override fun getPagingExpensesByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
@@ -63,7 +73,7 @@ class FakeExpenseRepository : ExpenseRepository {
     override fun getTotalAmountByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double> {
+    ): Flow<Long> {
         return expensesFlow.map { expenses ->
             println("Total recalculated: ${expenses.sumOf { e -> e.amount }}")
             expenses.sumOf { it.amount }
@@ -113,7 +123,7 @@ class FakeExpenseRepository : ExpenseRepository {
         categories: List<String>,
         start: LocalDateTime,
         end: LocalDateTime
-    ): Flow<Double> {
+    ): Flow<Long> {
         return expensesFlow.map { expenses ->
             expenses.sumOf { it.amount }
         }
@@ -151,7 +161,7 @@ class FakeExpenseRepository : ExpenseRepository {
         }
     }
 
-    override suspend fun editExpenseById(expenseId: Long, amount: Double, type: String) {
+    override suspend fun editExpenseById(expenseId: Long, amount: Long, type: String) {
         expensesFlow.update {
             it.map { e ->
                 if (e.id == expenseId) e.copy(amount = amount, type = type) else e

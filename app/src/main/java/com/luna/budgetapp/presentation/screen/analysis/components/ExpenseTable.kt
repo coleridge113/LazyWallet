@@ -96,7 +96,7 @@ fun ExpenseItem(
                 modifier = Modifier.padding(end = 4.dp)
             )
             Text(
-                text = "%,.2f".format(item.amount),
+                text = "%,.2f".format(item.amount / 100.0),
                 modifier = Modifier
                     .widthIn(min = 64.dp)
                     .wrapContentWidth(Alignment.End)
@@ -111,7 +111,7 @@ fun ExpenseItemPreview() {
     val expense = Expense(
         category = "BEVERAGE",
         type = "Coffee",
-        amount = 100.0
+        amount = 10000
     )
     ExpenseItem(
         item = expense,

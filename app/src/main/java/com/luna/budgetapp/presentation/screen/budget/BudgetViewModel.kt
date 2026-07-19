@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.budget
 
+import com.luna.budgetapp.domain.utils.parseAmountExpression
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Budget
@@ -100,7 +101,7 @@ class BudgetViewModel(
             val budget = Budget(
                 id = id,
                 name = name,
-                limit = amount.toDoubleOrNull() ?: 0.0,
+                limit = parseAmountExpression(amount),
                 frequency = frequency,
                 interactors = categoryMap.filter { it.value }.keys.toList(),
                 startDate = LocalDate.now()

@@ -40,11 +40,12 @@ fun getIconForCategory(category: Category): ImageVector {
         ?: Icons.Default.AttachMoney
 }
 
-fun Double.toCurrency(): String {
+fun Long.toCurrency(): String {
+    val doubleValue = this / 100.0
     return if (this >= 0)
-        "%,.2f".format(this)
+        "%,.2f".format(doubleValue)
     else
-        "(%,.2f)".format(abs(this))
+        "(%,.2f)".format(abs(doubleValue))
 }
 
 fun Double.formatToPercentage(): String {

@@ -9,7 +9,7 @@ class AddExpenseUseCase(
     suspend operator fun invoke(
         category: String,
         type: String,
-        amount: Double
+        amount: Long
     ) {
         val expense = Expense(
             category = category,

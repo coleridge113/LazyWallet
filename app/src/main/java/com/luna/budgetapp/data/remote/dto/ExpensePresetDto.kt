@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class ExpensePresetDto(
     @SerializedName("id") val id: Long,
-    @SerializedName("amount") val amount: Double,
+    @SerializedName("amount") val amount: Long,
     @SerializedName("category") val category: String,
     @SerializedName("type") val type: String,
     @SerializedName("created_at") val createdAt: LocalDateTime

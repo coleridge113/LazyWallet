@@ -15,7 +15,7 @@ import java.time.LocalDate
 data class BudgetEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "remote_id") val remoteId: String? = null,
-    @ColumnInfo(name = "limit") val limit: Double,
+    @ColumnInfo(name = "limit") val limit: Long,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "frequency") val frequency: DateFilter,
     @ColumnInfo(name = "start_date") val startDate: LocalDate,

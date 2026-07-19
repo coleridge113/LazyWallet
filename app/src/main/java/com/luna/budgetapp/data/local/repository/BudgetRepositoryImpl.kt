@@ -127,7 +127,7 @@ class BudgetRepositoryImpl(
         }
     }
 
-    override suspend fun updateBudgetWithHistory(currentBudget: Budget, newLimit: Double) {
+    override suspend fun updateBudgetWithHistory(currentBudget: Budget, newLimit: Long) {
         val oldWithChildren = dao.getBudgetWithInteractorsByIdOnce(currentBudget.id)
             ?: throw IllegalArgumentException("Budget not found")
 

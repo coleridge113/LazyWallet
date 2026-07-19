@@ -154,7 +154,7 @@ class ExpensePresetViewModel(
 
         val expensePreset = ExpensePreset(
             id = id,
-            amount = amount.toDoubleOrNull() ?: 0.0,
+            amount = parseAmountExpression(amount),
             category = category.name,
             type = type.ifEmpty { category.getDisplayName() }.trim()
         )
@@ -179,8 +179,7 @@ class ExpensePresetViewModel(
         customAmount: String?,
         customType: String?
     ) {
-        val amount =
-            parseAmountExpression(customAmount ?: expensePreset.amount.toString())
+        val amount = customAmount?.let { parseAmountExpression(it) } ?: expensePreset.amount
         viewModelScope.launch {
             expenseUseCases.addExpense(
                 category = expensePreset.category,

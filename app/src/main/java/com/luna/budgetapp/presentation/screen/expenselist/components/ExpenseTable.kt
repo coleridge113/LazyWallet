@@ -138,9 +138,9 @@ fun ExpenseItem(
 @Composable
 fun ExpenseTablePreview() {
     val expenses = listOf(
-        Expense(id = 1, amount = 100.0, category = "FOOD", type = "Lunch"),
-        Expense(id = 2, amount = 50.0, category = "COMMUTE", type = "Taxi"),
-        Expense(id = 3, amount = 200.0, category = "BILLS", type = "Electricity")
+        Expense(id = 1, amount = 10000, category = "FOOD", type = "Lunch"),
+        Expense(id = 2, amount = 5000, category = "COMMUTE", type = "Taxi"),
+        Expense(id = 3, amount = 20000, category = "BILLS", type = "Electricity")
     )
 
     LazyWalletTheme {

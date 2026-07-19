@@ -6,7 +6,7 @@ import java.util.Date
 data class Expense(
     @DocumentId val id: String = "",
     val name: String? = null,
-    val amount: Double = 0.0,
+    val amount: Long = 0L,
     val category: String = "",
     val type: String = "",
     val date: Date = Date()

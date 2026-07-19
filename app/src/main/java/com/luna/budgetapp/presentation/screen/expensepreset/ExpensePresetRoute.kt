@@ -290,13 +290,13 @@ fun MainContent(
 fun ExpenseRoutePreviewLight() {
     val expensesState = ExpensesState(
         expensePresets = listOf(
-            ExpensePreset(amount = 100.0, category = "FOOD", type = "Lunch"),
-            ExpensePreset(amount = 140.0, category = "BEVERAGE", type = "Coffee")
+            ExpensePreset(amount = 10000, category = "FOOD", type = "Lunch"),
+            ExpensePreset(amount = 14000, category = "BEVERAGE", type = "Coffee")
         ),
         expenses = listOf(
-            Expense(id = 1, amount = 50.0, category = "FOOD", type = "Lunch"),
-            Expense(id = 2, amount = 15.0, category = "BEVERAGE", type = "Coffee"),
-            Expense(id = 3, amount = 200.0, category = "SHOPPING", type = "Groceries")
+            Expense(id = 1, amount = 5000, category = "FOOD", type = "Lunch"),
+            Expense(id = 2, amount = 1500, category = "BEVERAGE", type = "Coffee"),
+            Expense(id = 3, amount = 20000, category = "SHOPPING", type = "Groceries")
         )
     )
 

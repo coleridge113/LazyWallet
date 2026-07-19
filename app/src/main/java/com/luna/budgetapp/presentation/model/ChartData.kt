@@ -5,7 +5,7 @@ import com.luna.budgetapp.domain.model.Category
 
 data class ChartData(
     val category: Category,
-    val subtotal: Double,
+    val subtotal: Long,
 ) {
     val color = CategoryOptions.entries
         .find { it.name == category.name }

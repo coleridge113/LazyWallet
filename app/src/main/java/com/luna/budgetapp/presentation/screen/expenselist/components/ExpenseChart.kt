@@ -40,7 +40,7 @@ import com.luna.budgetapp.ui.theme.OthersChartColor
 fun ExpenseChart(
     modifier: Modifier = Modifier,
     chartDataList: List<ChartData>,
-    totalAmount: Double,
+    totalAmount: Long,
     showDialog: () -> Unit,
     onClickCenter: () -> Unit,
 ) {
@@ -68,7 +68,7 @@ fun ExpenseChart(
 @Composable
 fun ExpenseDonutChart(
     modifier: Modifier = Modifier,
-    totalAmount: Double,
+    totalAmount: Long,
     chartDataList: List<ChartData>,
     onClickCenter: () -> Unit
 ) {
@@ -97,7 +97,7 @@ fun ExpenseDonutChart(
             var startAngle = -90f
             val gapAngle = if (chartDataList.size > 1) sliceGap else 0f
 
-            if (totalAmount == 0.0) {
+            if (totalAmount == 0L) {
                 val sweepAngle =
                     (360f * animationProgress.value)
                 drawArc(
@@ -112,7 +112,7 @@ fun ExpenseDonutChart(
 
             chartDataList.forEach { slice ->
                 val rawSweep =
-                    ((slice.subtotal / totalAmount) * 360f * animationProgress.value).toFloat()
+                    ((slice.subtotal.toDouble() / totalAmount) * 360f * animationProgress.value).toFloat()
 
                 val sweepAngle = (rawSweep - gapAngle).coerceAtLeast(0f)
 
@@ -139,7 +139,7 @@ fun ExpenseDonutChart(
             )
 
             Text(
-                text = "₱%,.2f".format(totalAmount),
+                text = "₱%,.2f".format(totalAmount / 100.0),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -151,7 +151,7 @@ fun ExpenseDonutChart(
 fun ExpenseChartLegends(
     modifier: Modifier = Modifier,
     chartDataList: List<ChartData>,
-    totalAmount: Double,
+    totalAmount: Long,
     showDialog: () -> Unit
 ) {
     LazyColumn(
@@ -159,7 +159,7 @@ fun ExpenseChartLegends(
         modifier = modifier.clickable { showDialog() }
     ) {
         items(chartDataList) { item ->
-            val portion = item.subtotal / totalAmount
+            val portion = item.subtotal.toDouble() / totalAmount
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -187,23 +187,23 @@ fun ExpenseChartLegends(
 @Preview
 @Composable
 fun ExpenseDonutChartPreview() {
-   val totalAmount = 240.0
+   val totalAmount = 24000L
    val chartDataList = listOf(
        ChartData(
            category = Category.FOOD,
-           subtotal = 100.0
+           subtotal = 10000
        ),
        ChartData(
            category = Category.BEVERAGE,
-           subtotal = 140.0
+           subtotal = 14000
        ),
        ChartData(
            category = Category.COMMUTE,
-           subtotal = 140.0
+           subtotal = 14000
        ),
        ChartData(
            category = Category.BILLS,
-           subtotal = 140.0
+           subtotal = 14000
        ),
    )
    Column(

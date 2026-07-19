@@ -19,6 +19,6 @@ interface BudgetRepository {
 
     suspend fun updateBudgetWithHistory(
         currentBudget: Budget,
-        newLimit: Double
+        newLimit: Long
     )
 }

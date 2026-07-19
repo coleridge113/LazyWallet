@@ -90,7 +90,7 @@ fun MainContent(
     modifier: Modifier,
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
-    totalAmount: Double,
+    totalAmount: Long,
     expenses: LazyPagingItems<Expense>
 ) {
     Column(

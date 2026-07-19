@@ -52,7 +52,7 @@ fun DailyExpenseBarChart(
         expenses.toLast7DaysExpenses()
     }
 
-    val maxValue = dailyData.maxOfOrNull { it.total } ?: 1.0
+    val maxValue = dailyData.maxOfOrNull { it.total } ?: 100L
 
     var animationTarget by remember { mutableFloatStateOf(0f) }
     val animationProgress by animateFloatAsState(
@@ -115,7 +115,7 @@ fun DailyExpenseBarChart(
 
             dailyData.forEachIndexed { index, item ->
 
-                val ratio = (item.total / maxValue).toFloat()
+                val ratio = (item.total.toDouble() / maxValue).toFloat()
 
                 val barHeight = usableHeight * ratio * animationProgress
 
@@ -138,7 +138,7 @@ fun DailyExpenseBarChart(
                 )
 
                 drawContext.canvas.nativeCanvas.drawText(
-                    "₱${item.total.toInt()}",
+                    "₱${(item.total / 100)}",
                     x + barWidth / 2,
                     y - 15f,
                     android.graphics.Paint().apply {
@@ -183,13 +183,13 @@ private fun DailyExpenseBarChartPreview() {
         ) {
             DailyExpenseBarChart(
                 expenses = listOf(
-                    Expense(amount = 100.0, category = "Food", type = "Lunch", date = LocalDateTime.now()),
-                    Expense(amount = 50.0, category = "Transport", type = "Bus", date = LocalDateTime.now().minusDays(1)),
-                    Expense(amount = 200.0, category = "Shopping", type = "Clothes", date = LocalDateTime.now().minusDays(2)),
-                    Expense(amount = 150.0, category = "Food", type = "Dinner", date = LocalDateTime.now().minusDays(3)),
-                    Expense(amount = 80.0, category = "Transport", type = "Taxi", date = LocalDateTime.now().minusDays(4)),
-                    Expense(amount = 120.0, category = "Entertainment", type = "Movie", date = LocalDateTime.now().minusDays(5)),
-                    Expense(amount = 300.0, category = "Bills", type = "Rent", date = LocalDateTime.now().minusDays(6))
+                    Expense(amount = 10000, category = "Food", type = "Lunch", date = LocalDateTime.now()),
+                    Expense(amount = 5000, category = "Transport", type = "Bus", date = LocalDateTime.now().minusDays(1)),
+                    Expense(amount = 20000, category = "Shopping", type = "Clothes", date = LocalDateTime.now().minusDays(2)),
+                    Expense(amount = 15000, category = "Food", type = "Dinner", date = LocalDateTime.now().minusDays(3)),
+                    Expense(amount = 8000, category = "Transport", type = "Taxi", date = LocalDateTime.now().minusDays(4)),
+                    Expense(amount = 12000, category = "Entertainment", type = "Movie", date = LocalDateTime.now().minusDays(5)),
+                    Expense(amount = 30000, category = "Bills", type = "Rent", date = LocalDateTime.now().minusDays(6))
                 ),
                 selectedDate = LocalDate.now(),
                 onClickBar = {}
