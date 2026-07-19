@@ -65,13 +65,13 @@ fun BudgetCard(
         ) {
             // Header sections
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = budget.name,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Box {
