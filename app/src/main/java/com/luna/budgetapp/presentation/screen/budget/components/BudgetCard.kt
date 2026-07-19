@@ -110,6 +110,21 @@ fun BudgetCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
+                        text = "Frequency:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = budget.frequency.getFriendlyName(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
                         text = "Amount: ",
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
@@ -240,7 +255,7 @@ fun BudgetCardPreview() {
 
     LazyWalletTheme {
         Surface(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
         ) {
             BudgetCard(
                 modifier = Modifier,
