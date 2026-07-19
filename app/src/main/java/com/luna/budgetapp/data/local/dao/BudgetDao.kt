@@ -48,6 +48,9 @@ interface BudgetDao {
     @Insert
     suspend fun insertBudget(budget: BudgetEntity): Long
 
+    @Insert
+    suspend fun insertBudgets(budgets: List<BudgetEntity>): List<Long>
+
     @Update
     suspend fun updateBudget(budget: BudgetEntity)
 
@@ -59,6 +62,20 @@ interface BudgetDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInteractors(interactors: List<BudgetInteractorCategoryEntity>)
+
+    @Transaction
+    suspend fun insertBudgetsWithInteractors(budgetsWithInteractors: List<Pair<BudgetEntity, List<Category>>>) {
+        budgetsWithInteractors.forEach { (entity, interactors) ->
+            val id = insertBudget(entity)
+            val childEntities = interactors.map { category ->
+                BudgetInteractorCategoryEntity(budgetId = id, category = category)
+            }
+            insertInteractors(childEntities)
+        }
+    }
+    
+    @Query("DELETE FROM budget")
+    suspend fun deleteAll()
 
     @Query("DELETE FROM budget_interactor_categories WHERE budgetId = :budgetId")
     suspend fun clearInteractors(budgetId: Long)

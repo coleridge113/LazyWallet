@@ -9,6 +9,8 @@ import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.getDateFilter
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -91,7 +93,7 @@ fun BudgetEntity.toFirestoreModel(interactors: List<Category>): Budget {
     return Budget(
         limit = this.limit,
         name = this.name,
-        frequency = this.frequency,
+        frequency = this.frequency.getFriendlyName(),
         interactors = interactors,
         startDate = this.startDate.toDate(),
         endDate = this.endDate?.toDate()
@@ -103,7 +105,7 @@ fun Budget.toEntity(): BudgetEntity {
         remoteId = this.id.ifBlank { null },
         limit = this.limit,
         name = this.name,
-        frequency = this.frequency,
+        frequency = this.frequency.getDateFilter(),
         startDate = this.startDate.toLocalDate(),
         endDate = this.endDate?.toLocalDate()
     )

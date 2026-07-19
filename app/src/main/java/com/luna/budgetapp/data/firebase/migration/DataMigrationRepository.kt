@@ -3,11 +3,14 @@ package com.luna.budgetapp.data.firebase.migration
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObjects
+import com.luna.budgetapp.data.firebase.models.Budget
 import com.luna.budgetapp.data.firebase.models.CategoryFilter
 import com.luna.budgetapp.data.firebase.models.Expense
 import com.luna.budgetapp.data.firebase.models.ExpensePreset
 import com.luna.budgetapp.data.firebase.toEntity
 import com.luna.budgetapp.data.firebase.toFirestoreModel
+import com.luna.budgetapp.data.local.dao.BudgetDao
 import com.luna.budgetapp.data.local.dao.CategoryFilterDao
 import com.luna.budgetapp.data.local.dao.ExpenseDao
 import com.luna.budgetapp.data.local.dao.ExpensePresetDao
@@ -19,6 +22,7 @@ class DataMigrationRepository(
     private val expenseDao: ExpenseDao,
     private val expensePresetDao: ExpensePresetDao,
     private val categoryFilterDao: CategoryFilterDao,
+    private val budgetDao: BudgetDao,
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
@@ -90,14 +94,19 @@ class DataMigrationRepository(
             
             val filters = userRef.collection("category_filters").get().await()
                 .toObjects(CategoryFilter::class.java)
+            
+            val budgets = userRef.collection("budgets").get().await()
+                .toObjects(Budget::class.java)
 
             expenseDao.deleteAll()
             expensePresetDao.deleteAll()
             categoryFilterDao.deleteAll()
+            budgetDao.deleteAll()
 
             expenseDao.addExpenses(expenses.map { it.toEntity() })
             expensePresetDao.addExpensePresets(presets.map { it.toEntity() })
             categoryFilterDao.upsertAll(filters.map { it.toEntity() })
+            budgetDao.insertBudgetsWithInteractors(budgets.map { it.toEntity() to it.interactors })
 
             Log.d("Sync", "Successfully synced data from cloud to local.")
         } catch (e: Exception) {
