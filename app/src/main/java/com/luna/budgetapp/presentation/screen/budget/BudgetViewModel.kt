@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Budget
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.projectAmountToMonth
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -16,10 +18,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BudgetViewModel(
@@ -28,7 +32,6 @@ class BudgetViewModel(
 ): ViewModel() {
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _budgets = budgetUseCases.getAllBudget()
-
     private val _expenses = _budgets
         .flatMapLatest { budgets ->
             if (budgets.isEmpty()) {
@@ -45,15 +48,31 @@ class BudgetViewModel(
                 combine(expenseFlows) { it.toMap() }
             }
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000.milliseconds),
+            initialValue = emptyMap()
+        )
+
+    private val _monthlyOutlook =
+        _budgets.map { budgets ->
+            OutlookDetails(
+                income = 0L,
+                projectedSpend = budgets.sumOf { it.frequency.projectAmountToMonth(it.limit) },
+                actualSpend = _expenses.value.values.flatten().sumOf { it.amount },
+            )
+        }
 
     private val _successState = combine(
         _budgets,
         _expenses,
+        _monthlyOutlook,
         _dialogState
-    ) { budgets, expenses, dialog ->
+    ) { budgets, expenses, monthlyOutlook, dialog ->
         UiState.Success(
             budgets = budgets,
             expenses = expenses,
+            monthlyOutlook = monthlyOutlook,
             dialog = dialog
         )
     }
@@ -61,7 +80,7 @@ class BudgetViewModel(
     val uiState: StateFlow<UiState> = _successState
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5000.milliseconds),
             initialValue = UiState.Loading
         )
 

@@ -204,3 +204,20 @@ fun String.getDateFilter(): DateFilter {
         else -> DateFilter.Monthly
     }
 }
+
+fun DateFilter.projectAmountToMonth(amount: Long): Long {
+    return when (this) {
+        DateFilter.Daily -> {
+            val refDate = LocalDate.now()
+            val daysCount = refDate.lengthOfMonth()
+            amount * daysCount
+        }
+        DateFilter.Weekly -> { amount * 4 }
+        DateFilter.BiWeekly -> { amount * 2 }
+        DateFilter.Monthly -> { amount }
+        DateFilter.Quarterly -> { amount.toBigDecimal().divide(3.toBigDecimal()).toLong() }
+        DateFilter.BiYearly -> { amount.toBigDecimal().divide(6.toBigDecimal()).toLong() }
+        DateFilter.Yearly -> { amount.toBigDecimal().divide(12.toBigDecimal()).toLong() }
+        else -> { 0L }
+    }
+}

@@ -4,6 +4,7 @@ import com.luna.budgetapp.domain.model.Budget
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
 
 typealias BudgetId = Long
 
@@ -13,6 +14,7 @@ sealed interface UiState {
     data class Success(
         val budgets: List<Budget>,
         val expenses: Map<BudgetId, List<Expense>>,
+        val monthlyOutlook: OutlookDetails,
         val dialog: DialogState? = null
     ) : UiState
 }

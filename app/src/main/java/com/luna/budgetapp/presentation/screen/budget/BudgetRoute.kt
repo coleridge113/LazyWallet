@@ -1,6 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budget
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
+import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -49,7 +51,7 @@ fun MainContent(
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
-    val (budgets, expenses, dialog) = uiState
+    val (budgets, expenses, monthlyOutlook, dialog) = uiState
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -84,16 +86,25 @@ fun MainContent(
             else -> {}
         }
 
-        LazyColumn(modifier = modifier) {
-            items(budgets) { budget ->
-                val spent = expenses[budget.id]?.sumOf { it.amount }
-                BudgetCard(
-                    modifier = Modifier.padding(4.dp),
-                    budget = budget,
-                    spent = spent ?: 0L,
-                    onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
-                    onDelete = { onEvent(Event.ShowDeleteDialog(it)) }
-                )
+        Column(
+            modifier = Modifier
+        ) {
+            BudgetOutlookCard(
+                modifier = Modifier,
+                details = monthlyOutlook
+            )
+
+            LazyColumn(modifier = modifier) {
+                items(budgets) { budget ->
+                    val spent = expenses[budget.id]?.sumOf { it.amount }
+                    BudgetCard(
+                        modifier = Modifier.padding(4.dp),
+                        budget = budget,
+                        spent = spent ?: 0L,
+                        onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
+                        onDelete = { onEvent(Event.ShowDeleteDialog(it)) }
+                    )
+                }
             }
         }
 
