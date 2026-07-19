@@ -48,7 +48,12 @@ class SettingsDataStore(
 
                 "DAILY" -> DateFilter.Daily
                 "WEEKLY" -> DateFilter.Weekly
+                "BI_WEEKLY" -> DateFilter.BiWeekly
                 "MONTHLY" -> DateFilter.Monthly
+                "QUARTERLY" -> DateFilter.Quarterly
+                "BI_YEARLY" -> DateFilter.BiYearly
+                "YEARLY" -> DateFilter.Yearly
+                "LAST_7_DAYS" -> DateFilter.Last7Days
 
                 "CUSTOM" -> {
                     val start = prefs[Keys.customStart] ?: 0L
@@ -75,6 +80,11 @@ class SettingsDataStore(
                     clearCustom(prefs)
                 }
 
+                DateFilter.BiWeekly -> {
+                    prefs[Keys.dateFilterType] = "BI_WEEKLY"
+                    clearCustom(prefs)
+                }
+
                 DateFilter.Last7Days -> {
                     prefs[Keys.dateFilterType] = "LAST_7_DAYS"
                     clearCustom(prefs)
@@ -82,6 +92,21 @@ class SettingsDataStore(
 
                 DateFilter.Monthly -> {
                     prefs[Keys.dateFilterType] = "MONTHLY"
+                    clearCustom(prefs)
+                }
+
+                DateFilter.Quarterly -> {
+                    prefs[Keys.dateFilterType] = "QUARTERLY"
+                    clearCustom(prefs)
+                }
+
+                DateFilter.BiYearly -> {
+                    prefs[Keys.dateFilterType] = "BI_YEARLY"
+                    clearCustom(prefs)
+                }
+
+                DateFilter.Yearly -> {
+                    prefs[Keys.dateFilterType] = "YEARLY"
                     clearCustom(prefs)
                 }
 

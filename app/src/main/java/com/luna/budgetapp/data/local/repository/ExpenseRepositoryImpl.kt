@@ -21,7 +21,6 @@ import com.luna.budgetapp.network.ExpenseService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -85,7 +84,7 @@ class ExpenseRepositoryImpl(
         emitAll(
             dao.getExpensesByType(type)
             .map { local ->
-                Resource.Success(local.map { it.toModel()} )
+                Resource.Success(local.map { it.toModel() } )
             }
         )
     }.flowOn(Dispatchers.IO)

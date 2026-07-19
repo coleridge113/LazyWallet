@@ -41,7 +41,6 @@ import com.luna.budgetapp.domain.usecase.expense.GetExpensesByCategoryUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetExpensesByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetExpensesByTypeUseCase
-import com.luna.budgetapp.domain.usecase.expense.UpdateExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
@@ -57,6 +56,7 @@ import com.luna.budgetapp.network.AuthService
 import com.luna.budgetapp.network.ExpenseService
 import com.luna.budgetapp.network.interceptors.AuthInterceptor
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
+import com.luna.budgetapp.presentation.screen.budget.BudgetViewModel
 import com.luna.budgetapp.presentation.screen.expensepreset.ExpensePresetViewModel
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListViewModel
 import com.luna.budgetapp.presentation.screen.auth.AuthViewModel
@@ -64,9 +64,19 @@ import com.luna.budgetapp.presentation.screen.migration.MigrationViewModel
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.luna.budgetapp.data.local.migrations.MIGRATION_3_4
+import com.luna.budgetapp.data.local.repository.BudgetRepositoryImpl
+import com.luna.budgetapp.domain.repository.BudgetRepository
+import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import com.luna.budgetapp.domain.usecase.budget.DeleteBudgetUseCase
+import com.luna.budgetapp.domain.usecase.budget.GetAllBudgetUseCase
+import com.luna.budgetapp.domain.usecase.budget.GetBudgetByIdUseCase
+import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
+import com.luna.budgetapp.domain.usecase.budget.UpdateBudgetUseCase
+import com.luna.budgetapp.domain.usecase.expense.GetBudgetByName
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
@@ -118,12 +128,13 @@ val databaseModule = module {
             AppDatabase::class.java, 
             "budget_db"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
         .build()
     }
     single { get<AppDatabase>().expenseDao() }
     single { get<AppDatabase>().expensePresetDao() }
     single { get<AppDatabase>().categoryFilterDao() }
+    single { get<AppDatabase>().budgetDao() }
     single { androidContext().authDataStore }
     single { androidContext().settingsDataStore }
 }
@@ -139,6 +150,7 @@ val appModule = module {
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ExpensePresetRepository> { ExpensePresetRepositoryImpl(get(), get(), get(), get(), get()) }
     single<CategoryRepository> { CategoryFilterRepositoryImpl(get(), get(), get(), get()) }
+    single<BudgetRepository> { BudgetRepositoryImpl(get(), get(), get()) }
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     singleOf(::SettingsRepositoryImpl) { bind<SettingsRepository>() }
     singleOf(::AuthRemoteDataSource)
@@ -157,7 +169,6 @@ val appModule = module {
     factoryOf(::GetTotalAmountByDateRangeUseCase)
     factoryOf(::GetExpensesByCategoryUseCase)
     factoryOf(::GetExpensesByTypeUseCase)
-    factoryOf(::UpdateExpenseUseCase)
     factoryOf(::GetTokenUseCase)
     factoryOf(::GetAllExpensePresetsUseCase)
     factoryOf(::GetCategoryTotalsByDateRange)
@@ -180,12 +191,19 @@ val appModule = module {
     factoryOf(::SignInGoogleUseCase)
     factoryOf(::SignInEmailPasswordUseCase)
     factoryOf(::SignUpUseCase)
+    factoryOf(::GetBudgetByName)
+    factoryOf(::SaveBudgetUseCase)
+    factoryOf(::GetBudgetByIdUseCase)
+    factoryOf(::UpdateBudgetUseCase)
+    factoryOf(::GetAllBudgetUseCase)
+    factoryOf(::DeleteBudgetUseCase)
 
     factoryOf(::AuthUseCases)
     factoryOf(::ExpenseUseCases)
     factoryOf(::ProfileUseCases)
     factoryOf(::PresetUseCases)
     factoryOf(::SettingsUseCases)
+    factoryOf(::BudgetUseCases)
 
     // ViewModels
     viewModelOf(::AuthViewModel)
@@ -193,4 +211,5 @@ val appModule = module {
     viewModelOf(::ExpensePresetViewModel)
     viewModelOf(::ExpenseListViewModel)
     viewModelOf(::AnalysisViewModel)
+    viewModelOf(::BudgetViewModel)
 }

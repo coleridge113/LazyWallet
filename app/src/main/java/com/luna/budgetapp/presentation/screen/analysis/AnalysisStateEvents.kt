@@ -22,7 +22,7 @@ data class ExpensesState(
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Last7Days,
-    val selectedDate: LocalDate = LocalDate.now(),
+    val selectedDate: LocalDate? = null,
 ) {
     val dateRange = dateFilter.resolve()
 }
@@ -39,6 +39,7 @@ data class CategoryProfileState(
 }
 
 sealed interface Event {
+    data object DeselectBar : Event
     data class SelectBar(val date: LocalDate) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
 }

@@ -1,15 +1,32 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +56,7 @@ fun AnalysisRoute(
                 TopAppBar(
                     modifier = Modifier,
                     title = {},
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     actions = {
                         CategoryProfileSelectorDropdown(
                             selectedProfile = state.categoryProfileState.activeProfile,
@@ -66,6 +84,8 @@ fun MainContent(
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier.fillMaxSize()
             .padding(16.dp)
@@ -75,14 +95,52 @@ fun MainContent(
             expenses = uiState.expensesState.expenses,
             selectedDate = uiState.dateState.selectedDate,
             onClickBar = { date ->
-                onEvent(Event.SelectBar(date)) 
+                onEvent(Event.SelectBar(date))
+                isExpanded = true
             }
         )
 
-        ExpenseTable(
-            modifier = Modifier,
-            expenses = uiState.expensesState.filteredExpenses
-        )
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = slideInVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy
+                )
+            ) { -it },
+            exit = slideOutVertically { -it },
+            modifier = Modifier.clipToBounds()
+        ) {
+            Column (
+                modifier = Modifier.padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ExpenseTable(
+                    modifier = Modifier,
+                    expenses = uiState.expensesState.filteredExpenses
+                )
+
+                Button(
+                    onClick = {
+                        isExpanded = false
+                        onEvent(Event.DeselectBar)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+//                HorizontalDivider(
+//                    modifier = Modifier.padding(horizontal = 164.dp),
+//                    color = MaterialTheme.colorScheme.outline
+//                )
+            }
+        }
     }
 }
 
@@ -97,15 +155,6 @@ private fun MainContentPreviewLight() {
     val dummyExpenses = listOf(
         Expense(1L, "Coffee", 90.0, "Food", "Expense", now.minusDays(6)),
         Expense(2L, "Lunch", 150.0, "Food", "Expense", now.minusDays(6)),
-        Expense(3L, "Grab", 200.0, "Transport", "Expense", now.minusDays(5)),
-        Expense(4L, "Dinner", 180.0, "Food", "Expense", now.minusDays(4)),
-        Expense(5L, "Snacks", 70.0, "Food", "Expense", now.minusDays(4)),
-        Expense(6L, "Groceries", 500.0, "Groceries", "Expense", now.minusDays(3)),
-        Expense(7L, "Coffee", 95.0, "Food", "Expense", now.minusDays(2)),
-        Expense(8L, "Taxi", 180.0, "Transport", "Expense", now.minusDays(2)),
-        Expense(9L, "Lunch", 160.0, "Food", "Expense", now.minusDays(1)),
-        Expense(10L, "Breakfast", 80.0, "Food", "Expense", now),
-        Expense(11L, "Dinner", 200.0, "Food", "Expense", now)
     )
 
     val successState = UiState.Success(

@@ -71,7 +71,7 @@ fun ExpenseForm(
 
         LaunchedEffect(Unit) {
             selectedOption = options.firstOrNull { option ->
-                option.displayName.equals(selectedExpense.category, ignoreCase = true)
+                option.getDisplayName().equals(selectedExpense.category, ignoreCase = true)
             } ?: options.first()
         }
 
@@ -94,7 +94,7 @@ fun ExpenseForm(
                     onExpandedChange = {}
                 ) {
                     TextField(
-                        value = selectedOption.displayName,
+                        value = selectedOption.getDisplayName(),
                         onValueChange = {},
                         readOnly = true,
                         label = null,
@@ -115,7 +115,7 @@ fun ExpenseForm(
                     ) {
                         options.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option.displayName) },
+                                text = { Text(option.getDisplayName()) },
                                 onClick = {
                                     selectedOption = option
                                     expanded = false

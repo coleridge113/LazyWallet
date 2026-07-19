@@ -1,6 +1,5 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -77,7 +76,7 @@ fun ExpensePresetDialog(
         LaunchedEffect(Unit) {
             selectedPreset?.let {
                 selectedOption = options.firstOrNull { option ->
-                    option.displayName.equals(it.category, ignoreCase = true)
+                    option.getDisplayName().equals(it.category, ignoreCase = true)
                 } ?: options.first()
             }
         }
@@ -105,7 +104,7 @@ fun ExpensePresetDialog(
                     onExpandedChange = { if (!isLocked) expanded = !expanded }
                 ) {
                     TextField(
-                        value = selectedOption.displayName,
+                        value = selectedOption.getDisplayName(),
                         onValueChange = {},
                         readOnly = true,
                         label = if (!isLocked) {{ Text("Select category") }} else null,
@@ -133,7 +132,7 @@ fun ExpensePresetDialog(
                     ) {
                         options.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option.displayName) },
+                                text = { Text(option.getDisplayName()) },
                                 onClick = {
                                     selectedOption = option
                                     expanded = false

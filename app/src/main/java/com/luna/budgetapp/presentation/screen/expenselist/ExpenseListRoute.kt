@@ -4,7 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fitInside
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -54,14 +57,8 @@ fun ExpenseListRoute(
                 TopAppBar(
                     modifier = Modifier,
                     title = {},
+                    windowInsets = WindowInsets(0, 0, 0, 0),
                     actions = {
-                        Icon(
-                            imageVector = Icons.Default.BarChart,
-                            contentDescription = null,
-                            modifier = Modifier.clickable {
-                                viewModel.onEvent(Event.GotoBarGraph)
-                            }
-                        )
                         DateRangeSelectorDropdown(
                             selected = state.dateState.dateFilter,
                             onSelectedChange = {
@@ -155,9 +152,6 @@ fun MainContent(
                     },
                     onSave = { newProfileName, filters ->
                         onEvent(Event.SaveCategoryProfile(newProfileName, filters))
-                    },
-                    onDelete = { profileName ->
-                        onEvent(Event.DeleteCategoryProfile(profileName))
                     }
                 )
 

@@ -64,8 +64,7 @@ fun CategoryFilterDialog(
     onDismiss: () -> Unit,
     onApply: (String, Map<Category, Boolean>) -> Unit,
     onSave: (String, Map<Category, Boolean>) -> Unit,
-    onSelectedChange: (String) -> Unit,
-    onDelete: (String) -> Unit
+    onSelectedChange: (String) -> Unit
 ) {
 
     val applySaveText = stringResource(R.string.btn_save)
@@ -213,7 +212,7 @@ fun CategoryFilter(
                     )
                 )
 
-                Text(text = item.displayName)
+                Text(text = item.getDisplayName())
             }
         }
     }
@@ -315,8 +314,7 @@ fun CategoryFilterPreview() {
             onApply = { _, _ -> },
             onSelectedChange = {},
             profileList = listOf("Default", "Profile 1"),
-            onSave = { _, _ ->},
-            onDelete = {}
+            onSave = { _, _ ->}
         )
     }
 }

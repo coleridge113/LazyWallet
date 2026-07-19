@@ -29,6 +29,8 @@ import com.luna.budgetapp.presentation.screen.auth.AuthRoute
 import com.luna.budgetapp.presentation.screen.expenselist.ExpenseListRoute
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisViewModel
 import com.luna.budgetapp.presentation.screen.analysis.AnalysisRoute
+import com.luna.budgetapp.presentation.screen.budget.BudgetRoute
+import com.luna.budgetapp.presentation.screen.budget.BudgetViewModel
 
 @ExperimentalMaterial3Api
 @ExperimentalSharedTransitionApi
@@ -44,6 +46,7 @@ fun NavGraphSetup(
         currentRoute?.contains("ExpensePresetRoute") == true -> NavOptions.HOME
         currentRoute?.contains("ExpensesRoute") == true -> NavOptions.LIST
         currentRoute?.contains("AnalysisRoute") == true -> NavOptions.ANALYSIS
+        currentRoute?.contains("BudgetRoute") == true -> NavOptions.BUDGET
         else -> null
     }
 
@@ -58,6 +61,7 @@ fun NavGraphSetup(
                             NavOptions.HOME -> Routes.ExpensePresetRoute
                             NavOptions.LIST -> Routes.ExpensesRoute
                             NavOptions.ANALYSIS -> Routes.AnalysisRoute
+                            NavOptions.BUDGET -> Routes.BudgetRoute
                         }
                         navController.navigate(route) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -134,6 +138,12 @@ fun NavGraphSetup(
                         viewModel = viewModel
                     )
                 }
+                composable<Routes.BudgetRoute> {
+                    val viewModel: BudgetViewModel = koinViewModel()
+                    BudgetRoute(
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }
@@ -144,6 +154,7 @@ private fun getTabIndex(destination: NavDestination?): Int {
         destination?.hasRoute<Routes.ExpensePresetRoute>() == true -> 0
         destination?.hasRoute<Routes.ExpensesRoute>() == true -> 1
         destination?.hasRoute<Routes.AnalysisRoute>() == true -> 2
+        destination?.hasRoute<Routes.BudgetRoute>() == true -> 3
         else -> -1
     }
 }

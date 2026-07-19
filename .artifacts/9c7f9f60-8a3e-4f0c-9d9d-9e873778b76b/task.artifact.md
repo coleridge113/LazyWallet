@@ -1,0 +1,10 @@
+- [x] Update `DateFilter.kt` with new frequencies and helpers
+- [x] Update `Budget.kt` to use `DateFilter` and remove `BudgetFrequency`
+- [x] Update `BudgetEntity.kt`
+- [x] Update `Converters.kt` for `DateFilter` serialization
+- [x] Update `SettingsDataStore.kt`
+- [x] Update `BudgetDialog.kt`
+- [x] Update `BudgetCard.kt`
+- [x] Update `ExpensePresetViewModel.kt`
+- [x] Update `DateRangeSelector.kt`
+- [x] Verify changes in the UI (Manual Verification)

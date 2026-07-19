@@ -3,6 +3,7 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 
 sealed interface UiState {
@@ -18,8 +19,10 @@ sealed interface UiState {
 
 data class ExpensesState(
     val expensePresets: List<ExpensePreset> = emptyList(),
-    val totalAmount: Double = 0.0
-)
+    val expenses: List<Expense> = emptyList()
+) {
+    val totalAmount = expenses.sumOf { it.amount }
+}
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily
@@ -33,6 +36,7 @@ data class CategoryProfileState(
 
 sealed interface DialogState {
     data object ConfirmDeleteExpense : DialogState
+    data object ConfirmLogout : DialogState
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
         val selectedPreset: ExpensePreset? = null,
@@ -46,7 +50,8 @@ sealed interface Event {
     data object GotoAnalysisRoute : Event
     data object DismissDialog : Event
     data object ShowDeleteConfirmationDialog : Event
-    data object Logout : Event
+    data object SignOut : Event
+    data object ShowSignOutDialog : Event
     data object DeleteLatestExpense : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
     data class ConfirmExpenseFormDialog(

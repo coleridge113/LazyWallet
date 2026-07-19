@@ -9,6 +9,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,11 +20,13 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
@@ -90,22 +94,39 @@ fun ExpensePresetRoute(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     uiState: UiState.Success,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
 ) {
-    val (expensePresets, totalAmount) = uiState.expensesState
+    val expensePresets = uiState.expensesState.expensePresets
+    val expenses = uiState.expensesState.expenses
+    val totalAmount = uiState.expensesState.totalAmount
+
     var isMenuExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier.fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ){
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
+            TopAppBar(
+                modifier = Modifier,
+                title = {},
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                actions = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
+                        contentDescription = "Logout",
+                        modifier = Modifier.singleClick { onEvent(Event.ShowSignOutDialog) }
+                    )
+                }
+            )
+
             ExpenseAmountDisplay(
                 totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
@@ -123,6 +144,15 @@ fun MainContent(
             )
 
             when (val dialog = uiState.dialogState) {
+                DialogState.ConfirmLogout -> {
+                    ConfirmationDialog(
+                        message = "Are you sure you want to sign out?",
+                        confirmText = "Yes",
+                        isDestructive = true,
+                        onDismiss = { onEvent(Event.DismissDialog) },
+                        onConfirm = { onEvent(Event.SignOut) }
+                    )
+                }
                 DialogState.ConfirmDeleteExpense -> {
                     ConfirmationDialog(
                         message = "Delete the last expense?",
@@ -179,7 +209,7 @@ fun MainContent(
         ) {
             val iconSize = 24.dp
             val fabSize = 56.dp
-            val offset = fabSize / 2
+            val offset = fabSize / 2 + 16.dp
             val noElevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
                 pressedElevation = 0.dp,
@@ -232,22 +262,6 @@ fun MainContent(
                             modifier = Modifier.size(iconSize)
                         )
                     }
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.Logout)
-                            isMenuExpanded = false
-                        },
-                        modifier = Modifier.padding(bottom = 18.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
                 }
             }
 
@@ -274,40 +288,24 @@ fun MainContent(
 )
 @Composable
 fun ExpenseRoutePreviewLight() {
-    val totalAmount = 1234.56
     val expensesState = ExpensesState(
-        totalAmount = totalAmount,
         expensePresets = listOf(
-            ExpensePreset(
-                amount = 100.0,
-                category = "FOOD",
-                type = "Lunch"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
-            ExpensePreset(
-                amount = 140.0,
-                category = "BEVERAGE",
-                type = "Coffee"
-            ),
+            ExpensePreset(amount = 100.0, category = "FOOD", type = "Lunch"),
+            ExpensePreset(amount = 140.0, category = "BEVERAGE", type = "Coffee")
+        ),
+        expenses = listOf(
+            Expense(id = 1, amount = 50.0, category = "FOOD", type = "Lunch"),
+            Expense(id = 2, amount = 15.0, category = "BEVERAGE", type = "Coffee"),
+            Expense(id = 3, amount = 200.0, category = "SHOPPING", type = "Groceries")
         )
     )
+
     val uiState = UiState.Success(
         expensesState = expensesState
     )
 
     LazyWalletTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             MainContent(
                 uiState = uiState,
                 onEvent = {}

@@ -4,8 +4,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.luna.budgetapp.data.local.dao.ExpenseDao
+import com.luna.budgetapp.data.local.dao.BudgetDao
 import com.luna.budgetapp.data.local.dao.ExpensePresetDao
 import com.luna.budgetapp.data.local.dao.CategoryFilterDao
+import com.luna.budgetapp.data.local.entity.BudgetEntity
+import com.luna.budgetapp.data.local.entity.BudgetInteractorCategoryEntity
 import com.luna.budgetapp.data.local.entity.CategoryFilterEntity
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
@@ -14,9 +17,11 @@ import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
     entities =  [
         ExpenseEntity::class, 
         ExpensePresetEntity::class,
-        CategoryFilterEntity::class
+        CategoryFilterEntity::class,
+        BudgetEntity::class,
+        BudgetInteractorCategoryEntity::class
     ], 
-    version =  3,
+    version =  4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -25,4 +30,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun expensePresetDao(): ExpensePresetDao
     abstract fun categoryFilterDao(): CategoryFilterDao
+    abstract fun budgetDao(): BudgetDao
 }

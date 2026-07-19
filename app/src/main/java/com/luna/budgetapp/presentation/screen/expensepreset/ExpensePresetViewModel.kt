@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
@@ -26,7 +27,8 @@ import kotlinx.coroutines.launch
 class ExpensePresetViewModel(
     private val presetUseCases: PresetUseCases,
     private val expenseUseCases: ExpenseUseCases,
-    private val profileUseCases: ProfileUseCases
+    private val profileUseCases: ProfileUseCases,
+    private val budgetUseCases: BudgetUseCases
 ): ViewModel() {
 
     private val _errorState = MutableStateFlow<String?>(null)
@@ -47,19 +49,25 @@ class ExpensePresetViewModel(
 
     private val _expensesState = combine(
         _dateState,
-        presetUseCases.getAllExpensePresets()
-    ) { dateState, expensePresets ->
-        dateState to expensePresets
+        presetUseCases.getAllExpensePresets(),
+        _categoryProfileState
+    ) { dateState, expensePresets, categoryProfileState ->
+        Triple(dateState, expensePresets, categoryProfileState)
     }
-        .flatMapLatest { (dateState, expensePresets) ->
+        .flatMapLatest { (dateState, expensePresets, categoryProfileState) ->
             val (start, end) = dateState.dateRange
-            expenseUseCases.getTotalAmountByDateRange(
+            expenseUseCases.getExpensesByDateRange(
                 start = start,
-                end = end
-            ).map { totalAmount ->
+                end = end,
+                categories = categoryProfileState.selectedCategoryMap
+                    .filter { it.value }
+                    .keys
+                    .map { it.name }
+                    .toList()
+            ).map { expenses ->
                 ExpensesState(
                     expensePresets = expensePresets,
-                    totalAmount = totalAmount
+                    expenses = expenses
                 )
             }
         }
@@ -103,7 +111,8 @@ class ExpensePresetViewModel(
 
     fun onEvent(event: Event) {
         when (event) {
-            Event.Logout -> logoutUser()
+            Event.SignOut -> signOutUser()
+            Event.ShowSignOutDialog -> showSignOutDialog()
             Event.GotoExpenseRoute -> gotoExpenseRoute(Navigation.GotoExpenseRoute)
             Event.GotoAnalysisRoute -> gotoExpenseRoute(Navigation.GotoAnalysisRoute)
             Event.DismissDialog -> dismissDialog()
@@ -147,7 +156,7 @@ class ExpensePresetViewModel(
             id = id,
             amount = amount.toDoubleOrNull() ?: 0.0,
             category = category.name,
-            type = type.ifEmpty { category.displayName }.trim()
+            type = type.ifEmpty { category.getDisplayName() }.trim()
         )
 
         viewModelScope.launch {
@@ -227,7 +236,13 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun logoutUser() {
+    private fun showSignOutDialog() {
+        _dialogState.update {
+            DialogState.ConfirmLogout
+        }
+    }
+
+    private fun signOutUser() {
         viewModelScope.launch {
             _navigation.send(Navigation.Logout)
         }
