@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.common.Constants.EMPTY
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.presentation.screen.utils.toCurrency
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +70,7 @@ fun ExpensePresetDialog(
         var selectedOption by remember { mutableStateOf(options.first()) }
         val typeState = rememberTextFieldState(selectedPreset?.type ?: EMPTY)
         val amountState = rememberTextFieldState(
-            selectedPreset?.let { it.amount.toString() } ?: EMPTY
+            selectedPreset?.amount?.toCurrency() ?: EMPTY
         )
         val isLocked = selectedPreset != null
 
@@ -163,7 +164,7 @@ fun ExpensePresetDialog(
                     ),
                     placeholder = {
                         Text(
-                            selectedPreset?.let { it.amount.toString() } ?: EMPTY
+                            selectedPreset?.amount?.toCurrency() ?: EMPTY
                         )
                     },
                     inputTransformation = InputTransformation {

@@ -3,7 +3,6 @@ package com.luna.budgetapp.domain.model
 import java.time.Instant
 import java.time.temporal.WeekFields
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.util.Locale
@@ -154,7 +153,8 @@ sealed class DateFilter {
                 .toLocalDate()
                 .atStartOfDay()
 
-            val endDateTime = if (end != null) {
+            val endDateTime =
+                if (end != null) {
                     Instant.ofEpochMilli(end)
                         .atZone(zone)
                         .toLocalDate()

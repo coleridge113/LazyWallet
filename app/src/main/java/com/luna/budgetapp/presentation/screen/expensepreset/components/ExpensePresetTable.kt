@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
+import com.luna.budgetapp.presentation.screen.utils.toCurrency
 import com.luna.budgetapp.ui.icons.CoffeeIcon
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
@@ -115,7 +116,7 @@ fun ExpensePresetItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "%.2f".format(item.amount / 100.0),
+                    text = item.amount.toCurrency(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
