@@ -48,18 +48,13 @@ class BudgetViewModel(
                 combine(expenseFlows) { it.toMap() }
             }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000.milliseconds),
-            initialValue = emptyMap()
-        )
 
     private val _monthlyOutlook =
-        _budgets.map { budgets ->
+        combine(_budgets, _expenses) { budgets, expenses ->
             OutlookDetails(
                 income = 0L,
                 projectedSpend = budgets.sumOf { it.frequency.projectAmountToMonth(it.limit) },
-                actualSpend = _expenses.value.values.flatten().sumOf { it.amount },
+                actualSpend = expenses.values.flatten().distinctBy { it.id }.sumOf { it.amount },
             )
         }
 
