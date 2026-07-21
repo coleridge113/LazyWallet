@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budget.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +21,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
@@ -172,8 +177,10 @@ fun BudgetCard(
                                 MaterialTheme.colorScheme.error
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                BudgetProgressBar(spent = spent, limit = budget.limit)
                 Spacer(
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
 
@@ -239,6 +246,171 @@ private enum class Options {
     }
 }
 
+@Composable
+fun BudgetCard2(
+    modifier: Modifier,
+    budget: Budget,
+    spent: Long,
+    onEdit: (Budget) -> Unit,
+    onDelete: (Budget) -> Unit
+) {
+
+    val remaining = budget.limit - spent
+
+    Surface(
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.fillMaxWidth()
+            .height(200.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header sections
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = budget.name,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Box {
+                    var expanded by remember { mutableStateOf(false) }
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .singleClick { expanded = true }
+                    )
+                    BudgetCardMenu(
+                        modifier = Modifier
+                            .width(90.dp),
+                        expanded = expanded,
+                        onDismiss = { expanded = false },
+                        onClick = { option ->
+                            when (option) {
+                                Options.EDIT -> onEdit(budget)
+                                Options.DELETE -> onDelete(budget)
+                            }
+                            expanded = false
+                        }
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "Php ${remaining.toCurrency()} left",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                BudgetProgressBar(
+                    spent = spent,
+                    limit = budget.limit,
+                    modifier = Modifier.height(16.dp)
+                        .width(240.dp)
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Php ${spent.toCurrency()} spent",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            Spacer(
+                modifier = Modifier.height(24.dp),
+            )
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier.fillMaxWidth(0.80f)
+            ) {
+                items(budget.interactors) { category ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = getIconForCategory(category),
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = category.getDisplayName(),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BudgetProgressBar(
+    spent: Long,
+    limit: Long,
+    modifier: Modifier = Modifier
+) {
+    val rawProgress = if (limit > 0f) spent.toFloat() / limit.toFloat() else 0f
+    val progress = rawProgress.coerceIn(0f, 1f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress,
+        label = "progress_animation"
+    )
+
+    val progressColor = when {
+        progress < 0.75f -> MaterialTheme.colorScheme.primary
+        progress < 0.90f -> Color(0xFFF57C00)
+        else -> MaterialTheme.colorScheme.error
+    }
+
+    LinearProgressIndicator(
+        progress = { animatedProgress },
+        modifier = modifier,
+        color = progressColor,
+        trackColor = progressColor.copy(alpha = 0.2f),
+        strokeCap = StrokeCap.Round
+    )
+}
+
+@Composable
+fun BudgetCardMiddleSection(spent: Long, limit: Long) {
+    Column(
+        modifier = Modifier.padding(vertical = 12.dp)
+    ) {
+        BudgetProgressBar(
+            spent = spent,
+            limit = limit,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Php ${spent.toCurrency()} spent of Php ${limit.toCurrency()}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            val percentage = if (limit > 0) ((spent.toFloat() / limit) * 100).toInt() else 0
+            Text(
+                text = "$percentage%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 @Preview(
     device = Devices.PIXEL_7,
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
@@ -258,6 +430,35 @@ fun BudgetCardPreview() {
             modifier = Modifier
         ) {
             BudgetCard(
+                modifier = Modifier,
+                budget = budget,
+                spent = 43200,
+                onEdit = {},
+                onDelete = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    device = Devices.PIXEL_7,
+    uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
+)
+@Composable
+fun BudgetCardPreview2() {
+    val budget = Budget(
+        limit = 50000,
+        name = "Daily Budget",
+        frequency = DateFilter.Daily,
+        interactors = Category.entries,
+        startDate = LocalDate.now()
+    )
+
+    LazyWalletTheme {
+        Surface(
+            modifier = Modifier
+        ) {
+            BudgetCard2(
                 modifier = Modifier,
                 budget = budget,
                 spent = 43200,

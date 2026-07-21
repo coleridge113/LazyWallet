@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
+import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard2
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
@@ -97,7 +98,7 @@ fun MainContent(
             LazyColumn(modifier = modifier) {
                 items(budgets) { budget ->
                     val spent = expenses[budget.id]?.sumOf { it.amount }
-                    BudgetCard(
+                    BudgetCard2(
                         modifier = Modifier.padding(4.dp),
                         budget = budget,
                         spent = spent ?: 0L,
