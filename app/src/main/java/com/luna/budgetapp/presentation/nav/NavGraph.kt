@@ -64,7 +64,7 @@ fun NavGraphSetup(
                             NavOptions.BUDGET -> Routes.BudgetRoute
                         }
                         navController.navigate(route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
+                            popUpTo<Routes.ExpensePresetRoute> {
                                 saveState = true
                             }
                             launchSingleTop = true
