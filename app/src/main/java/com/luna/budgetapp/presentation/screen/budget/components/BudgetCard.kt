@@ -272,6 +272,13 @@ fun BudgetCard2(
                     text = budget.name,
                     style = MaterialTheme.typography.titleMedium,
                 )
+                Text(
+                    text = "(${budget.frequency})",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 Box {
                     var expanded by remember { mutableStateOf(false) }
