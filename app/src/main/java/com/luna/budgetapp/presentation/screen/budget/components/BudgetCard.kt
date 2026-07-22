@@ -178,10 +178,6 @@ fun BudgetCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                BudgetProgressBar(spent = spent, limit = budget.limit)
-                Spacer(
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
             }
 
             // Categories section
