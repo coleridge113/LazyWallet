@@ -248,7 +248,8 @@ fun BudgetCard2(
     budget: Budget,
     spent: Long,
     onEdit: (Budget) -> Unit,
-    onDelete: (Budget) -> Unit
+    onDelete: (Budget) -> Unit,
+    onClick: (Budget) -> Unit
 ) {
 
     val remaining = budget.limit - spent
@@ -257,7 +258,8 @@ fun BudgetCard2(
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         shape = RoundedCornerShape(16.dp),
         modifier = modifier.fillMaxWidth()
-            .height(160.dp),
+            .height(160.dp)
+            .singleClick { onClick(budget) },
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -431,7 +433,8 @@ fun BudgetCardPreview2() {
                 budget = budget,
                 spent = 43200,
                 onEdit = {},
-                onDelete = {}
+                onDelete = {},
+                onClick = {}
             )
         }
     }
