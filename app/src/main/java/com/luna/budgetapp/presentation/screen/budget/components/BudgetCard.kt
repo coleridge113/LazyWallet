@@ -261,7 +261,7 @@ fun BudgetCard2(
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
         shape = RoundedCornerShape(16.dp),
         modifier = modifier.fillMaxWidth()
-            .height(200.dp),
+            .height(160.dp),
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -315,12 +315,7 @@ fun BudgetCard2(
                     spent = spent,
                     limit = budget.limit,
                     modifier = Modifier.height(16.dp)
-                        .width(240.dp)
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Php ${spent.toCurrency()} spent",
-                    style = MaterialTheme.typography.bodyMedium,
+                        .width(300.dp)
                 )
             }
             Spacer(
@@ -378,37 +373,6 @@ fun BudgetProgressBar(
         trackColor = progressColor.copy(alpha = 0.2f),
         strokeCap = StrokeCap.Round
     )
-}
-
-@Composable
-fun BudgetCardMiddleSection(spent: Long, limit: Long) {
-    Column(
-        modifier = Modifier.padding(vertical = 12.dp)
-    ) {
-        BudgetProgressBar(
-            spent = spent,
-            limit = limit,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Php ${spent.toCurrency()} spent of Php ${limit.toCurrency()}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            val percentage = if (limit > 0) ((spent.toFloat() / limit) * 100).toInt() else 0
-            Text(
-                text = "$percentage%",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
 }
 
 @Preview(
