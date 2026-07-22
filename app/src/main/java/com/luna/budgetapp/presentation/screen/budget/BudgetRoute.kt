@@ -15,24 +15,36 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
+import androidx.navigation.NavHostController
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard2
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun BudgetRoute(
+    navController: NavHostController,
     viewModel: BudgetViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collectLatest { navigation ->
+            when (navigation) {
+                is Navigation.GotoBudgetDetails -> {
+                }
+            }
+        }
+    }
+
     when (val state = uiState) {
         is UiState.Loading -> {}
         is UiState.Error -> {}
@@ -103,7 +115,8 @@ fun MainContent(
                         budget = budget,
                         spent = spent ?: 0L,
                         onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
-                        onDelete = { onEvent(Event.ShowDeleteDialog(it)) }
+                        onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
+                        onClick
                     )
                 }
             }
