@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
-import com.luna.budgetapp.presentation.screen.analysis.components.ExpenseTable
+import com.luna.budgetapp.presentation.screen.components.ExpenseTable
 import com.luna.budgetapp.presentation.screen.components.CategoryProfileSelectorDropdown
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDateTime
