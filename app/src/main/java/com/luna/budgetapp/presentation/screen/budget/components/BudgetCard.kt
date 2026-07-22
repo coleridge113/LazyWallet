@@ -308,8 +308,9 @@ fun BudgetCard2(
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
+                val suffix = if (remaining > 0) "left" else "overspent"
                 Text(
-                    text = "Php ${remaining.toCurrency()} left",
+                    text = "Php ${remaining.toCurrency()} $suffix",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
