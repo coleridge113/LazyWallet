@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard2
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
@@ -40,6 +41,7 @@ fun BudgetRoute(
         viewModel.navigation.collectLatest { navigation ->
             when (navigation) {
                 is Navigation.GotoBudgetDetails -> {
+                    navController.navigate(Routes.BudgetDetailsRoute(navigation.budgetId))
                 }
             }
         }
@@ -116,7 +118,7 @@ fun MainContent(
                         spent = spent ?: 0L,
                         onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
                         onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
-                        onClick
+                        onClick = { onEvent(Event.GotoBudgetDetails(budget.id)) }
                     )
                 }
             }
