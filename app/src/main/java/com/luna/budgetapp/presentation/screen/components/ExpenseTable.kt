@@ -1,4 +1,4 @@
-package com.luna.budgetapp.presentation.screen.analysis.components
+package com.luna.budgetapp.presentation.screen.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
