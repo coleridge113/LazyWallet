@@ -118,14 +118,14 @@ class ExpensePresetViewModel(
             Event.DismissDialog -> dismissDialog()
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
-            is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType)
+            is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType, event.customDate)
             is Event.AddExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset, event.action)
             is Event.EditExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(
-                event.id, event.category, event.type, event.amount
+                event.id, event.category, event.type, event.amount, event.date
             )
         }
     }
@@ -147,7 +147,7 @@ class ExpensePresetViewModel(
         _dialogState.update { null }
     }
 
-    private fun saveExpensePreset(id: Long?, category: Category, type: String, amount: String) {
+    private fun saveExpensePreset(id: Long?, category: Category, type: String, amount: String, date: java.time.LocalDateTime?) {
         val dialog = _dialogState.value
 
         if (dialog !is DialogState.ExpenseForm || dialog.isSaving) return
@@ -156,7 +156,8 @@ class ExpensePresetViewModel(
             id = id,
             amount = parseAmountExpression(amount),
             category = category.name,
-            type = type.ifEmpty { category.getDisplayName() }.trim()
+            type = type.ifEmpty { category.getDisplayName() }.trim(),
+            createdAt = date ?: java.time.LocalDateTime.now()
         )
 
         viewModelScope.launch {
@@ -177,14 +178,16 @@ class ExpensePresetViewModel(
     private fun addExpense(
         expensePreset: ExpensePreset, 
         customAmount: String?,
-        customType: String?
+        customType: String?,
+        customDate: java.time.LocalDateTime?
     ) {
         val amount = customAmount?.let { parseAmountExpression(it) } ?: expensePreset.amount
         viewModelScope.launch {
             expenseUseCases.addExpense(
                 category = expensePreset.category,
                 type = customType ?: expensePreset.type,
-                amount = amount
+                amount = amount,
+                date = customDate ?: java.time.LocalDateTime.now()
             )
 
             if (_dialogState.value != null) {

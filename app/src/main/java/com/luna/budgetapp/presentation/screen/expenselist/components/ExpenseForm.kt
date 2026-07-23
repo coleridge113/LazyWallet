@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expenselist.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,12 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -31,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,14 +51,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.presentation.screen.utils.formatToDisplay
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpenseForm(
     selectedExpense: Expense,
     onDismissRequest: () -> Unit,
-    onConfirm: (Long, String, String) -> Unit,
+    onConfirm: (Long, String, String, LocalDateTime) -> Unit,
     isSaving: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -70,10 +80,47 @@ fun ExpenseForm(
             "%.2f".format(selectedExpense.amount / 100.0)
         )
 
+        var showDatePicker by remember { mutableStateOf(false) }
+        var selectedDate by remember { mutableStateOf(selectedExpense.date) }
+
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.toInstant(ZoneOffset.UTC).toEpochMilli()
+        )
+
         LaunchedEffect(Unit) {
             selectedOption = options.firstOrNull { option ->
                 option.getDisplayName().equals(selectedExpense.category, ignoreCase = true)
             } ?: options.first()
+        }
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            selectedDate = Instant.ofEpochMilli(it)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false,
+                    title = null,
+                    headline = null
+                )
+            }
         }
 
         Surface(
@@ -163,6 +210,27 @@ fun ExpenseForm(
                     }
                 )
 
+                OutlinedTextField(
+                    value = selectedDate.formatToDisplay(),
+                    onValueChange = {},
+                    label = { Text("Date") },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Select Date",
+                            modifier = Modifier.clickable { showDatePicker = true }
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                showDatePicker = true
+                            }
+                        }
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -184,7 +252,8 @@ fun ExpenseForm(
                         onConfirm(
                             selectedExpense.id!!,
                             type,
-                            amount
+                            amount,
+                            selectedDate
                         )
                     },
                         enabled = !isSaving
@@ -217,7 +286,7 @@ fun ExpensePresetDialogPreview() {
             ExpenseForm(
                 selectedExpense = dummyExpense,
                 onDismissRequest = {},
-                onConfirm = { _, _, _ -> },
+                onConfirm = { _, _, _, _ -> },
                 isSaving = false,
             )
         }

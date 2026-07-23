@@ -9,12 +9,14 @@ class AddExpenseUseCase(
     suspend operator fun invoke(
         category: String,
         type: String,
-        amount: Long
+        amount: Long,
+        date: java.time.LocalDateTime = java.time.LocalDateTime.now()
     ) {
         val expense = Expense(
             category = category,
             type = type,
-            amount = amount
+            amount = amount,
+            date = date
         )
         repository.addExpense(expense)
     }

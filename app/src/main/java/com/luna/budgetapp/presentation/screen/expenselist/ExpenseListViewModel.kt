@@ -144,7 +144,7 @@ class ExpenseListViewModel(
             Event.ResetCategoryFilters -> resetCategoryFilters()
             Event.GotoBarGraph -> gotoAnalysisRoute()
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
-            is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount)
+            is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
@@ -260,12 +260,13 @@ class ExpenseListViewModel(
         }
     }
 
-    private fun editExpense(expenseId: Long, type: String, amount: String) {
+    private fun editExpense(expenseId: Long, type: String, amount: String, date: java.time.LocalDateTime) {
         viewModelScope.launch {
             expenseUseCases.editExpense(
                 id = expenseId,
                 type = type,
-                amount = parseAmountExpression(amount)
+                amount = parseAmountExpression(amount),
+                date = date
             )
         }
 

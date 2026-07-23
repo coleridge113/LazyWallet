@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +15,13 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -30,6 +34,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,15 +52,22 @@ import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.common.Constants.EMPTY
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.presentation.screen.utils.formatToDisplay
 import com.luna.budgetapp.presentation.screen.utils.toCurrency
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+
+typealias FormInputs = (Long?, Category, String, String, LocalDateTime) -> Unit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpensePresetDialog(
     selectedPreset: ExpensePreset?,
     onDismissRequest: () -> Unit,
-    onConfirm: (Long?, Category, String, String) -> Unit,
+    onConfirm: FormInputs,
     isSaving: Boolean,
     action: ExpenseFormAction,
     modifier: Modifier = Modifier
@@ -74,11 +86,50 @@ fun ExpensePresetDialog(
         )
         val isLocked = selectedPreset != null
 
+        var showDatePicker by remember { mutableStateOf(false) }
+        var selectedDate by remember {
+            mutableStateOf(selectedPreset?.createdAt ?: LocalDateTime.now())
+        }
+
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.toInstant(ZoneOffset.UTC).toEpochMilli()
+        )
+
         LaunchedEffect(Unit) {
             selectedPreset?.let {
                 selectedOption = options.firstOrNull { option ->
                     option.getDisplayName().equals(it.category, ignoreCase = true)
                 } ?: options.first()
+            }
+        }
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            selectedDate = Instant.ofEpochMilli(it)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+                        }
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false,
+                    title = null,
+                    headline = null
+                )
             }
         }
 
@@ -182,6 +233,27 @@ fun ExpensePresetDialog(
                     }
                 )
 
+                OutlinedTextField(
+                    value = selectedDate.formatToDisplay(),
+                    onValueChange = {},
+                    label = { Text("Date") },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Select Date",
+                            modifier = Modifier.clickable { showDatePicker = true }
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            if (it.isFocused) {
+                                showDatePicker = true
+                            }
+                        }
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -201,7 +273,7 @@ fun ExpensePresetDialog(
                                 amountState.text.ifBlank {
                                     selectedPreset?.amount
                                 }.toString()
-                            onConfirm(selectedPreset?.id, selectedOption, type, amount)
+                            onConfirm(selectedPreset?.id, selectedOption, type, amount, selectedDate)
                         },
                         enabled = !isSaving
                     ) {
@@ -232,7 +304,7 @@ fun ExpensePresetDialogPreview() {
             ExpensePresetDialog(
                 selectedPreset = null,
                 onDismissRequest = {},
-                onConfirm = { id, category, type, amount -> },
+                onConfirm = { _, _, _, _, _ -> },
                 isSaving = false,
                 action = ExpenseFormAction.ADD
             )

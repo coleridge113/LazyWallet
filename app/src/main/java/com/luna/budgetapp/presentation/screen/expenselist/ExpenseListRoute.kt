@@ -168,8 +168,8 @@ fun MainContent(
                 ExpenseForm(
                     selectedExpense = dialog.selectedExpense,
                     onDismissRequest = { onEvent(Event.DismissDialog) },
-                    onConfirm = { expenseId, type, amount ->
-                        onEvent(Event.EditExpense(expenseId, type, amount))
+                    onConfirm = { expenseId, type, amount, date ->
+                        onEvent(Event.EditExpense(expenseId, type, amount, date))
                     },
                     isSaving = dialog.isSaving
                 )

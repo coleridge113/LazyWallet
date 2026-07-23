@@ -4,6 +4,7 @@ import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.presentation.model.ChartData
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
+import java.time.LocalDateTime
 
 sealed interface UiState {
     data object Loading : UiState
@@ -67,7 +68,8 @@ sealed interface Event {
     data class EditExpense(
         val expenseId: Long,
         val type: String,
-        val amount: String
+        val amount: String,
+        val date: LocalDateTime
     ) : Event
     data class SaveCategoryProfile(
         val profileName: String,

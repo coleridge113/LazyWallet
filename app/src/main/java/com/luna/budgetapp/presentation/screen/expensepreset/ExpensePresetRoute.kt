@@ -168,22 +168,22 @@ fun MainContent(
                         onDismissRequest = { onEvent(Event.DismissDialog) },
                         isSaving = dialog.isSaving,
                         action = dialog.action,
-                        onConfirm = { id, category, type, amount ->
+                        onConfirm = { id, category, type, amount, date ->
                             when (dialog.action) {
                                 ExpenseFormAction.ADD ->
                                     onEvent(
                                         Event.ConfirmExpenseFormDialog(
-                                            null, category, type, amount
+                                            null, category, type, amount, date
                                         )
                                     )
                                 ExpenseFormAction.EDIT ->
                                     onEvent(
                                         Event.ConfirmExpenseFormDialog(
-                                            id, category, type, amount
+                                            id, category, type, amount, date
                                         )
                                     )
                                 else ->
-                                    onEvent(Event.AddExpense(dialog.selectedPreset!!, amount, type))
+                                    onEvent(Event.AddExpense(dialog.selectedPreset!!, amount, type, date))
                             }
                         }
                     )

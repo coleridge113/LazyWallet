@@ -241,9 +241,10 @@ class ExpenseRepositoryImpl(
     override suspend fun editExpenseById(
         expenseId: Long,
         amount: Long,
-        type: String
+        type: String,
+        date: LocalDateTime
     ) {
-        dao.editExpenseById(expenseId, amount, type)
+        dao.editExpenseById(expenseId, amount, type, date)
 
         val expense = dao.getExpenseByIdOnce(expenseId)
         val remoteId = expense?.remoteId

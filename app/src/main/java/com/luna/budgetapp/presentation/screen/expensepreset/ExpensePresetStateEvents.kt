@@ -58,10 +58,11 @@ sealed interface Event {
         val id: Long?,
         val category: Category,
         val type: String,
-        val amount: String
+        val amount: String,
+        val date: java.time.LocalDateTime? = null
     ) : Event
     data class DeleteExpensePreset(val expensePresetId: Long) : Event
-    data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null) : Event
+    data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null, val customDate: java.time.LocalDateTime? = null) : Event
     data class AddCustomExpense(
         val selectedPreset: ExpensePreset,
         val action: ExpenseFormAction

@@ -140,13 +140,15 @@ interface ExpenseDao {
     @Query("""
         UPDATE expenses
         SET amount = :amount,
-            type = :type
+            type = :type,
+            date = :date
         WHERE id = :expenseId
     """)
     suspend fun editExpenseById(
         expenseId: Long,
         amount: Long,
-        type: String
+        type: String,
+        date: LocalDateTime
     )
 
     @Query("SELECT * FROM expenses")

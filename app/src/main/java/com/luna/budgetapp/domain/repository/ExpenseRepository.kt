@@ -71,6 +71,7 @@ interface ExpenseRepository {
     suspend fun editExpenseById(
         expenseId: Long,
         amount: Long,
-        type: String
+        type: String,
+        date: LocalDateTime
     )
 }

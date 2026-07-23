@@ -8,8 +8,9 @@ class EditExpenseUseCase(
     suspend operator fun invoke(
         id: Long,
         amount: Long,
-        type: String
+        type: String,
+        date: java.time.LocalDateTime
     ) {
-        repository.editExpenseById(id, amount, type)
+        repository.editExpenseById(id, amount, type, date)
     }
 }
