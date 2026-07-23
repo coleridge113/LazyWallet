@@ -3,6 +3,9 @@ package com.luna.budgetapp.presentation.nav
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
@@ -139,14 +142,43 @@ fun NavGraphSetup(
                         viewModel = viewModel
                     )
                 }
-                composable<Routes.BudgetRoute> {
+                composable<Routes.BudgetRoute>(
+                    exitTransition = {
+                        if (targetState.destination.hasRoute<Routes.BudgetDetailsRoute>()) {
+                            fadeOut(animationSpec = tween(300))
+                        } else {
+                            null
+                        }
+                    }
+                ) {
                     val viewModel: BudgetViewModel = koinViewModel()
                     BudgetRoute(
                         navController = navController,
                         viewModel = viewModel
                     )
                 }
-                composable<Routes.BudgetDetailsRoute> {
+                composable<Routes.BudgetDetailsRoute>(
+                    enterTransition = {
+                        if (initialState.destination.hasRoute<Routes.BudgetRoute>()) {
+                            fadeIn(animationSpec = tween(300)) + scaleIn(
+                                initialScale = 0.8f,
+                                animationSpec = tween(300)
+                            )
+                        } else {
+                            null
+                        }
+                    },
+                    popExitTransition = {
+                        if (targetState.destination.hasRoute<Routes.BudgetRoute>()) {
+                            slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> fullWidth },
+                                animationSpec = tween(300)
+                            )
+                        } else {
+                            null
+                        }
+                    }
+                ) {
                     val viewModel: BudgetDetailsViewModel = koinViewModel()
                     BudgetDetailsRoute(
                         navController = navController,
