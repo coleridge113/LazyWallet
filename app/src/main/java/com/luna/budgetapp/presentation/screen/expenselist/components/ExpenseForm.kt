@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
+import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -210,13 +211,15 @@ fun ExpensePresetDialogPreview() {
         type = "Lunch",
     )
 
-    Spacer(modifier = Modifier.height(50.dp))
-    Box(modifier = Modifier.fillMaxSize()){
-        ExpenseForm(
-            selectedExpense = dummyExpense,
-            onDismissRequest = {},
-            onConfirm = { _, _, _ -> },
-            isSaving = false,
-        )
+    LazyWalletTheme {
+        Spacer(modifier = Modifier.height(50.dp))
+        Box(modifier = Modifier.fillMaxSize()){
+            ExpenseForm(
+                selectedExpense = dummyExpense,
+                onDismissRequest = {},
+                onConfirm = { _, _, _ -> },
+                isSaving = false,
+            )
+        }
     }
 }
