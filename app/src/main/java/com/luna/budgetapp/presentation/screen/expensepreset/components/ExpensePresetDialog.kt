@@ -88,7 +88,7 @@ fun ExpensePresetDialog(
 
         var showDatePicker by remember { mutableStateOf(false) }
         var selectedDate by remember {
-            mutableStateOf(selectedPreset?.createdAt ?: LocalDateTime.now())
+            mutableStateOf(LocalDateTime.now())
         }
 
         val datePickerState = rememberDatePickerState(
