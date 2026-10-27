@@ -41,7 +41,7 @@ class ExpensePresetViewModel(
             .flatMapLatest { activeProfile ->
                 profileUseCases.getCategoryProfile(activeProfile)
                     .map { filters ->
-                        val categoryMap = filters.associate { it.category to it.isActive }
+                        val categoryMap = Category.entries.associateWith { true } + filters.associate { it.category to it.isActive }
 
                         CategoryProfileState(
                             selectedCategoryMap = categoryMap

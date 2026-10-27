@@ -2,6 +2,7 @@ package com.luna.budgetapp.presentation.screen.analysis
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ class AnalysisViewModel (
         .flatMapLatest { activeProfile ->
             profileUseCases.getCategoryProfile(activeProfile)
                 .map { filters ->
-                    val categoryMap = filters.associate { it.category to it.isActive }
+                    val categoryMap = Category.entries.associateWith { true } + filters.associate { it.category to it.isActive }
                     activeProfile to categoryMap
                 }
         }

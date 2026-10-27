@@ -194,7 +194,7 @@ fun CategoryFilter(
         items(Category.entries) { item ->
 
             val isChecked =
-                selectedCategoryMap[item]!!
+                selectedCategoryMap[item] ?: true
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

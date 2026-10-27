@@ -29,7 +29,7 @@ data class DateState(
 }
 
 data class CategoryProfileState(
-    val selectedCategoryMap: Map<Category, Boolean> = emptyMap(),
+    val selectedCategoryMap: Map<Category, Boolean> = Category.entries.associateWith { true },
     val activeProfile: String = "",
     val profileList: List<String> = emptyList()
 ) {

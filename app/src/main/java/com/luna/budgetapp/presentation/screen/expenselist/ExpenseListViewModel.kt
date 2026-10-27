@@ -40,7 +40,7 @@ class ExpenseListViewModel(
         .flatMapLatest { activeProfile ->
             profileUseCases.getCategoryProfile(activeProfile)
                 .map { filters ->
-                    val categoryMap = filters.associate { it.category to it.isActive }
+                    val categoryMap = Category.entries.associateWith { true } + filters.associate { it.category to it.isActive }
                     activeProfile to categoryMap
                 }
         }
@@ -212,7 +212,7 @@ class ExpenseListViewModel(
 
     private fun applyCategoryFilters(profileName: String, filters: Map<Category, Boolean>) {
         viewModelScope.launch {
-            if (profileName == CUSTOM) saveCategoryProfile(profileName, filters)
+            if (profileName == CUSTOM) saveCategoryProfileInternal(profileName, filters)
             profileUseCases.setActiveCategoryProfile(profileName)
         }
         dismissDialog()
@@ -229,17 +229,24 @@ class ExpenseListViewModel(
         categoryMap: Map<Category, Boolean>
     ) {
         viewModelScope.launch {
-            val filters = categoryMap.map { (category, isActive) ->
-                CategoryFilter(
-                    profileName = profileName,
-                    category = category,
-                    isActive = isActive
-                )
-            }
-
-            profileUseCases.saveCategoryProfile(filters)
+            saveCategoryProfileInternal(profileName, categoryMap)
             dismissDialog()
         }
+    }
+
+    private suspend fun saveCategoryProfileInternal(
+        profileName: String,
+        categoryMap: Map<Category, Boolean>
+    ) {
+        val filters = categoryMap.map { (category, isActive) ->
+            CategoryFilter(
+                profileName = profileName,
+                category = category,
+                isActive = isActive
+            )
+        }
+
+        profileUseCases.saveCategoryProfile(filters)
     }
 
     private fun setActiveCategoryProfile(profileName: String) {
