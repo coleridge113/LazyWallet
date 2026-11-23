@@ -12,12 +12,13 @@ class GetPagingExpensesByDateRangeUseCase(
     operator fun invoke(
         categories: List<String>? = null,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String = ""
     ): Flow<PagingData<Expense>> {
         return if (categories == null) { 
-            repository.getPagingExpensesByDateRange(start, end) 
+            repository.getPagingExpensesByDateRange(start, end, query)
         } else {
-            repository.getPagingExpensesByCategories(categories, start, end) 
+            repository.getPagingExpensesByCategories(categories, start, end, query)
         }
     }
 }

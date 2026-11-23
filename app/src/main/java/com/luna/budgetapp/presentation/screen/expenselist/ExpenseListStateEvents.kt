@@ -61,6 +61,7 @@ sealed interface Event {
     data object GotoBarGraph : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class DeleteExpense(val expenseId: Long) : Event
+    data class SearchQueryChanged(val query: String) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
     data class DeleteCategoryProfile(val profileName: String) : Event
