@@ -4,12 +4,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fitInside
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +27,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.runtime.remember
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
@@ -37,24 +50,59 @@ import com.luna.budgetapp.presentation.screen.components.CategoryFilterDialog
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.components.DateRangePickerDialog
 import com.luna.budgetapp.presentation.screen.components.DateRangeSelectorDropdown
+import com.luna.budgetapp.presentation.screen.expenselist.components.ExpandableSearchFab
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseChart
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseTable
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExpenseListRoute(
     viewModel: ExpenseListViewModel
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
 
     when (val state = uiState) {
         is UiState.Loading -> {}
         is UiState.Error -> {}
         is UiState.Success -> {
+            val imeVisible = WindowInsets.isImeVisible
+            val fabBottomPadding by animateDpAsState(
+                targetValue = if (imeVisible) 16.dp else 72.dp,
+                label = "searchFabBottomPadding"
+            )
+            val focusManager = LocalFocusManager.current
+            // Plain holders (not state): only read inside the pointer handler.
+            val rootCoords = remember { arrayOfNulls<LayoutCoordinates>(1) }
+            val fabCoords = remember { arrayOfNulls<LayoutCoordinates>(1) }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onGloballyPositioned { rootCoords[0] = it }
+                    .pointerInput(Unit) {
+                        // Observe taps without consuming so children still get them.
+                        awaitEachGesture {
+                            val down = awaitFirstDown(
+                                requireUnconsumed = false,
+                                pass = PointerEventPass.Initial
+                            )
+                            val root = rootCoords[0]
+                            val fab = fabCoords[0]
+                            val insideFab = if (
+                                root != null && root.isAttached && fab != null && fab.isAttached
+                            ) {
+                                root.localBoundingBoxOf(fab).contains(down.position)
+                            } else {
+                                false
+                            }
+                            if (!insideFab) focusManager.clearFocus()
+                        }
+                    }
+            ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 TopAppBar(
                     modifier = Modifier,
@@ -80,8 +128,19 @@ fun ExpenseListRoute(
                     uiState = state,
                     onEvent = viewModel::onEvent,
                     totalAmount = state.expensesState.totalAmount,
-                    expenses = expenses
+                    expenses = expenses,
+                    searchQuery = searchQuery
                 )
+            }
+            ExpandableSearchFab(
+                query = searchQuery,
+                onQueryChange = { viewModel.onEvent(Event.SearchQueryChanged(it)) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(start = 16.dp, end = 16.dp, bottom = fabBottomPadding)
+                    .imePadding(),
+                onPositioned = { fabCoords[0] = it }
+            )
             }
         }
     }
@@ -93,7 +152,8 @@ fun MainContent(
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
     totalAmount: Long,
-    expenses: LazyPagingItems<Expense>
+    expenses: LazyPagingItems<Expense>,
+    searchQuery: String
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -114,7 +174,11 @@ fun MainContent(
                     contentAlignment = Alignment.TopCenter
                 ) {
                     Text(
-                        text = "No expenses for the filtered range!",
+                        text = if (searchQuery.isBlank()) {
+                            stringResource(R.string.no_expenses_filtered_range)
+                        } else {
+                            stringResource(R.string.no_expenses_match_query, searchQuery.trim())
+                        },
                         modifier = Modifier.padding(top = 48.dp)
                     )
                 }
@@ -125,6 +189,7 @@ fun MainContent(
                     expenses = expenses,
                     onEdit = { onEvent(Event.ShowExpenseForm(it)) },
                     onDelete = { onEvent(Event.ShowDeleteConfirmationDialog(it.id!!)) },
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 )
             }
         }

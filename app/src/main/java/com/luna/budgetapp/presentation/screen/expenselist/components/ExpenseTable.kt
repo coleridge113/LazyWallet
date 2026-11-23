@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,10 +40,12 @@ fun ExpenseTable(
     modifier: Modifier = Modifier,
     expenses: LazyPagingItems<Expense>,
     onEdit: (Expense) -> Unit,
-    onDelete: (Expense) -> Unit
+    onDelete: (Expense) -> Unit,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     LazyColumn(
         modifier = modifier,
+        contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(expenses.itemCount) { index ->
