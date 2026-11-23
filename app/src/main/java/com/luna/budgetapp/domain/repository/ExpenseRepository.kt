@@ -27,13 +27,15 @@ interface ExpenseRepository {
 
     fun getPagingExpensesByDateRange(
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String = ""
     ): Flow<PagingData<Expense>>
 
     fun getPagingExpensesByCategories(
         categories: List<String>,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String = ""
     ): Flow<PagingData<Expense>>
 
     fun getTotalAmountByDateRange(

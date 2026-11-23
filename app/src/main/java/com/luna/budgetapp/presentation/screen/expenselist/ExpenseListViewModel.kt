@@ -13,12 +13,15 @@ import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.model.ChartData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,7 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class ExpenseListViewModel(
     private val expenseUseCases: ExpenseUseCases,
     private val profileUseCases: ProfileUseCases
@@ -36,6 +39,8 @@ class ExpenseListViewModel(
     private val _errorState = MutableStateFlow<String?>(null)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
     private val _categoryProfileState = profileUseCases.getActiveCategoryProfile()
         .flatMapLatest { activeProfile ->
             profileUseCases.getCategoryProfile(activeProfile)
@@ -147,6 +152,7 @@ class ExpenseListViewModel(
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
             is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
+            is Event.SearchQueryChanged -> _searchQuery.value = event.query
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.ApplyCategoryFilters -> applyCategoryFilters(event.profileName, event.selectedCategoryMap)
@@ -158,16 +164,18 @@ class ExpenseListViewModel(
 
     val expensesPagingFlow: Flow<PagingData<Expense>> = combine(
         _dateState,
-        _categoryProfileState
-    ) { dateState, categoryProfileState ->
-        dateState to categoryProfileState
+        _categoryProfileState,
+        _searchQuery.debounce(300).distinctUntilChanged()
+    ) { dateState, categoryProfileState, query ->
+        Triple(dateState, categoryProfileState, query)
     }
-        .flatMapLatest { (dateState, categoryProfileState) ->
+        .flatMapLatest { (dateState, categoryProfileState, query) ->
             val (start, end) = dateState.dateRange
             expenseUseCases.getPagingExpensesByDateRange(
                 categories = categoryProfileState.activeCategories,
                 start = start,
-                end = end
+                end = end,
+                query = query
             )
         }
 

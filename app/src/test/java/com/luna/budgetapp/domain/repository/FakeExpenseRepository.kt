@@ -47,11 +47,12 @@ class FakeExpenseRepository : ExpenseRepository {
 
     override fun getPagingExpensesByDateRange(
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): Flow<PagingData<Expense>> {
         return expensesFlow.map { expenses ->
             val filtered = expenses.filter {
-                it.date in start..end
+                it.date in start..end && it.matches(query)
             }
             PagingData.from(filtered)
         }
@@ -60,14 +61,23 @@ class FakeExpenseRepository : ExpenseRepository {
     override fun getPagingExpensesByCategories(
         categories: List<String>,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): Flow<PagingData<Expense>> {
         return expensesFlow.map { expenses ->
             val filtered = expenses.filter {
-                it.category in categories && it.date in start..end
+                it.category in categories && it.date in start..end && it.matches(query)
             }
             PagingData.from(filtered)
         }
+    }
+
+    private fun Expense.matches(query: String): Boolean {
+        val q = query.trim()
+        return q.isEmpty() ||
+            type.contains(q, ignoreCase = true) ||
+            name?.contains(q, ignoreCase = true) == true ||
+            category.name.contains(q, ignoreCase = true)
     }
 
     override fun getTotalAmountByDateRange(

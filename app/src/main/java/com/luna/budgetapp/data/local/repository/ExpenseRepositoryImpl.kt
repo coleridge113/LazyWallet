@@ -112,8 +112,10 @@ class ExpenseRepositoryImpl(
 
     override fun getPagingExpensesByDateRange(
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): Flow<PagingData<Expense>> {
+        val likeQuery = query.toLikeQuery()
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
@@ -122,7 +124,7 @@ class ExpenseRepositoryImpl(
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { 
-                dao.getPagingExpensesByDateRange(start, end)
+                dao.getPagingExpensesByDateRange(start, end, likeQuery)
             }
         ).flow
             .map { pagingData ->
@@ -133,8 +135,10 @@ class ExpenseRepositoryImpl(
     override fun getPagingExpensesByCategories(
         categories: List<String>,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): Flow<PagingData<Expense>> {
+        val likeQuery = query.toLikeQuery()
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
@@ -143,7 +147,7 @@ class ExpenseRepositoryImpl(
                 enablePlaceholders = false
             ),
             pagingSourceFactory = { 
-                dao.getPagingExpensesByCategories(categories, start, end)
+                dao.getPagingExpensesByCategories(categories, start, end, likeQuery)
             }
         ).flow
             .map { pagingData ->
@@ -151,6 +155,12 @@ class ExpenseRepositoryImpl(
             }
     }
     
+    private fun String.toLikeQuery(): String =
+        trim()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+
     override fun getTotalAmountByDateRange(
         start: LocalDateTime,
         end: LocalDateTime

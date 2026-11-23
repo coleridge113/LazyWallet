@@ -49,23 +49,33 @@ interface ExpenseDao {
     @Query("""
         SELECT * FROM expenses
         WHERE date BETWEEN :start AND :end
+        AND (:query = ''
+            OR type LIKE '%' || :query || '%' ESCAPE '\'
+            OR name LIKE '%' || :query || '%' ESCAPE '\'
+            OR category LIKE '%' || :query || '%' ESCAPE '\')
         ORDER BY date DESC
     """)
     fun getPagingExpensesByDateRange(
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): PagingSource<Int, ExpenseEntity>
 
     @Query("""
         SELECT * FROM expenses
         WHERE date BETWEEN :start AND :end
         AND (category IN (:categories))
+        AND (:query = ''
+            OR type LIKE '%' || :query || '%' ESCAPE '\'
+            OR name LIKE '%' || :query || '%' ESCAPE '\'
+            OR category LIKE '%' || :query || '%' ESCAPE '\')
         ORDER BY date DESC
     """)
     fun getPagingExpensesByCategories(
         categories: List<String>,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
+        query: String
     ): PagingSource<Int, ExpenseEntity>
 
     @Query("""
