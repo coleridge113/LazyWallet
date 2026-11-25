@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
+import androidx.compose.material3.IconButton
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -78,11 +79,6 @@ fun AuthRoute(
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }
-                Navigation.GotoMigrationRoute -> {
-                    navController.navigate(Routes.MigrationRoute) {
-                        popUpTo(Routes.AuthRoute) { inclusive = true }
-                    }
-                }
             }
         }
     }
@@ -150,24 +146,26 @@ fun AuthContent(
             )
             OutlinedTextField(
                 state = emailState,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.auth_email)) },
             )
             OutlinedTextField(
                 value = passwordString,
                 onValueChange = { passwordString = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.auth_password)) },
                 trailingIcon = {
-                    Icon(
-                        imageVector =
-                            if (passwordVisible)
-                                Icons.Default.Visibility
-                            else
-                                Icons.Default.VisibilityOff,
-                        contentDescription = null,
-                        modifier = Modifier.clickable {
-                            passwordVisible = !passwordVisible
-                        }
-                    )
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector =
+                                if (passwordVisible)
+                                    Icons.Default.Visibility
+                                else
+                                    Icons.Default.VisibilityOff,
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.cd_hide_password
+                                else R.string.cd_show_password
+                            )
+                        )
+                    }
                 },
                 visualTransformation =
                     if (passwordVisible)
@@ -214,7 +212,7 @@ fun AuthContent(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "Or continue with",
+                    text = stringResource(R.string.auth_or_continue_with),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

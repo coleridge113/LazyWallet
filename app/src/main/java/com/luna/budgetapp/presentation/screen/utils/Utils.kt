@@ -48,6 +48,11 @@ fun Long.toCurrency(): String {
         "(%,.2f)".format(abs(doubleValue))
 }
 
+/** Shared money format: cents -> "₱1,234.56"; negatives as "(₱1,234.56)". */
+fun Long.toPeso(): String =
+    if (this >= 0) "₱${toCurrency()}"
+    else "(₱${abs(this / 100.0).let { "%,.2f".format(it) }})"
+
 fun Double.formatToPercentage(): String {
     val percent = (this * 100).roundToInt()
     return "${percent.coerceAtLeast(0)}%"

@@ -29,6 +29,7 @@ fun launchCredentialManager(
             val result = credentialManager.getCredential(context, request)
             onResult(Result.success(result.credential))
         } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
             onResult(Result.failure(e))
         }
 

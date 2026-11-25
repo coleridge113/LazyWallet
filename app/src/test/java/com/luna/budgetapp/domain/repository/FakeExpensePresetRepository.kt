@@ -11,7 +11,13 @@ class FakeExpensePresetRepository : ExpensePresetRepository {
     override fun getAllExpensePresets(): Flow<List<ExpensePreset>> = presetFlow
 
     override suspend fun addExpensePresets(expensePresets: List<ExpensePreset>) {
-        TODO("Not yet implemented")
+        presetFlow.update { it + expensePresets }
+    }
+
+    override suspend fun updateExpensePreset(expensePreset: ExpensePreset) {
+        presetFlow.update { list ->
+            list.map { if (it.id == expensePreset.id) expensePreset else it }
+        }
     }
 
     override suspend fun addExpensePreset(expensePreset: ExpensePreset) {

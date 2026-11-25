@@ -27,12 +27,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.formatToDisplay
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @Composable
@@ -48,7 +49,10 @@ fun ExpenseTable(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(expenses.itemCount) { index ->
+        items(
+            count = expenses.itemCount,
+            key = expenses.itemKey { it.id ?: "local-${it.hashCode()}" }
+        ) { index ->
             expenses[index]?.let { expense ->
                 SwipeableTableItem(
                     onClickEdit = { onEdit(expense) },
@@ -125,11 +129,7 @@ fun ExpenseItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "₱",
-                modifier = Modifier.padding(end = 4.dp)
-            )
-            Text(
-                text = item.amount.toCurrency(),
+                text = item.amount.toPeso(),
                 modifier = Modifier
                     .widthIn(min = 64.dp)
                     .wrapContentWidth(Alignment.End)

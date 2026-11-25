@@ -38,7 +38,6 @@ fun MigrationRoute(
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }
-                else -> {}
             }
         }
     }

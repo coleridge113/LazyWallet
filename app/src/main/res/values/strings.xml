@@ -8,6 +8,7 @@
     <string name="btn_confirm">Confirm</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
     <string name="btn_save">Save</string>
     <string name="btn_update">Update</string>
     <string name="btn_yes">Yes</string>
@@ -43,6 +44,15 @@
     # Charts
     <string name="chart_total">Total</string>
 
+    <string name="chart_open_details">Show details</string>
+    <string name="chart_reset_filters">Reset category filters</string>
+
+    # Accessibility
+    <string name="cd_more_options">More options</string>
+    <string name="cd_sign_out">Sign out</string>
+    <string name="cd_show_password">Show password</string>
+    <string name="cd_hide_password">Hide password</string>
+
     <string name="title_custom">Custom</string>
 
     <!-- Expense search -->
@@ -51,4 +61,21 @@
     <string name="search_clear">Clear search</string>
     <string name="no_expenses_filtered_range">No expenses for the filtered range!</string>
     <string name="no_expenses_match_query">No expenses match \"%1$s\"</string>
+    <string name="state_error_title">Something went wrong</string>
+    <string name="state_retry">Retry</string>
+    <string name="state_loading_description">Loading</string>
+    <string name="budget_label_frequency">Frequency:</string>
+    <string name="budget_label_amount">Amount: </string>
+    <string name="budget_label_spent">Spent: </string>
+    <string name="budget_label_remaining">Remaining: </string>
+    <string name="budget_suffix_left">left</string>
+    <string name="budget_suffix_overspent">overspent</string>
+    <string name="auth_email">Email</string>
+    <string name="auth_password">Password</string>
+    <string name="auth_or_continue_with">Or continue with</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_undo">Undo</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_add_budget">Add budget</string>
+    <string name="cd_expense_preset_icon">Expense preset icon</string>
 </resources>

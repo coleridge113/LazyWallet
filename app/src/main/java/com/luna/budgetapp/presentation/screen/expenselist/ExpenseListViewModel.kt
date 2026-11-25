@@ -3,6 +3,7 @@ package com.luna.budgetapp.presentation.screen.expenselist
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.luna.budgetapp.common.Constants.CUSTOM
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryFilter
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -41,20 +44,17 @@ class ExpenseListViewModel(
     private val _dateState = MutableStateFlow(DateState())
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-    private val _categoryProfileState = profileUseCases.getActiveCategoryProfile()
-        .flatMapLatest { activeProfile ->
-            profileUseCases.getCategoryProfile(activeProfile)
-                .map { filters ->
-                    val categoryMap = Category.entries.associateWith { true } + filters.associate { it.category to it.isActive }
-                    activeProfile to categoryMap
-                }
-        }
-        .combine(profileUseCases.getCategoryProfiles()) { (activeProfile, categoryMap), profileList ->
+    private val _categoryProfileState = profileUseCases.observeCategoryProfileState()
+        .map { snapshot ->
             CategoryProfileState(
-                profileList = profileList,
-                activeProfile = activeProfile,
-                selectedCategoryMap = categoryMap
+                profileList = snapshot.profileList,
+                activeProfile = snapshot.activeProfile,
+                selectedCategoryMap = snapshot.categoryMap
             )
+        }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            _errorState.value = e.message ?: "Something went wrong"
         }
         .stateIn(
             scope = viewModelScope,
@@ -133,6 +133,10 @@ class ExpenseListViewModel(
             success
         }
     }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            emit(UiState.Error(e.message ?: "Something went wrong"))
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -178,6 +182,7 @@ class ExpenseListViewModel(
                 query = query
             )
         }
+        .cachedIn(viewModelScope)
 
     private fun showDeleteConfirmationDialog(expenseId: Long) {
         _dialogState.update {

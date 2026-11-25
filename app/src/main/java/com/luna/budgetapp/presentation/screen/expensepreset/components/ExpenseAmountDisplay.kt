@@ -10,14 +10,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 
 @Composable
 fun ExpenseAmountDisplay(
     modifier: Modifier = Modifier,
     totalAmount: Long,
 ) {
-    val displayAmount = if (totalAmount == 0L) "-" else totalAmount.toCurrency()
+    val displayAmount = if (totalAmount == 0L) "-" else totalAmount.toPeso()
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -27,11 +27,6 @@ fun ExpenseAmountDisplay(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = "PHP",
-                textAlign = TextAlign.Center
-            )
-            Text(
-                modifier = Modifier.weight(3f),
                 text = displayAmount,
                 style = MaterialTheme.typography.displayMedium,
                 textAlign = TextAlign.Center

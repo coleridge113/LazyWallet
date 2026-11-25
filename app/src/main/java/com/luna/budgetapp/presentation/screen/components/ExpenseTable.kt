@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.components
 
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -92,11 +93,7 @@ fun ExpenseItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "₱",
-                modifier = Modifier.padding(end = 4.dp)
-            )
-            Text(
-                text = "%,.2f".format(item.amount / 100.0),
+                text = item.amount.toPeso(),
                 modifier = Modifier
                     .widthIn(min = 64.dp)
                     .wrapContentWidth(Alignment.End)

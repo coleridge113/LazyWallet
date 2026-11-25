@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.auth
 
+import android.util.Log
+import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.credentials.Credential
@@ -24,9 +26,6 @@ class AuthViewModel(
     private val settings: SettingsDataStore
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UiState.Success())
-    val uiState = _uiState.asStateFlow()
-
     private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
 
@@ -48,7 +47,9 @@ class AuthViewModel(
         viewModelScope.launch {
             try {
                 migrationRepository.syncFromCloud()
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.w("AuthViewModel", "syncFromCloud failed", e)
             } finally {
                 settings.setGuestMode(isGuest)
                 _navigation.send(Navigation.GotoAddExpenseRoute)
@@ -78,6 +79,7 @@ class AuthViewModel(
                     )
                 }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 showError(e)
             }
         }
@@ -102,6 +104,7 @@ class AuthViewModel(
                     }
                 )
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 showError(e)
             }
         }
@@ -126,6 +129,7 @@ class AuthViewModel(
                     }
                 )
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 showError(e)
             }
         }

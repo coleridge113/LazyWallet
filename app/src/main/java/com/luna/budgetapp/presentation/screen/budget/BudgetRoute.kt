@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budget
 
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,10 +52,10 @@ fun BudgetRoute(
     }
 
     when (val state = uiState) {
-        is UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Loading -> LoadingContent()
+        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
         is UiState.Success -> {
-            MainContent(
+            BudgetContent(
                 uiState = state,
                 onEvent = viewModel::onEvent,
                 modifier = Modifier
@@ -63,7 +65,7 @@ fun BudgetRoute(
 }
 
 @Composable
-fun MainContent(
+fun BudgetContent(
     uiState: UiState.Success,
     modifier: Modifier = Modifier,
     onEvent: (Event) -> Unit
@@ -148,7 +150,7 @@ fun MainContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircleOutline,
-                    contentDescription = "Menu",
+                    contentDescription = stringResource(R.string.cd_add_budget),
                     modifier = Modifier.size(iconSize)
                 )
             }

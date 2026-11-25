@@ -1,5 +1,8 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
+import androidx.compose.material3.IconButton
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -85,10 +88,10 @@ fun ExpensePresetRoute(
     }
 
     when (val state = uiState) {
-        is UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Loading -> LoadingContent()
+        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
         is UiState.Success -> {
-            MainContent(
+            ExpensePresetContent(
                 uiState = state,
                 modifier = Modifier,
                 onEvent = onEvent,
@@ -100,7 +103,7 @@ fun ExpensePresetRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainContent(
+fun ExpensePresetContent(
     modifier: Modifier = Modifier,
     uiState: UiState.Success,
     auth: FirebaseAuth,
@@ -122,11 +125,12 @@ fun MainContent(
                 title = {},
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = "Logout",
-                        modifier = Modifier.singleClick { onEvent(Event.ShowSignOutDialog) }
-                    )
+                    IconButton(onClick = { onEvent(Event.ShowSignOutDialog) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = stringResource(R.string.cd_sign_out)
+                        )
+                    }
                 }
             )
 
@@ -246,7 +250,7 @@ fun MainContent(
                     ) {
                         Icon(
                             imageVector = Icons.Default.AddCircleOutline,
-                            contentDescription = "Add",
+                            contentDescription = stringResource(R.string.cd_add),
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -261,7 +265,7 @@ fun MainContent(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = "Undo",
+                            contentDescription = stringResource(R.string.cd_undo),
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -276,7 +280,7 @@ fun MainContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
+                    contentDescription = stringResource(R.string.cd_menu),
                     modifier = Modifier.size(iconSize)
                 )
             }
@@ -310,7 +314,7 @@ fun ExpenseRoutePreviewLight() {
 
     LazyWalletTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth
@@ -333,7 +337,7 @@ fun ExpenseRoutePreviewDark() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth
@@ -359,7 +363,7 @@ fun ExpenseRoutePreviewDialog() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth

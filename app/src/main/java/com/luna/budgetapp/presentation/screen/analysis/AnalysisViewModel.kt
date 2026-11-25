@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -26,19 +28,12 @@ class AnalysisViewModel (
     private val _dateState = MutableStateFlow(DateState())
     private val _errorState = MutableStateFlow<String?>(null)
 
-    private val _categoryProfileState = profileUseCases.getActiveCategoryProfile()
-        .flatMapLatest { activeProfile ->
-            profileUseCases.getCategoryProfile(activeProfile)
-                .map { filters ->
-                    val categoryMap = Category.entries.associateWith { true } + filters.associate { it.category to it.isActive }
-                    activeProfile to categoryMap
-                }
-        }
-        .combine(profileUseCases.getCategoryProfiles()) { (activeProfile, categoryMap), profileList ->
+    private val _categoryProfileState = profileUseCases.observeCategoryProfileState()
+        .map { snapshot ->
             CategoryProfileState(
-                profileList = profileList,
-                activeProfile = activeProfile,
-                selectedCategoryMap = categoryMap
+                profileList = snapshot.profileList,
+                activeProfile = snapshot.activeProfile,
+                selectedCategoryMap = snapshot.categoryMap
             )
         }
 
@@ -63,6 +58,10 @@ class AnalysisViewModel (
                     filteredExpenses = filteredExpenses
                 )
             }
+        }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            _errorState.value = e.message ?: "Something went wrong"
         }
         .stateIn(
             scope = viewModelScope,
@@ -92,6 +91,10 @@ class AnalysisViewModel (
             success
         }
     }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            emit(UiState.Error(e.message ?: "Something went wrong"))
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

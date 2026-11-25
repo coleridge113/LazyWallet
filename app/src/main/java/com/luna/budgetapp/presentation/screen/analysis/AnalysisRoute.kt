@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -50,8 +52,8 @@ fun AnalysisRoute(
     val onEvent = viewModel::onEvent
 
     when (val state = uiState) {
-        is UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Loading -> LoadingContent()
+        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
         is UiState.Success -> {
             Column(modifier = Modifier.fillMaxSize()) {
                 TopAppBar(
@@ -69,7 +71,7 @@ fun AnalysisRoute(
                     }
                 )
 
-                MainContent(
+                AnalysisContent(
                     modifier = Modifier,
                     uiState = state,
                     onEvent = onEvent,
@@ -80,7 +82,7 @@ fun AnalysisRoute(
 }
 
 @Composable
-fun MainContent(
+fun AnalysisContent(
     modifier: Modifier,
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
@@ -146,7 +148,7 @@ fun MainContent(
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
 @Composable
-private fun MainContentPreviewLight() {
+private fun AnalysisContentPreviewLight() {
     val now = LocalDateTime.now()
     val dummyExpenses = listOf(
         Expense(1L, "Coffee", 9000, Category.FOOD, "Expense", now.minusDays(6)),
@@ -164,7 +166,7 @@ private fun MainContentPreviewLight() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            AnalysisContent(
                 modifier = Modifier,
                 uiState = successState,
                 onEvent = {}
@@ -179,7 +181,7 @@ private fun MainContentPreviewLight() {
     uiMode = AndroidUiModes.UI_MODE_NIGHT_YES
 )
 @Composable
-private fun MainContentPreviewDark() {
+private fun AnalysisContentPreviewDark() {
     val now = LocalDateTime.now()
     val dummyExpenses = listOf(
         Expense(1L, "Coffee", 9000, Category.FOOD, "Expense", now.minusDays(6)),
@@ -206,7 +208,7 @@ private fun MainContentPreviewDark() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            AnalysisContent(
                 modifier = Modifier,
                 uiState = successState,
                 onEvent = {}

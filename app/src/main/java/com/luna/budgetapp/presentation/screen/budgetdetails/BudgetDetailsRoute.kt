@@ -96,7 +96,7 @@ fun BudgetDetailsRoute(
                     )
                 }
             ) { innerPadding ->
-                MainContent(
+                BudgetDetailsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
                     onEvent = viewModel::onEvent
@@ -107,7 +107,7 @@ fun BudgetDetailsRoute(
 }
 
 @Composable
-private fun MainContent(
+private fun BudgetDetailsContent(
     modifier: Modifier,
     state: UiState.Success,
     onEvent: (Event) -> Unit

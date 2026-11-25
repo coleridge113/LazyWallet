@@ -1,14 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
 import androidx.credentials.Credential
-import com.firebase.ui.auth.AuthState
-
-sealed interface UiState {
-    data object Loading : UiState
-    data class Success(
-        val authState: AuthState = AuthState.Idle
-    ) : UiState
-}
 
 sealed interface Event {
     data object DismissDialog : Event
@@ -21,7 +13,6 @@ sealed interface Event {
 
 sealed class Navigation {
     data object GotoAddExpenseRoute : Navigation()
-    data object GotoMigrationRoute : Navigation()
 }
 
 sealed interface DialogState {
