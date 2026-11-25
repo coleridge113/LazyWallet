@@ -59,8 +59,8 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ExpensePresetRoute(
-    viewModel: ExpensePresetViewModel = koinViewModel(),
-    onSignedOut: () -> Unit
+    onSignedOut: () -> Unit,
+    viewModel: ExpensePresetViewModel = koinViewModel()
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

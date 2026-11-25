@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
@@ -118,7 +119,7 @@ class ExpensePresetViewModel(
         )
 
     private val _signedOut = MutableStateFlow(false)
-    val signedOut: StateFlow<Boolean> = _signedOut
+    val signedOut: StateFlow<Boolean> = _signedOut.asStateFlow()
 
     fun onSignedOutHandled() {
         _signedOut.value = false

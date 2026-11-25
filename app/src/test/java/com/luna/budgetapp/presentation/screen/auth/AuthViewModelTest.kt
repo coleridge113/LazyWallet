@@ -57,5 +57,6 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertThat(vm.signedIn.value).isTrue()
+        coVerify { settings.setGuestMode(false) }
     }
 }

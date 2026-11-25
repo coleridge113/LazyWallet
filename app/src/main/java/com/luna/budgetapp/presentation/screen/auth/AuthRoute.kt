@@ -65,6 +65,7 @@ fun AuthRoute(
     val lifecycleOwner = rememberLifecycleOwner()
     val currentContext = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val isUserSignedIn = remember { auth.currentUser != null }
     val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
 
@@ -79,7 +80,7 @@ fun AuthRoute(
 
     Scaffold { innerPadding ->
         AuthContent(
-            isUserSignedIn = auth.currentUser != null,
+            isUserSignedIn = isUserSignedIn,
             onEvent = onEvent,
             modifier = Modifier.padding(innerPadding),
             dialog = dialog,
