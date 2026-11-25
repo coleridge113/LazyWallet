@@ -1,6 +1,6 @@
 package com.luna.budgetapp.presentation.screen.budget
 
-import com.luna.budgetapp.domain.utils.parseAmountExpression
+import com.luna.budgetapp.domain.utils.todayFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Budget
@@ -12,6 +12,8 @@ import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -24,43 +26,45 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.Clock
 import java.time.LocalTime
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BudgetViewModel(
     private val budgetUseCases: BudgetUseCases,
-    private val expenseUseCases: ExpenseUseCases
+    private val expenseUseCases: ExpenseUseCases,
+    private val clock: Clock
 ): ViewModel() {
 
     private val _navigation = Channel<Navigation>()
     val navigation = _navigation.receiveAsFlow()
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _budgets = budgetUseCases.getAllBudget()
-    private val _expenses = _budgets.flatMapLatest { budgets ->
-        if (budgets.isEmpty()) {
-            flowOf(emptyMap())
-        } else {
-            val expenseFlows = budgets.map { budget ->
-                val (start, end) = budget.frequency.resolve()
-                expenseUseCases.getExpensesByDateRange(
-                    categories = budget.interactors.map { it.name },
-                    start = start,
-                    end = end
-                ).map { expenses -> budget.id to expenses }
+    private val _today = todayFlow(clock)
+    private val _expenses = combine(_budgets, _today) { budgets, today -> budgets to today }
+        .flatMapLatest { (budgets, today) ->
+            if (budgets.isEmpty()) {
+                flowOf(emptyMap())
+            } else {
+                val expenseFlows = budgets.map { budget ->
+                    val (start, end) = budget.frequency.resolve(today)
+                    expenseUseCases.getExpensesByDateRange(
+                        categories = budget.interactors.map { it.name },
+                        start = start,
+                        end = end
+                    ).map { expenses -> budget.id to expenses }
+                }
+                combine(expenseFlows) { it.toMap() }
             }
-            combine(expenseFlows) { it.toMap() }
         }
-    }
 
-    private val now = LocalDateTime.now()
-    private val _totalAmount =
+    private val _totalAmount = _today.flatMapLatest { today ->
         expenseUseCases.getTotalAmountByDateRange(
-            start = now.withDayOfMonth(1).with(LocalTime.MIN),
-            end = now
+            start = today.withDayOfMonth(1).atStartOfDay(),
+            end = today.atTime(LocalTime.MAX)
         )
+    }
 
     private val _monthlyOutlook = combine(
         _budgets, 
@@ -88,6 +92,11 @@ class BudgetViewModel(
     }
 
     val uiState: StateFlow<UiState> = _successState
+        .map<UiState.Success, UiState> { it }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            emit(UiState.Error(e.message ?: "Something went wrong"))
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000.milliseconds),
@@ -128,20 +137,7 @@ class BudgetViewModel(
         viewModelScope.launch {
             dismissDialog()
 
-            val budget = Budget(
-                id = id,
-                name = name,
-                limit = parseAmountExpression(amount),
-                frequency = frequency,
-                interactors = categoryMap.filter { it.value }.keys.toList(),
-                startDate = LocalDate.now()
-            )
-
-            if (budget.id != 0L) {
-                budgetUseCases.updateBudget(budget)
-            } else {
-                budgetUseCases.saveBudget(budget)
-            }
+            budgetUseCases.saveBudgetForm(id, name, amount, frequency, categoryMap)
         }
     }
 

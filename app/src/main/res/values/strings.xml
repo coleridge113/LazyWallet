@@ -51,4 +51,7 @@
     <string name="search_clear">Clear search</string>
     <string name="no_expenses_filtered_range">No expenses for the filtered range!</string>
     <string name="no_expenses_match_query">No expenses match \"%1$s\"</string>
+    <string name="state_error_title">Something went wrong</string>
+    <string name="state_retry">Retry</string>
+    <string name="state_loading_description">Loading</string>
 </resources>

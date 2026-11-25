@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.migration
 
+import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
@@ -38,6 +39,7 @@ class MigrationViewModel(
                 settingsUseCases.setMigrationComplete()
                 _navigation.send(MigrationNavigation.GotoAddExpenseRoute)
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _uiState.update { it.copy(isLoading = false, error = e.message ?: "Migration failed") }
             }
         }
@@ -62,6 +64,5 @@ sealed interface MigrationEvent {
 }
 
 sealed interface MigrationNavigation {
-    data object SetMigrationComplete : MigrationNavigation
     data object GotoAddExpenseRoute : MigrationNavigation
 }

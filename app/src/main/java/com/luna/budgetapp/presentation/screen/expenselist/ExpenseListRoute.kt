@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expenselist
 
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,8 +69,8 @@ fun ExpenseListRoute(
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
 
     when (val state = uiState) {
-        is UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Loading -> LoadingContent()
+        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
         is UiState.Success -> {
             val imeVisible = WindowInsets.isImeVisible
             val fabBottomPadding by animateDpAsState(
@@ -123,7 +125,7 @@ fun ExpenseListRoute(
                     }
                 )
 
-                MainContent(
+                ExpenseListContent(
                     modifier = Modifier,
                     uiState = state,
                     onEvent = viewModel::onEvent,
@@ -147,7 +149,7 @@ fun ExpenseListRoute(
 }
 
 @Composable
-fun MainContent(
+fun ExpenseListContent(
     modifier: Modifier,
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
@@ -252,7 +254,7 @@ fun MainContent(
     uiMode = AndroidUiModes.UI_MODE_NIGHT_NO
 )
 @Composable
-private fun MainContentPreviewLight() {
+private fun ExpenseListContentPreviewLight() {
     val successState = UiState.Success()
 
     LazyWalletTheme {
@@ -260,7 +262,7 @@ private fun MainContentPreviewLight() {
             color = MaterialTheme.colorScheme.background
         ) {
             // Preview simplified to avoid paging data issues
-            Text("Preview of MainContent")
+            Text("Preview of ExpenseListContent")
         }
     }
 }

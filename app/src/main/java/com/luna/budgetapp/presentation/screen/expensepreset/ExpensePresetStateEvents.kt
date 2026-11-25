@@ -27,9 +27,7 @@ data class ExpensesState(
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily
-) {
-    val dateRange = dateFilter.resolve()
-}
+)
 
 data class CategoryProfileState(
     val selectedCategoryMap: Map<Category, Boolean> = emptyMap()

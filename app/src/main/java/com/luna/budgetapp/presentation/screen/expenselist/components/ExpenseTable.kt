@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
@@ -48,7 +49,10 @@ fun ExpenseTable(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(expenses.itemCount) { index ->
+        items(
+            count = expenses.itemCount,
+            key = expenses.itemKey { it.id ?: "local-${it.hashCode()}" }
+        ) { index ->
             expenses[index]?.let { expense ->
                 SwipeableTableItem(
                     onClickEdit = { onEdit(expense) },

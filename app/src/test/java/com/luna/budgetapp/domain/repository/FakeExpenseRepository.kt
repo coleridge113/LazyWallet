@@ -6,6 +6,8 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
 import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -14,23 +16,30 @@ import java.time.LocalDateTime
 class FakeExpenseRepository : ExpenseRepository {
     private val expensesFlow = MutableStateFlow<List<Expense>>(emptyList())
 
+    /** When true, the date-range / category read flows throw on collection. */
+    var shouldThrow = false
+
     override fun getAllExpenses(): Flow<PagingData<Expense>> {
         return expensesFlow.map { PagingData.from(it) }
     }
 
     override fun getExpensesByCategory(category: String): Flow<Resource<List<Expense>>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            Resource.Success(expenses.filter { it.category.name.equals(category, ignoreCase = true) })
+        }
     }
 
     override fun getExpensesByType(type: String): Flow<Resource<List<Expense>>> {
-        TODO("Not yet implemented")
+        return expensesFlow.map { expenses ->
+            Resource.Success(expenses.filter { it.type == type })
+        }
     }
 
     override fun getExpensesByDateRange(
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<Expense>> {
-        return expensesFlow.map { expenses ->
+        return expensesFlow.throwIfRequested().map { expenses ->
             expenses.filter { it.date in start..end }
         }
     }
@@ -40,8 +49,8 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<Expense>> {
-        return expensesFlow.map { expenses ->
-            expenses.filter { it.category in categories && it.date in start..end }
+        return expensesFlow.throwIfRequested().map { expenses ->
+            expenses.filter { it.category.name in categories && it.date in start..end }
         }
     }
 
@@ -66,7 +75,7 @@ class FakeExpenseRepository : ExpenseRepository {
     ): Flow<PagingData<Expense>> {
         return expensesFlow.map { expenses ->
             val filtered = expenses.filter {
-                it.category in categories && it.date in start..end && it.matches(query)
+                it.category.name in categories && it.date in start..end && it.matches(query)
             }
             PagingData.from(filtered)
         }
@@ -84,9 +93,9 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<Long> {
-        return expensesFlow.map { expenses ->
+        return expensesFlow.throwIfRequested().map { expenses ->
             println("Total recalculated: ${expenses.sumOf { e -> e.amount }}")
-            expenses.sumOf { it.amount }
+            expenses.filter { it.date in start..end }.sumOf { it.amount }
         }
     }
 
@@ -99,10 +108,9 @@ class FakeExpenseRepository : ExpenseRepository {
                 .filter { it.date in start..end }
                 .groupBy { it.category }
                 .map { (category, expenses) ->
-                    val match = Category.entries.find { it.displayName == category }
 
                     CategoryTotalProjection(
-                        category = match!!,
+                        category = category,
                         total = expenses.sumOf { it.amount }
                     )
                 }
@@ -116,13 +124,11 @@ class FakeExpenseRepository : ExpenseRepository {
     ): Flow<List<CategoryTotalProjection>> {
         return expensesFlow.map { expenses ->
             expenses
-                .filter { it.category in categories && it.date in start..end }
+                .filter { it.category.name in categories && it.date in start..end }
                 .groupBy { it.category }
                 .map { (category, expenses) ->
-
-                    val match = Category.entries.find { it.displayName == category }
                     CategoryTotalProjection(
-                        category = match!!,
+                        category = category,
                         total = expenses.sumOf { it.amount }
                     )
                 }
@@ -134,8 +140,10 @@ class FakeExpenseRepository : ExpenseRepository {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<Long> {
-        return expensesFlow.map { expenses ->
-            expenses.sumOf { it.amount }
+        return expensesFlow.throwIfRequested().map { expenses ->
+            expenses
+                .filter { it.category.name in categories && it.date in start..end }
+                .sumOf { it.amount }
         }
     }
 
@@ -171,11 +179,21 @@ class FakeExpenseRepository : ExpenseRepository {
         }
     }
 
-    override suspend fun editExpenseById(expenseId: Long, amount: Long, type: String) {
+    override suspend fun editExpenseById(
+        expenseId: Long,
+        amount: Long,
+        type: String,
+        date: LocalDateTime
+    ) {
         expensesFlow.update {
             it.map { e ->
-                if (e.id == expenseId) e.copy(amount = amount, type = type) else e
+                if (e.id == expenseId) e.copy(amount = amount, type = type, date = date) else e
             }
         }
+    }
+
+    private fun <T> Flow<T>.throwIfRequested(): Flow<T> = flow {
+        if (shouldThrow) throw IllegalStateException("fake failure")
+        emitAll(this@throwIfRequested)
     }
 }

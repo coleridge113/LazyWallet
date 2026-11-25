@@ -78,11 +78,6 @@ fun AuthRoute(
                         popUpTo(Routes.AuthRoute) { inclusive = true }
                     }
                 }
-                Navigation.GotoMigrationRoute -> {
-                    navController.navigate(Routes.MigrationRoute) {
-                        popUpTo(Routes.AuthRoute) { inclusive = true }
-                    }
-                }
             }
         }
     }

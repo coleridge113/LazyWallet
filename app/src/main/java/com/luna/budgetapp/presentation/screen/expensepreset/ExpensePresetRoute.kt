@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -85,10 +87,10 @@ fun ExpensePresetRoute(
     }
 
     when (val state = uiState) {
-        is UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Loading -> LoadingContent()
+        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
         is UiState.Success -> {
-            MainContent(
+            ExpensePresetContent(
                 uiState = state,
                 modifier = Modifier,
                 onEvent = onEvent,
@@ -100,7 +102,7 @@ fun ExpensePresetRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainContent(
+fun ExpensePresetContent(
     modifier: Modifier = Modifier,
     uiState: UiState.Success,
     auth: FirebaseAuth,
@@ -310,7 +312,7 @@ fun ExpenseRoutePreviewLight() {
 
     LazyWalletTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth
@@ -333,7 +335,7 @@ fun ExpenseRoutePreviewDark() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth
@@ -359,7 +361,7 @@ fun ExpenseRoutePreviewDialog() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            MainContent(
+            ExpensePresetContent(
                 uiState = uiState,
                 onEvent = {},
                 auth = auth

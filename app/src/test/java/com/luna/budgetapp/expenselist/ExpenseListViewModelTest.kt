@@ -14,6 +14,7 @@ import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfilesUseCase
 import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.ObserveCategoryProfileStateUseCase
 import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
@@ -82,6 +83,11 @@ class ExpenseListViewModelTest {
             initializeCategoryProfile = InitializeCategoryProfileUseCase(fakeCategoryRepo),
             getActiveCategoryProfile = GetActiveCategoryProfileUseCase(fakeSettingsRepo),
             setActiveCategoryProfile = SetActiveCategoryProfileUseCase(fakeSettingsRepo),
+            observeCategoryProfileState = ObserveCategoryProfileStateUseCase(
+                GetActiveCategoryProfileUseCase(fakeSettingsRepo),
+                GetCategoryProfileUseCase(fakeCategoryRepo),
+                GetCategoryProfilesUseCase(fakeCategoryRepo)
+            ),
         )
 
         fakeCategoryRepo.initializeIfNeeded()
@@ -96,9 +102,20 @@ class ExpenseListViewModelTest {
 
     @Test
     fun `expense list is empty by default`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
         val state = viewModel.uiState.value as UiState.Success
         assertThat(state.expensesState.totalAmount).isEqualTo(0L)
+        job.cancel()
+    }
+
+    @Test
+    fun `uiState becomes Error when the expense flow throws`() = runTest {
+        fakeExpenseRepo.shouldThrow = true
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+        assertThat(viewModel.uiState.value).isInstanceOf(UiState.Error::class.java)
+        job.cancel()
     }
 
     @Test

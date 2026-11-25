@@ -17,7 +17,7 @@ Status: Ready · In progress · Your call · Blocked · Done · Later.
 
 | ID | Task | Status | Depends on | Scope | Done when | Needs OK |
 |---|---|---|---|---|---|---|
-| T01 | Your call: finish and merge `feat/expense-search` (search query + expandable FAB, 2 commits ahead of master, no tests for search yet) | Your call | – | Branch `feat/expense-search` | User decides: add tests, then merge or park | Yes: merging |
+| T01 | ~~Your call: finish and merge `feat/expense-search`~~ merged into master via PR #2 (search query + expandable FAB, 2 commits ahead of master, no tests for search yet) | Done | – | Branch `feat/expense-search` | User decides: add tests, then merge or park | Yes: merging |
 
 | T02 | Verify the unchecked Figma screens (Auth sign in, Cloud sync, Expenses search/date menu, Budget create/delete dialogs) with screenshots; fix issues found | Blocked | – | Figma file only (see Spec §5.1); no app code | Each screen screenshotted and matches the Compose source | No |
 | T03 | Fix known Figma gaps: Budget Details category icons (misshapen at 12px), BudgetCard missing category chips and bottom space | Blocked | T02 | Figma file only | Screenshots show icons and chips correct | No |

@@ -30,6 +30,7 @@ import com.luna.budgetapp.domain.usecase.category.DeleteCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.category.GetCategoryProfilesUseCase
 import com.luna.budgetapp.domain.usecase.category.InitializeCategoryProfileUseCase
+import com.luna.budgetapp.domain.usecase.category.ObserveCategoryProfileStateUseCase
 import com.luna.budgetapp.domain.usecase.category.SaveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.expense.AddExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
@@ -77,6 +78,7 @@ import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
 import com.luna.budgetapp.domain.usecase.budget.DeleteBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetAllBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetBudgetByIdUseCase
+import com.luna.budgetapp.domain.usecase.budget.SaveBudgetFormUseCase
 import com.luna.budgetapp.domain.usecase.budget.SaveBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.UpdateBudgetUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetBudgetByName
@@ -144,6 +146,7 @@ val databaseModule = module {
 
 val servicesModule = module {
     singleOf(::PusherManager)
+    single<java.time.Clock> { java.time.Clock.systemDefaultZone() }
 }
 
 val appModule = module {
@@ -184,6 +187,7 @@ val appModule = module {
     factoryOf(::SaveCategoryProfileUseCase)
     factoryOf(::DeleteCategoryProfileUseCase)
     factoryOf(::InitializeCategoryProfileUseCase)
+    factoryOf(::ObserveCategoryProfileStateUseCase)
     factoryOf(::GetActiveCategoryProfileUseCase)
     factoryOf(::SetActiveCategoryProfileUseCase)
     factoryOf(::GetActiveDateFilterUseCase)
@@ -197,6 +201,7 @@ val appModule = module {
     factoryOf(::SignOutUseCase)
     factoryOf(::GetBudgetByName)
     factoryOf(::SaveBudgetUseCase)
+    factoryOf(::SaveBudgetFormUseCase)
     factoryOf(::GetBudgetByIdUseCase)
     factoryOf(::UpdateBudgetUseCase)
     factoryOf(::GetAllBudgetUseCase)

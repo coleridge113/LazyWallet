@@ -15,6 +15,13 @@ class FakeSettingsRepository(
     private val _activeDateFilterFlow = MutableStateFlow(initialDateFilter)
     override val activeDateFilterFlow: Flow<DateFilter> = _activeDateFilterFlow
 
+    private val _isMigratedFlow = MutableStateFlow(false)
+    override val isMigratedFlow: Flow<Boolean> = _isMigratedFlow
+
+    override suspend fun setMigrationComplete() {
+        _isMigratedFlow.value = true
+    }
+
     override suspend fun setActiveProfile(profileName: String) {
         _activeProfileFlow.value = profileName
     }
