@@ -48,44 +48,39 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
-import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ErrorDialog
 import com.luna.budgetapp.presentation.screen.components.PrimaryButton
 import com.luna.budgetapp.presentation.screen.components.SecondaryButton
 import com.luna.budgetapp.presentation.screen.utils.launchCredentialManager
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
-import kotlinx.coroutines.flow.collectLatest
 
 @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
 fun AuthRoute(
     viewModel: AuthViewModel,
-    navController: NavController
+    onSignedIn: () -> Unit
 ) {
     val lifecycleOwner = rememberLifecycleOwner()
     val currentContext = LocalContext.current
     val auth = FirebaseAuth.getInstance()
+    val isUserSignedIn = remember { auth.currentUser != null }
     val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
 
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-            when (navigation) {
-                Navigation.GotoAddExpenseRoute -> {
-                    navController.navigate(Routes.ExpensePresetRoute) {
-                        popUpTo(Routes.AuthRoute) { inclusive = true }
-                    }
-                }
-            }
+    val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
+
+    LaunchedEffect(signedIn) {
+        if (signedIn) {
+            onSignedIn()
+            viewModel.onSignedInHandled()
         }
     }
 
     Scaffold { innerPadding ->
         AuthContent(
-            isUserSignedIn = auth.currentUser != null,
+            isUserSignedIn = isUserSignedIn,
             onEvent = onEvent,
             modifier = Modifier.padding(innerPadding),
             dialog = dialog,

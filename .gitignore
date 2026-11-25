@@ -23,3 +23,6 @@ backup/
 *keystore*
 keystore.properties
 gradle/*
+
+# Superpowers scratch (brainstorm mockups, SDD ledgers)
+.superpowers/

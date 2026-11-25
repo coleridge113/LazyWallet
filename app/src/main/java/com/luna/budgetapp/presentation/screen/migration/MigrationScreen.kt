@@ -21,26 +21,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.luna.budgetapp.presentation.nav.Routes
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MigrationRoute(
     viewModel: MigrationViewModel,
-    navController: NavController
+    onMigrationDone: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-            when (navigation) {
-                MigrationNavigation.GotoAddExpenseRoute -> {
-                    navController.navigate(Routes.ExpensePresetRoute) {
-                        popUpTo(Routes.AuthRoute) { inclusive = true }
-                    }
-                }
-            }
+    LaunchedEffect(state.isDone) {
+        if (state.isDone) {
+            onMigrationDone()
+            viewModel.onDoneHandled()
         }
     }
 

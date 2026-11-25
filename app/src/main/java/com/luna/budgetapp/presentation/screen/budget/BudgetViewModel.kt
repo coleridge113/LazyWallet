@@ -18,11 +18,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,8 +35,6 @@ class BudgetViewModel(
     private val clock: Clock
 ): ViewModel() {
 
-    private val _navigation = Channel<Navigation>()
-    val navigation = _navigation.receiveAsFlow()
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _budgets = budgetUseCases.getAllBudget()
     private val _today = todayFlow(clock)
@@ -107,7 +103,6 @@ class BudgetViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
-            is Event.GotoBudgetDetails -> gotoBudgetDetails(event.budgetId)
             is Event.ShowDeleteDialog -> showDeleteConfirmationDialog(event.budget)
             is Event.ShowBudgetFormDialog -> showBudgetDialog(event.budget)
             is Event.ConfirmBudgetFormDialog -> saveBudget(
@@ -151,12 +146,6 @@ class BudgetViewModel(
         viewModelScope.launch {
             dismissDialog()
             budgetUseCases.deleteBudget(budget)
-        }
-    }
-
-    fun gotoBudgetDetails(budgetId: BudgetId) {
-        viewModelScope.launch {
-            _navigation.send(Navigation.GotoBudgetDetails(budgetId))
         }
     }
 }

@@ -45,8 +45,6 @@ sealed interface DialogState {
 }
 
 sealed interface Event {
-    data object GotoExpenseRoute : Event
-    data object GotoAnalysisRoute : Event
     data object DismissDialog : Event
     data object ShowDeleteConfirmationDialog : Event
     data object ShowSignOutDialog : Event
@@ -76,8 +74,3 @@ sealed interface Event {
     ) : Event
 }
 
-sealed interface Navigation {
-    data object GotoExpenseRoute : Navigation
-    data object GotoAnalysisRoute : Navigation
-    data object Logout : Navigation
-}

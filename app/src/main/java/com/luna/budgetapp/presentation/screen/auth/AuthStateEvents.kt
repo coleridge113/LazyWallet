@@ -11,10 +11,6 @@ sealed interface Event {
     data class HandleError(val error: Exception) : Event
 }
 
-sealed class Navigation {
-    data object GotoAddExpenseRoute : Navigation()
-}
-
 sealed interface DialogState {
     data class ErrorMessage(val message: String?) : DialogState
 }

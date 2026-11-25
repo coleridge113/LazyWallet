@@ -5,10 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,9 +17,6 @@ class MigrationViewModel(
 
     private val _uiState = MutableStateFlow(MigrationUiState())
     val uiState = _uiState.asStateFlow()
-
-    private val _navigation = Channel<MigrationNavigation>()
-    val navigation = _navigation.receiveAsFlow()
 
     fun onEvent(event: MigrationEvent) {
         when (event) {
@@ -37,7 +32,7 @@ class MigrationViewModel(
                 migrationRepository.performMigration()
                 migrationRepository.syncFromCloud()
                 settingsUseCases.setMigrationComplete()
-                _navigation.send(MigrationNavigation.GotoAddExpenseRoute)
+                _uiState.update { it.copy(isLoading = false, isDone = true) }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 _uiState.update { it.copy(isLoading = false, error = e.message ?: "Migration failed") }
@@ -45,24 +40,25 @@ class MigrationViewModel(
         }
     }
 
+    fun onDoneHandled() {
+        _uiState.update { it.copy(isDone = false) }
+    }
+
     private fun skipMigration() {
         viewModelScope.launch {
             settingsUseCases.setMigrationComplete()
-            _navigation.send(MigrationNavigation.GotoAddExpenseRoute)
+            _uiState.update { it.copy(isLoading = false, isDone = true) }
         }
     }
 }
 
 data class MigrationUiState(
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isDone: Boolean = false
 )
 
 sealed interface MigrationEvent {
     data object StartMigration : MigrationEvent
     data object SkipMigration : MigrationEvent
-}
-
-sealed interface MigrationNavigation {
-    data object GotoAddExpenseRoute : MigrationNavigation
 }

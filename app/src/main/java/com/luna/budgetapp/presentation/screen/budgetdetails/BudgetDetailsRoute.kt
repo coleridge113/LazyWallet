@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -43,7 +42,7 @@ import java.time.ZoneId
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetDetailsRoute(
-    navController: NavController,
+    onBack: () -> Unit,
     viewModel: BudgetDetailsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,7 +59,7 @@ fun BudgetDetailsRoute(
                         navigationIcon = {
                             IconButton(
                                 onClick = {
-                                    navController.navigateUp()
+                                    onBack()
                                 }
                             ) {
                                 Icon(

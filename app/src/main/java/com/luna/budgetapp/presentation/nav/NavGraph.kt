@@ -15,6 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -120,15 +122,26 @@ fun NavGraphSetup(
                 composable<Routes.AuthRoute> {
                     val viewModel: AuthViewModel = koinViewModel()
                     AuthRoute(
-                        navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onSignedIn = {
+                            navController.navigate(Routes.ExpensePresetRoute) {
+                                popUpTo(Routes.AuthRoute) { inclusive = true }
+                            }
+                        }
                     )
                 }
                 composable<Routes.ExpensePresetRoute> {
                     val viewModel: ExpensePresetViewModel = koinViewModel()
                     ExpensePresetRoute(
-                        navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onSignedOut = {
+                            navController.navigate(Routes.AuthRoute) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
                 composable<Routes.ExpensesRoute> {
@@ -151,10 +164,14 @@ fun NavGraphSetup(
                             null
                         }
                     }
-                ) {
+                ) { backStackEntry ->
                     val viewModel: BudgetViewModel = koinViewModel()
                     BudgetRoute(
-                        navController = navController,
+                        onOpenBudgetDetails = { id ->
+                            backStackEntry.ifResumed {
+                                navController.navigate(Routes.BudgetDetailsRoute(id))
+                            }
+                        },
                         viewModel = viewModel
                     )
                 }
@@ -179,10 +196,10 @@ fun NavGraphSetup(
                             null
                         }
                     }
-                ) {
+                ) { backStackEntry ->
                     val viewModel: BudgetDetailsViewModel = koinViewModel()
                     BudgetDetailsRoute(
-                        navController = navController,
+                        onBack = { backStackEntry.ifResumed { navController.navigateUp() } },
                         viewModel = viewModel
                     )
                 }
@@ -199,4 +216,8 @@ private fun getTabIndex(destination: NavDestination?): Int {
 //        destination?.hasRoute<Routes.AnalysisRoute>() == true -> 2
         else -> -1
     }
+}
+
+private inline fun NavBackStackEntry.ifResumed(block: () -> Unit) {
+    if (lifecycle.currentState == Lifecycle.State.RESUMED) block()
 }

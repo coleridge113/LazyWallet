@@ -44,26 +44,22 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
-import com.luna.budgetapp.presentation.nav.Routes
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
-import com.luna.budgetapp.presentation.screen.utils.singleClick
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
-import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ExpensePresetRoute(
-    navController: NavController,
+    onSignedOut: () -> Unit,
     viewModel: ExpensePresetViewModel = koinViewModel()
 ) {
 
@@ -71,19 +67,11 @@ fun ExpensePresetRoute(
     val auth = remember { FirebaseAuth.getInstance() }
     val onEvent = viewModel::onEvent
 
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-            when (navigation) {
-                Navigation.Logout -> {
-                    navController.navigate(Routes.AuthRoute) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                }
-                else -> {}
-            }
+    val signedOut by viewModel.signedOut.collectAsStateWithLifecycle()
+    LaunchedEffect(signedOut) {
+        if (signedOut) {
+            onSignedOut()
+            viewModel.onSignedOutHandled()
         }
     }
 
@@ -138,7 +126,6 @@ fun ExpensePresetContent(
                 totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
                     .fillMaxWidth()
-                    .singleClick { onEvent(Event.GotoExpenseRoute) }
             )
 
             ExpensePresetTable(

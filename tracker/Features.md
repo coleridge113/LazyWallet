@@ -5,12 +5,15 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | ID | Feature | Status | Spec | Plan | Next step |
 |---|---|---|---|---|---|
 | F01 | Figma design file | Blocked | – | – | Figma MCP rate limit; resume T02 when it resets |
-| F02 | Navigation events | Idea | – | – | Brainstorm when wanted |
+| F02 | Navigation events | Building | [design](../docs/superpowers/specs/2026-11-25-navigation-events-design.md) | [plan](../docs/superpowers/plans/2026-11-25-navigation-events.md) | Built and reviewed on feat/navigation-events (34 tests); your call: merge locally or PR; then device-check sign-in/sign-out/budget nav |
 | F03 | Firebase out of presentation | Idea | – | – | Brainstorm when wanted |
 | F04 | Theme, contrast & light theme | Idea | – | – | Your call: does the app need a tuned light theme? |
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
+| F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
+| F10 | Analysis history and timelines | Idea | – | – | Brainstorm spec (layout A agreed 2026-11-25) |
+| F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
@@ -27,12 +30,6 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 | Spec §5.1 known issues | Known issues: Budget Details category icons misshapen; BudgetCard lacks category chips; dialog background color (surfaceVariant) and some layouts (category filter, budget create, auth, migration) are guesses; no Light screens; no month/year or date-range picker, loading/error states; logo is a placeholder; Analysis screens use the "List" nav tab because the app hides Analysis from the bar. |
 | Spec §5.1 verified | Verified by screenshot: Home (presets, add dialog), Expenses list, Category filter, Analysis x2, Budget list, Budget details. NOT verified: Auth, Migration, Expenses search/date menu, Budget create/delete dialogs. |
 | Spec §5.1 tracking | Tracking: T02-T05 in Plan.md. T02 and T03 are Blocked: the Figma Starter plan's MCP call limit was hit on 2026-11-25. Resume when it resets or the plan is upgraded. |
-
-### F02 seed notes (from P02)
-
-| ID | Source text |
-|---|---|
-| P02 | Navigation sent through `Channel`s (Auth, ExpenseList, ExpensePreset, Migration, Budget VMs); Google's events guidance says these can drop events. Replace click navigation with `onNavigateTo…` lambdas wired in `NavGraph.kt`, and result-driven navigation (sign-in, migration, logout) with UiState flags. Also: `AuthViewModel` sends on a rendezvous Channel (can suspend); `GotoMigrationRoute` / `SetMigrationComplete` never sent **Area:** presentation: all screens + `nav/NavGraph.kt`. **Status was:** Open. **Found:** 2026-11-25, MVVM research. **Notes:** Biggest item; touches every screen. Use `dropUnlessResumed` for click nav. Source: developer.android.com/topic/architecture/ui-layer/events |
 
 ### F03 seed notes (from P03)
 
@@ -65,3 +62,26 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 | ID | Source text |
 |---|---|
 | P20 | Not adaptive: fixed `fillMaxWidth(0.6f)` + `offset(16.dp)` chart, `GridCells.Fixed(2)` presets, no rail/window size classes **Area:** ExpenseList/ExpensePreset, `NavGraph.kt`. **Status was:** Your call. **Found:** 2026-11-25, UI audit. **Notes:** Only if tablets/landscape matter. `GridCells.Adaptive`, `NavigationSuiteScaffold` |
+
+### F09 seed notes (brainstorm 2026-11-25)
+
+- Intent (user): a guest is offline-only, never touches Firebase. To get sync they sign in; that's when the Cloud Sync (migration) page is used: it moves their guest data into the account. Doesn't work this way yet.
+- Today (code): guest sign-in doesn't touch Firebase (good). No "connect account" path; a guest must sign out (data kept) then sign in. **Bug:** after sign-in `DataMigrationRepository.syncFromCloud()` deletes every local table and replaces it with cloud data, so the guest's data is silently lost; `performMigration()` (upload) is never called. `MigrationRoute` isn't registered in `NavGraph`.
+- Decided (user, option B): on sign-in after guest use, show the Cloud Sync page. Account empty → confirm "Move your data to your account". Account has data → choose **Merge** (default, recommended) or **Keep only my account's data** (warns this phone's data will be deleted).
+- Open for the spec: what counts as a duplicate when merging (presets/category profiles by name?), show only to former guests, offline/failure handling, sign-in entry point for a guest (without signing out first?).
+
+### F10 seed notes (brainstorm 2026-11-25)
+
+- Intent (user): compare spending over time: today vs previous days, this week vs previous weeks, this month vs previous months. Analysis used to be reachable; hidden because the bar chart couldn't scroll back past 7 days.
+- Today (code): custom `Canvas` chart (`DailyExpenseBarChart`, `toLast7DaysExpenses()`), fixed last 7 days; tap a bar → that day's expenses; category profile filter applies; screen not in the bottom bar and its only entry events are dead (see F02).
+- Decided (user): layout **A "compare-first"**: Day / Week / Month switch; newest bar on the right, drag to go back in time (no hard limit); selected period's total and change vs the previous period at the top; dashed line = average of bars in view; tap a bar → list that period's expenses (day/week/month). Tap behaviour "good enough for now".
+- Proposed (not yet confirmed): opens on Day with the current period selected; ~7 bars in view (Day), 5–6 (Week), 6 (Month); weeks Mon–Sun; empty periods show a zero bar; scale fits bars in view; category filter still applies.
+- Open for the spec: chart library vs custom scrolling Canvas; how Analysis is reached (ties to F05/P17 Analysis tab).
+
+### F11 seed notes (MVVM research 2026-11-26)
+
+- Failures in writes are swallowed: ExpensePreset `saveExpensePreset`/`deleteExpensePreset` only log; `addExpense`, `deleteExpense`, `editExpense`, `saveBudget` (ExpenseList/Budget/BudgetDetails) have no try/catch. Dialogs close in `finally` even on failure; `isSaving` in `DialogState.ExpenseForm` and the other dialog states is never set true.
+- Auth already uses `DialogState.ErrorMessage`, so two error mechanisms exist. Google's guidance: transient errors as a `userMessage` in state that the UI shows (usually a snackbar) and acknowledges (https://developer.android.com/topic/architecture/ui-layer/events).
+- Open for the spec: snackbar vs dialog, keep form open on failure with `isSaving`, shared shape across screens, strings via P23 pattern.
+- Sign-out failure (F02 final review 2026-11-26): `signOutUser` now catches and logs, but the confirm dialog stays open with no feedback; `SignOutUseCase` calls `auth.signOut()` before `clearAllTables()`, so a failed clear leaves the user signed out of Firebase with local data still shown. Include in the same write-failure pattern.
+

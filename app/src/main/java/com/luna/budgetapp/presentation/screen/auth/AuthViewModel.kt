@@ -13,8 +13,7 @@ import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.StateFlow
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.luna.budgetapp.data.datastore.SettingsDataStore
@@ -26,8 +25,8 @@ class AuthViewModel(
     private val settings: SettingsDataStore
 ) : ViewModel() {
 
-    private val _navigation = Channel<Navigation>()
-    val navigation = _navigation.receiveAsFlow()
+    private val _signedIn = MutableStateFlow(false)
+    val signedIn: StateFlow<Boolean> = _signedIn.asStateFlow()
 
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     val dialogState = _dialogState.asStateFlow()
@@ -43,6 +42,10 @@ class AuthViewModel(
         }
     }
 
+    fun onSignedInHandled() {
+        _signedIn.value = false
+    }
+
     private fun handleSignInSuccess(isGuest: Boolean) {
         viewModelScope.launch {
             try {
@@ -52,7 +55,7 @@ class AuthViewModel(
                 Log.w("AuthViewModel", "syncFromCloud failed", e)
             } finally {
                 settings.setGuestMode(isGuest)
-                _navigation.send(Navigation.GotoAddExpenseRoute)
+                _signedIn.value = true
             }
         }
     }

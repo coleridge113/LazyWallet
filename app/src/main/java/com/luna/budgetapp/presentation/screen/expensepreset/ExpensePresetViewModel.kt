@@ -15,17 +15,16 @@ import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.domain.utils.todayFlow
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -119,14 +118,16 @@ class ExpensePresetViewModel(
             initialValue = UiState.Loading
         )
 
-    private val _navigation = Channel<Navigation>()
-    val navigation = _navigation.receiveAsFlow()
+    private val _signedOut = MutableStateFlow(false)
+    val signedOut: StateFlow<Boolean> = _signedOut.asStateFlow()
+
+    fun onSignedOutHandled() {
+        _signedOut.value = false
+    }
 
     fun onEvent(event: Event) {
         when (event) {
             Event.ShowSignOutDialog -> showSignOutDialog()
-            Event.GotoExpenseRoute -> gotoExpenseRoute(Navigation.GotoExpenseRoute)
-            Event.GotoAnalysisRoute -> gotoExpenseRoute(Navigation.GotoAnalysisRoute)
             Event.DismissDialog -> dismissDialog()
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
@@ -242,12 +243,6 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun gotoExpenseRoute(navigation: Navigation) {
-        viewModelScope.launch {
-            _navigation.send(navigation)
-        }
-    }
-
     private fun showSignOutDialog() {
         _dialogState.update {
             DialogState.ConfirmLogout
@@ -256,8 +251,14 @@ class ExpensePresetViewModel(
 
     private fun signOutUser(auth: FirebaseAuth) {
         viewModelScope.launch {
-            authUseCases.signOut(auth)
-            _navigation.send(Navigation.Logout)
+            try {
+                authUseCases.signOut(auth)
+                _signedOut.value = true
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Sign out failed", e)
+            }
         }
     }
 }

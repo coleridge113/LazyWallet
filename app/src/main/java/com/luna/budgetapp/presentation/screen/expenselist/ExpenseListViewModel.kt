@@ -15,7 +15,6 @@ import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.presentation.model.ChartData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -143,16 +141,12 @@ class ExpenseListViewModel(
             initialValue = UiState.Loading
         )
 
-    private val _navigation = Channel<Navigation>()
-    val navigation = _navigation.receiveAsFlow()
-
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
             Event.ShowCategoryFilterDialog -> showCategoryFilterDialog()
             Event.ShowCalendarForm -> showCalendarForm()
             Event.ResetCategoryFilters -> resetCategoryFilters()
-            Event.GotoBarGraph -> gotoAnalysisRoute()
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
             is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
@@ -292,11 +286,5 @@ class ExpenseListViewModel(
         }
 
         dismissDialog()
-    }
-
-    private fun gotoAnalysisRoute() {
-        viewModelScope.launch {
-            _navigation.send(Navigation.GotoAnalysisRoute) 
-        }
     }
 }

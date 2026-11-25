@@ -37,6 +37,10 @@ import com.luna.budgetapp.domain.usecase.expensepreset.UpdateExpensePresetUseCas
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
+import com.luna.budgetapp.domain.usecase.auth.SignOutUseCase
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -59,6 +63,7 @@ class ExpensePresetViewModelTest {
     private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpensePresetViewModel
     private val clock = MutableClock(Instant.now())
+    private val signOut = mockk<SignOutUseCase>()
 
     val dummyPreset = ExpensePreset(
         id = 1,
@@ -127,11 +132,44 @@ class ExpensePresetViewModelTest {
             presetUseCases,
             expenseUseCases,
             profileUseCases,
-            mockk<AuthUseCases>(),
+            AuthUseCases(
+                getToken = mockk(),
+                signInGoogle = mockk(),
+                signInEmailPassword = mockk(),
+                signUp = mockk(),
+                signOut = signOut
+            ),
             clock
         )
 
         runCurrent()
+    }
+
+    @Test
+    fun `signOut setsSignedOut and handled resets it`() = runTest {
+        coEvery { signOut(any()) } just Runs
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.SignOut(mockk(relaxed = true)))
+        runCurrent()
+        assertThat(viewModel.signedOut.value).isTrue()
+
+        viewModel.onSignedOutHandled()
+        assertThat(viewModel.signedOut.value).isFalse()
+        job.cancel()
+    }
+
+    @Test
+    fun `signOut when signOut throws does not set signedOut`() = runTest {
+        coEvery { signOut(any()) } throws RuntimeException("boom")
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.SignOut(mockk(relaxed = true)))
+        runCurrent()
+        assertThat(viewModel.signedOut.value).isFalse()
+        job.cancel()
     }
 
     @Test
