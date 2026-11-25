@@ -129,8 +129,15 @@ fun NavGraphSetup(
                 composable<Routes.ExpensePresetRoute> {
                     val viewModel: ExpensePresetViewModel = koinViewModel()
                     ExpensePresetRoute(
-                        navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onSignedOut = {
+                            navController.navigate(Routes.AuthRoute) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
                 composable<Routes.ExpensesRoute> {

@@ -63,27 +63,19 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ExpensePresetRoute(
-    navController: NavController,
-    viewModel: ExpensePresetViewModel = koinViewModel()
+    viewModel: ExpensePresetViewModel = koinViewModel(),
+    onSignedOut: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val auth = remember { FirebaseAuth.getInstance() }
     val onEvent = viewModel::onEvent
 
-    LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { navigation ->
-            when (navigation) {
-                Navigation.Logout -> {
-                    navController.navigate(Routes.AuthRoute) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
-                    }
-                }
-                else -> {}
-            }
+    val signedOut by viewModel.signedOut.collectAsStateWithLifecycle()
+    LaunchedEffect(signedOut) {
+        if (signedOut) {
+            onSignedOut()
+            viewModel.onSignedOutHandled()
         }
     }
 
@@ -138,7 +130,6 @@ fun ExpensePresetContent(
                 totalAmount = totalAmount,
                 modifier = Modifier.weight(1f)
                     .fillMaxWidth()
-                    .singleClick { onEvent(Event.GotoExpenseRoute) }
             )
 
             ExpensePresetTable(
