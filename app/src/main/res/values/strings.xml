@@ -8,6 +8,7 @@
     <string name="btn_confirm">Confirm</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
     <string name="btn_save">Save</string>
     <string name="btn_update">Update</string>
     <string name="btn_yes">Yes</string>
@@ -42,6 +43,15 @@
 
     # Charts
     <string name="chart_total">Total</string>
+
+    <string name="chart_open_details">Show details</string>
+    <string name="chart_reset_filters">Reset category filters</string>
+
+    # Accessibility
+    <string name="cd_more_options">More options</string>
+    <string name="cd_sign_out">Sign out</string>
+    <string name="cd_show_password">Show password</string>
+    <string name="cd_hide_password">Hide password</string>
 
     <string name="title_custom">Custom</string>
 

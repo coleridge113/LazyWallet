@@ -1,5 +1,8 @@
 package com.luna.budgetapp.presentation.screen.budget.components
 
+import com.luna.budgetapp.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.IconButton
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -81,13 +84,13 @@ fun BudgetCard(
                 Spacer(modifier = Modifier.weight(1f))
                 Box {
                     var expanded by remember { mutableStateOf(false) }
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .singleClick { expanded = true }
-                    )
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.cd_more_options),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                     BudgetCardMenu(
                         modifier = Modifier
                             .width(90.dp),
@@ -284,13 +287,13 @@ fun BudgetCard2(
                 Spacer(modifier = Modifier.weight(1f))
                 Box {
                     var expanded by remember { mutableStateOf(false) }
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .singleClick { expanded = true }
-                    )
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.cd_more_options),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                     BudgetCardMenu(
                         modifier = Modifier
                             .width(90.dp),

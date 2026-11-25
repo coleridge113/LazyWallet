@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
+import androidx.compose.material3.IconButton
 import com.luna.budgetapp.presentation.screen.components.LoadingContent
 import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import androidx.compose.animation.AnimatedVisibility
@@ -124,11 +125,12 @@ fun ExpensePresetContent(
                 title = {},
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = "Logout",
-                        modifier = Modifier.singleClick { onEvent(Event.ShowSignOutDialog) }
-                    )
+                    IconButton(onClick = { onEvent(Event.ShowSignOutDialog) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = stringResource(R.string.cd_sign_out)
+                        )
+                    }
                 }
             )
 

@@ -1,5 +1,11 @@
 package com.luna.budgetapp.presentation.screen.components
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import com.luna.budgetapp.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.IconButton
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +50,7 @@ fun SwipeableTableItem(
     content: @Composable () -> Unit
 ) {
     val density = LocalDensity.current
-    val actionWidth = 80.dp
+    val actionWidth = 96.dp
     val actionWidthPx = with(density) { actionWidth.toPx() }
     val iconSize = 32.dp
 
@@ -62,6 +68,8 @@ fun SwipeableTableItem(
         )
     }
     val scope = rememberCoroutineScope()
+    val editLabel = stringResource(R.string.btn_edit)
+    val deleteLabel = stringResource(R.string.btn_delete)
 
     val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
         state = state,
@@ -82,24 +90,28 @@ fun SwipeableTableItem(
                     .width(actionWidth / 2)
                     .fillMaxHeight()
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondary)
-                        .clickable {
-                            onClickEdit()
-                            scope.launch {
-                                state.animateTo(DragValue.Closed)
-                            }
+                IconButton(
+                    onClick = {
+                        onClickEdit()
+                        scope.launch {
+                            state.animateTo(DragValue.Closed)
                         }
+                    },
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        tint = MaterialTheme.colorScheme.onSecondary
-                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(iconSize)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.btn_edit),
+                            tint = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
                 }
             }
             Box(
@@ -108,24 +120,28 @@ fun SwipeableTableItem(
                     .width(actionWidth / 2)
                     .fillMaxHeight()
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer)
-                        .clickable {
-                            onClickDelete()
-                            scope.launch {
-                                state.animateTo(DragValue.Closed)
-                            }
+                IconButton(
+                    onClick = {
+                        onClickDelete()
+                        scope.launch {
+                            state.animateTo(DragValue.Closed)
                         }
+                    },
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(iconSize)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.btn_delete),
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
                 }
             }
         }
@@ -145,6 +161,18 @@ fun SwipeableTableItem(
                     flingBehavior = flingBehavior
                 )
                 .background(MaterialTheme.colorScheme.surface)
+                .semantics {
+                    customActions = listOf(
+                        CustomAccessibilityAction(editLabel) {
+                            onClickEdit()
+                            true
+                        },
+                        CustomAccessibilityAction(deleteLabel) {
+                            onClickDelete()
+                            true
+                        }
+                    )
+                }
         ) {
             content()
         }

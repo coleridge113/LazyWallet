@@ -1,6 +1,6 @@
 # Lazy Wallet: project instructions
 
-**Model rule:** task sessions run on the task model (to be confirmed) and do the task themselves without sub-agents; planning and reviews run on the planning model. If the session is on the wrong model, say so first.
+**Model rule:** tasks and Sonnet-ready Polish tickets run through the global `task-runner` agent (Sonnet, no sub-agents, hook-blocked from commits/pushes/branch switches): `@task-runner do P10`. Planning and reviews run on Opus in the main session. If the session is on the wrong model, say so first.
 
 ## Source of truth
 `android/tracker/` (Markdown): Plan.md (tasks), Polish.md (cosmetic tickets, only when asked), Progress.md (log, newest first), Learnings.md (override these instructions), Spec.md (reference + accepted gaps). Architecture and commands: `../CLAUDE.md`.

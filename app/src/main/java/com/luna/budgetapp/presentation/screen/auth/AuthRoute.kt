@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
+import androidx.compose.material3.IconButton
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
@@ -152,17 +153,19 @@ fun AuthContent(
                 onValueChange = { passwordString = it },
                 label = { Text("Password") },
                 trailingIcon = {
-                    Icon(
-                        imageVector =
-                            if (passwordVisible)
-                                Icons.Default.Visibility
-                            else
-                                Icons.Default.VisibilityOff,
-                        contentDescription = null,
-                        modifier = Modifier.clickable {
-                            passwordVisible = !passwordVisible
-                        }
-                    )
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector =
+                                if (passwordVisible)
+                                    Icons.Default.Visibility
+                                else
+                                    Icons.Default.VisibilityOff,
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.cd_hide_password
+                                else R.string.cd_show_password
+                            )
+                        )
+                    }
                 },
                 visualTransformation =
                     if (passwordVisible)

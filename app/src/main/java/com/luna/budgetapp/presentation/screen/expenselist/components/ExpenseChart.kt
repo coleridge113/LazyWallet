@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expenselist.components
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -132,7 +134,12 @@ fun ExpenseDonutChart(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.clickable { onClickCenter() }
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .clickable(
+                    onClickLabel = stringResource(R.string.chart_reset_filters),
+                    role = Role.Button
+                ) { onClickCenter() }
         ) {
             Text(
                 text = stringResource(R.string.chart_total),
@@ -158,7 +165,10 @@ fun ExpenseChartLegends(
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = modifier.clickable { showDialog() }
+        modifier = modifier.clickable(
+            onClickLabel = stringResource(R.string.chart_open_details),
+            role = Role.Button
+        ) { showDialog() }
     ) {
         items(chartDataList) { item ->
             val portion = item.subtotal.toDouble() / totalAmount
