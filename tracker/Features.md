@@ -5,7 +5,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | ID | Feature | Status | Spec | Plan | Next step |
 |---|---|---|---|---|---|
 | F01 | Figma design file | Blocked | – | – | Figma MCP rate limit; resume T02 when it resets |
-| F02 | Navigation events | Planned | [design](../docs/superpowers/specs/2026-11-25-navigation-events-design.md) | [plan](../docs/superpowers/plans/2026-11-25-navigation-events.md) | Run the plan: subagent-driven-development with task-runner (5 tasks, branch feat/navigation-events) |
+| F02 | Navigation events | Building | [design](../docs/superpowers/specs/2026-11-25-navigation-events-design.md) | [plan](../docs/superpowers/plans/2026-11-25-navigation-events.md) | Built and reviewed on feat/navigation-events (34 tests); your call: merge locally or PR; then device-check sign-in/sign-out/budget nav |
 | F03 | Firebase out of presentation | Idea | – | – | Brainstorm when wanted |
 | F04 | Theme, contrast & light theme | Idea | – | – | Your call: does the app need a tuned light theme? |
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |
@@ -83,3 +83,5 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 - Failures in writes are swallowed: ExpensePreset `saveExpensePreset`/`deleteExpensePreset` only log; `addExpense`, `deleteExpense`, `editExpense`, `saveBudget` (ExpenseList/Budget/BudgetDetails) have no try/catch. Dialogs close in `finally` even on failure; `isSaving` in `DialogState.ExpenseForm` and the other dialog states is never set true.
 - Auth already uses `DialogState.ErrorMessage`, so two error mechanisms exist. Google's guidance: transient errors as a `userMessage` in state that the UI shows (usually a snackbar) and acknowledges (https://developer.android.com/topic/architecture/ui-layer/events).
 - Open for the spec: snackbar vs dialog, keep form open on failure with `isSaving`, shared shape across screens, strings via P23 pattern.
+- Sign-out failure (F02 final review 2026-11-26): `signOutUser` now catches and logs, but the confirm dialog stays open with no feedback; `SignOutUseCase` calls `auth.signOut()` before `clearAllTables()`, so a failed clear leaves the user signed out of Firebase with local data still shown. Include in the same write-failure pattern.
+
