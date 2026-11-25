@@ -13,6 +13,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F10 | Analysis history and timelines | Idea | – | – | Brainstorm spec (layout A agreed 2026-11-25) |
+| F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
@@ -77,3 +78,8 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 - Proposed (not yet confirmed): opens on Day with the current period selected; ~7 bars in view (Day), 5–6 (Week), 6 (Month); weeks Mon–Sun; empty periods show a zero bar; scale fits bars in view; category filter still applies.
 - Open for the spec: chart library vs custom scrolling Canvas; how Analysis is reached (ties to F05/P17 Analysis tab).
 
+### F11 seed notes (MVVM research 2026-11-26)
+
+- Failures in writes are swallowed: ExpensePreset `saveExpensePreset`/`deleteExpensePreset` only log; `addExpense`, `deleteExpense`, `editExpense`, `saveBudget` (ExpenseList/Budget/BudgetDetails) have no try/catch. Dialogs close in `finally` even on failure; `isSaving` in `DialogState.ExpenseForm` and the other dialog states is never set true.
+- Auth already uses `DialogState.ErrorMessage`, so two error mechanisms exist. Google's guidance: transient errors as a `userMessage` in state that the UI shows (usually a snackbar) and acknowledges (https://developer.android.com/topic/architecture/ui-layer/events).
+- Open for the spec: snackbar vs dialog, keep form open on failure with `isSaving`, shared shape across screens, strings via P23 pattern.
