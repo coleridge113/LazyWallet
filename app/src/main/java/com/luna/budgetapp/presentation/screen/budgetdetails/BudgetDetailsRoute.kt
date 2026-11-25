@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budgetdetails
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.budgetdetails.components.BudgetDetailsCard
 import com.luna.budgetapp.presentation.screen.budgetdetails.components.MonthYearPickerDialog
 import com.luna.budgetapp.presentation.screen.components.ExpenseTable
@@ -154,14 +156,14 @@ private fun BudgetDetailsContent(
                                 )
                             }
                         ) {
-                            Text("OK")
+                            Text(stringResource(R.string.btn_ok))
                         }
                     },
                     dismissButton = {
                         TextButton(
                             onClick = { onEvent(Event.DismissDialog) }
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.btn_cancel))
                         }
                     }
                 ) {
@@ -190,8 +192,8 @@ private fun BudgetDetailsContent(
                 )
             is DialogState.DeleteConfirmation ->
                 ConfirmationDialog(
-                    message = "Delete this expense?",
-                    confirmText = "Delete",
+                    message = stringResource(R.string.confirm_delete_expense),
+                    confirmText = stringResource(R.string.btn_delete),
                     isDestructive = true,
                     onDismiss = { onEvent(Event.DismissDialog) },
                     onConfirm = { onEvent(Event.DeleteExpense(dialog.expenseId)) }

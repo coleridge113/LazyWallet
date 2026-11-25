@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budget.components
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +36,7 @@ fun BudgetOutlookCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Total Remaining",
+                    text = stringResource(R.string.outlook_total_remaining),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
@@ -66,7 +68,7 @@ fun BudgetOutlookCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Projected",
+                        text = stringResource(R.string.outlook_projected),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
@@ -80,7 +82,7 @@ fun BudgetOutlookCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Actual",
+                        text = stringResource(R.string.outlook_actual),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(

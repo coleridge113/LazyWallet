@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.luna.budgetapp.ui.theme.PresetPillShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -105,7 +105,7 @@ fun ExpensePresetItem(
             modifier = Modifier
                 .weight(1.5f)
                 .height(size)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(PresetPillShape)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .clickable { onClickItem(item) },
             contentAlignment = Alignment.Center

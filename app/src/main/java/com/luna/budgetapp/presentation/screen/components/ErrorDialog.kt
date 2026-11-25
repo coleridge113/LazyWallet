@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.components
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +48,7 @@ fun ErrorDialog(
                     .fillMaxSize(),
             ) {
                 Text(
-                    text = message ?: "Something went wrong",
+                    text = message ?: stringResource(R.string.state_error_title),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -55,7 +57,7 @@ fun ErrorDialog(
                     contentAlignment = Alignment.BottomEnd
                 ) {
                     Text(
-                        text = "Ok",
+                        text = stringResource(R.string.btn_ok),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable {
                             onDismiss()

@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budgetdetails.components
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import java.time.YearMonth
 import java.time.Month
 import java.time.format.TextStyle
@@ -11,7 +13,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -57,7 +58,7 @@ fun MonthYearPickerDialog(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                        contentDescription = "Previous Year"
+                        contentDescription = stringResource(R.string.cd_previous_year)
                     )
                 }
                 Text(
@@ -70,7 +71,7 @@ fun MonthYearPickerDialog(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = "Next Year"
+                        contentDescription = stringResource(R.string.cd_next_year)
                     )
                 }
             }
@@ -88,7 +89,7 @@ fun MonthYearPickerDialog(
                         monthNumber == initialYearMonth.monthValue &&
                         selectedYear == initialYearMonth.year
                     val isSelected = monthNumber == selectedMonth
-                    val shape = RoundedCornerShape(8.dp)
+                    val shape = MaterialTheme.shapes.small
                     val borderColor =
                         if (isCurrentMonth)
                             MaterialTheme.colorScheme.primary
@@ -132,12 +133,12 @@ fun MonthYearPickerDialog(
                     onDismiss()
                 }
             ) {
-                Text("OK")
+                Text(stringResource(R.string.btn_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )

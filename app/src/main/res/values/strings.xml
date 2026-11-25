@@ -78,4 +78,21 @@
     <string name="cd_menu">Menu</string>
     <string name="cd_add_budget">Add budget</string>
     <string name="cd_expense_preset_icon">Expense preset icon</string>
+    <string name="edit_expense">Edit Expense</string>
+    <string name="cd_previous_year">Previous year</string>
+    <string name="cd_next_year">Next year</string>
+    <string name="cd_dropdown_arrow">Dropdown arrow</string>
+    <string name="cd_lock">Locked</string>
+    <string name="budget_status_remaining">Remaining</string>
+    <string name="budget_status_exceeded">Exceeded</string>
+    <string name="budget_stat_spent">Spent</string>
+    <string name="budget_stat_limit">Limit</string>
+    <string name="outlook_total_remaining">Total Remaining</string>
+    <string name="outlook_projected">Projected</string>
+    <string name="outlook_actual">Actual</string>
+    <string name="migration_title">Cloud Sync</string>
+    <string name="migration_message">Would you like to migrate your local data to the cloud? This will allow you to access your expenses from any device.</string>
+    <string name="migration_in_progress">Migrating data...</string>
+    <string name="migration_start">Migrate to Cloud</string>
+    <string name="migration_skip">Keep Data Local (Not Recommended)</string>
 </resources>

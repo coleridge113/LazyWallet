@@ -18,3 +18,4 @@ Gotchas not yet in the project instructions; delete them here once folded in.
 - With `launch { vm.uiState.collect {} }` under runTest, call `runCurrent()` before reading `.value`/sending events (the launch is queued; `uiState` is still Loading).
 - `BudgetRepository` has `updateBudgetWithHistory`; `FakeBudgetRepository` implements it. `MutableClock` (test root) is the controllable `java.time.Clock`.
 - navigation-compose 2.10.x pulls lifecycle 2.11.0 transitively, which needs compileSdk 37 and AGP ≥ 9.2.0; pinning lifecycle to 2.10.0 in the catalog does not prevent it. Bump them together with the build tools. `checkDebugAarMetadata` is where it fails.
+- Don't rewrite Material3 `Typography` roles as plain `TextStyle(...)` to "match defaults": M3's defaults carry extra settings (line-height style, platform style) a plain TextStyle lacks, so text shifts. Override only what you actually change, e.g. `Typography().bodyLarge.copy(...)`.
