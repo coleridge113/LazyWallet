@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-25 | F08 | Done: branch `polish/presentation-fixes` pushed, PR #3 opened against master (tracker refactor + polish P04–P13, paging bump). Merge link to fill in once merged. |
 | 2026-11-25 | F08 | build finished: checker, task-runner plan-task mode, handover + project-tracker rewritten, instructions/CLAUDE.md updated, final-review fixes applied. |
 | 2026-11-25 | F08 | Tracker migrated to the feature layout: new Features.md (F01-F07 from old Plan/Polish items, with seed notes), Features-done.md (T01), Polish-done.md (P04, P05, P07, P08, P09, P11, P12, P13), trimmed Polish.md and Spec.md, Plan.md removed. Instructions file and CLAUDE.md still describe the old layout (later tasks). |
 | 2026-11-25 | P06 (main session) | Bumped paging (pagingCompose, pagingTesting) 3.4.2 → 3.5.3 in `libs.versions.toml`; resolved 3.5.3 everywhere, lifecycle stays 2.10.0. testDebugUnitTest 27/27, assembleDebug ok. Navigation 2.10.2 left at 2.9.8 (needs compileSdk 37 / AGP 9.2 via lifecycle 2.11). Not committed. |
