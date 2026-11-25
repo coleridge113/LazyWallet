@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expenselist.components
 
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.animation.core.Animatable
@@ -148,7 +149,7 @@ fun ExpenseDonutChart(
             )
 
             Text(
-                text = "₱%,.2f".format(totalAmount / 100.0),
+                text = totalAmount.toPeso(),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )

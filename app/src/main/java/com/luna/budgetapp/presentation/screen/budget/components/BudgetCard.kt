@@ -47,7 +47,7 @@ import com.luna.budgetapp.domain.model.Budget
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
 import com.luna.budgetapp.presentation.screen.utils.singleClick
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 import java.util.Locale
@@ -118,7 +118,7 @@ fun BudgetCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Frequency:",
+                        text = stringResource(R.string.budget_label_frequency),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
@@ -133,27 +133,12 @@ fun BudgetCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Amount: ",
+                        text = stringResource(R.string.budget_label_amount),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Php ${budget.limit.toCurrency()}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Spent: ",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "Php ${spent.toCurrency()}",
+                        text = budget.limit.toPeso(),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
@@ -163,12 +148,27 @@ fun BudgetCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Remaining: ",
+                        text = stringResource(R.string.budget_label_spent),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        text = "Php ${remaining.toCurrency()}",
+                        text = spent.toPeso(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.budget_label_remaining),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = remaining.toPeso(),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
@@ -313,9 +313,11 @@ fun BudgetCard2(
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                val suffix = if (remaining > 0) "left" else "overspent"
+                val suffix = stringResource(
+                    if (remaining > 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
+                )
                 Text(
-                    text = "Php ${remaining.toCurrency()} $suffix",
+                    text = "${remaining.toPeso()} $suffix",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -371,7 +373,7 @@ fun BudgetProgressBar(
 
     val progressColor = when {
         progress < 0.75f -> MaterialTheme.colorScheme.primary
-        progress < 0.90f -> Color(0xFFF57C00)
+        progress < 0.90f -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.error
     }
 

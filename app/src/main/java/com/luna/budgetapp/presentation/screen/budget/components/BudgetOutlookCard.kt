@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
 @Composable
@@ -38,7 +38,7 @@ fun BudgetOutlookCard(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = details.remaining.toCurrency(),
+                    text = details.remaining.toPeso(),
                     style = MaterialTheme.typography.titleLarge
                 )
             }
@@ -57,7 +57,7 @@ fun BudgetOutlookCard(
 //                        style = MaterialTheme.typography.bodyMedium
 //                    )
 //                    Text(
-//                        text = details.income.toCurrency(),
+//                        text = details.income.toPeso(),
 //                        style = MaterialTheme.typography.bodyMedium
 //                    )
 //                }
@@ -70,7 +70,7 @@ fun BudgetOutlookCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = details.projectedSpend.toCurrency(),
+                        text = details.projectedSpend.toPeso(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -84,7 +84,7 @@ fun BudgetOutlookCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        text = details.actualSpend.toCurrency(),
+                        text = details.actualSpend.toPeso(),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

@@ -150,7 +150,7 @@ fun BudgetContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircleOutline,
-                    contentDescription = "Menu",
+                    contentDescription = stringResource(R.string.cd_add_budget),
                     modifier = Modifier.size(iconSize)
                 )
             }

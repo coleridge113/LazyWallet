@@ -17,3 +17,4 @@ Gotchas not yet in the project instructions; delete them here once folded in.
 - A `todayFlow`-style ticker (infinite `delay` loop) makes `advanceUntilIdle()` hang while a collector is active; use `runCurrent()` / `advanceTimeBy(...)` in those tests and `job.cancel()` after.
 - With `launch { vm.uiState.collect {} }` under runTest, call `runCurrent()` before reading `.value`/sending events (the launch is queued; `uiState` is still Loading).
 - `BudgetRepository` has `updateBudgetWithHistory`; `FakeBudgetRepository` implements it. `MutableClock` (test root) is the controllable `java.time.Clock`.
+- navigation-compose 2.10.x pulls lifecycle 2.11.0 transitively, which needs compileSdk 37 and AGP ≥ 9.2.0; pinning lifecycle to 2.10.0 in the catalog does not prevent it. Bump them together with the build tools. `checkDebugAarMetadata` is where it fails.

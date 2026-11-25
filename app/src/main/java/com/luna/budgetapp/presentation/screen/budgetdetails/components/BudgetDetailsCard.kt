@@ -27,7 +27,7 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 
@@ -52,7 +52,7 @@ fun BudgetDetailsCard(
                 style = MaterialTheme.typography.titleSmall
             )
             Text(
-                text = remaining.toCurrency(),
+                text = remaining.toPeso(),
                 style = MaterialTheme.typography.titleLarge
             )
         }
@@ -69,7 +69,7 @@ fun BudgetDetailsCard(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = spent.toCurrency()
+                    text = spent.toPeso()
                 )
             }
             Column(
@@ -81,7 +81,7 @@ fun BudgetDetailsCard(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = budget.limit.toCurrency()
+                    text = budget.limit.toPeso()
                 )
             }
         }

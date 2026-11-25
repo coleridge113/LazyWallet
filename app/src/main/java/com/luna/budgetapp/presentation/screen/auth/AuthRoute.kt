@@ -146,12 +146,12 @@ fun AuthContent(
             )
             OutlinedTextField(
                 state = emailState,
-                label = { Text("Email") },
+                label = { Text(stringResource(R.string.auth_email)) },
             )
             OutlinedTextField(
                 value = passwordString,
                 onValueChange = { passwordString = it },
-                label = { Text("Password") },
+                label = { Text(stringResource(R.string.auth_password)) },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
@@ -212,7 +212,7 @@ fun AuthContent(
                     modifier = Modifier.weight(1f)
                 )
                 Text(
-                    text = "Or continue with",
+                    text = stringResource(R.string.auth_or_continue_with),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

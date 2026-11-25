@@ -250,7 +250,7 @@ fun ExpensePresetContent(
                     ) {
                         Icon(
                             imageVector = Icons.Default.AddCircleOutline,
-                            contentDescription = "Add",
+                            contentDescription = stringResource(R.string.cd_add),
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -265,7 +265,7 @@ fun ExpensePresetContent(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = "Undo",
+                            contentDescription = stringResource(R.string.cd_undo),
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -280,7 +280,7 @@ fun ExpensePresetContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
+                    contentDescription = stringResource(R.string.cd_menu),
                     modifier = Modifier.size(iconSize)
                 )
             }

@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
+import com.luna.budgetapp.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -33,7 +35,7 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
-import com.luna.budgetapp.presentation.screen.utils.toCurrency
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.icons.CoffeeIcon
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 
@@ -94,7 +96,7 @@ fun ExpensePresetItem(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = "Expense Preset Icon",
+                contentDescription = stringResource(R.string.cd_expense_preset_icon),
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -117,7 +119,7 @@ fun ExpensePresetItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = item.amount.toCurrency(),
+                    text = item.amount.toPeso(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
