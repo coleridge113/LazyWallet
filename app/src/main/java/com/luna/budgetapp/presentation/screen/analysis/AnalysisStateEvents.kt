@@ -43,5 +43,3 @@ sealed interface Event {
     data class SelectBar(val date: LocalDate) : Event
     data class SelectCategoryProfile(val profileName: String) : Event
 }
-
-sealed interface Navigation {}
