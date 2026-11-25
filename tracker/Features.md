@@ -11,11 +11,13 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
-| F08 | Feature-based tracker | Building | [design](../docs/superpowers/specs/2026-11-25-feature-based-tracker-design.md) | [plan](../docs/superpowers/plans/2026-11-25-feature-based-tracker.md) | Migrate remaining tracker docs and global skills per the plan |
+| F08 | Feature-based tracker | Building | [design](../docs/superpowers/specs/2026-11-25-feature-based-tracker-design.md) | [plan](../docs/superpowers/plans/2026-11-25-feature-based-tracker.md) | Final review fixes done; finish branch (user picks merge/PR) |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
 ### F01 seed notes (from Plan.md T02-T05 and Spec §5.1)
+
+(Moved verbatim on 2026-11-25: "Spec §5.1" is now Spec §4; Plan.md was retired, T02–T05 are the rows below.)
 
 | ID | Source text |
 |---|---|

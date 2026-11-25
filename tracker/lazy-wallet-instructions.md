@@ -27,14 +27,14 @@ If something doesn't match what you see, trust what you see and tell the user.
 
 ## Boundaries
 Never: edit `backup/`, `keystore*`, `local.properties`, `google-services.json`; run `firestore/*.js` scripts against the live project.
-Ask first: commits/pushes/merges, Firestore or schema changes, deleting branches, anything affecting release (`playstore-build`).
+Ask first: commits (except the controller's per-task and milestone commits during an approved feature build), pushes, merges, Firestore or schema changes, deleting branches, anything affecting release (`playstore-build`).
 
 ## Workflows
 
 **Feature (Opus main session):** "plan F05".
 1. `superpowers:brainstorming` writes the spec; fold the seed notes into it and delete them from Features.md. Status Designing, link Spec.
 2. `superpowers:writing-plans` writes the plan. Status Planned, link Plan.
-3. `superpowers:subagent-driven-development`, working in place on a feature branch (no worktree). The controller dispatches each implementer with `subagent_type: task-runner, model: sonnet` (not `general-purpose`), overriding the brief's "commit your work" step with "leave changes uncommitted; list the files you changed". A reviewer checks each task and a final review checks the branch. Status Building. The **controller commits** each task, staging only the files the implementer listed (never `git add -A`), and updates Features/Progress only at milestones.
+3. `superpowers:subagent-driven-development`, working in place on a feature branch (no worktree). The controller dispatches each implementer with `subagent_type: task-runner, model: sonnet` (not `general-purpose`), overriding the brief's "commit your work" step with "leave changes uncommitted; list the files you changed". A reviewer checks each task and a final review checks the branch. Status Building. The **controller commits** each task, staging only the files the implementer listed (never `git add -A`), and updates Features/Progress only at milestones. Milestone tracker edits are committed by the controller as their own commit (and before finishing-a-development-branch); review-fix rounds are committed by the controller too, so each re-review has a FIX_BASE..HEAD range.
 4. `superpowers:finishing-a-development-branch`; the user picks merge or PR. Status Done: move the row to Features-done.md (a merge or PR link not yet known is filled in by handover's resume).
 
 **Small fix:** `@task-runner do P13`. One Polish ticket, no spec or plan. It updates Polish, Progress and Learnings and doesn't commit.
@@ -43,7 +43,7 @@ Ask first: commits/pushes/merges, Firestore or schema changes, deleting branches
 
 **Session rules:**
 1. Read Features.md (or Polish.md for a ticket), the newest 3 rows of Progress, and all of Learnings. Learnings override the instructions where they conflict.
-2. Take the item the user named. Set it In progress before starting.
+2. Take the item the user named. Set it In progress (Polish ticket) or Designing/Building (feature) before starting.
 3. Do only that item, inside its scope. Where it needs the user's OK, stop before that step and ask.
 4. Check the result against its done-when and the project's checks.
 5. Progress: one row at the top per milestone (spec approved, plan approved, build finished) or per Polish ticket, not per plan task. Keep 50 rows; move older ones to Progress-archive.md.
@@ -56,7 +56,7 @@ Imperfections get sorted, not just mentioned: broken or blocking becomes a featu
 - `./gradlew testDebugUnitTest` (or `--tests` for one class) from `android/`
 - `./gradlew assembleDebug` compiles
 - Use real use cases over `Fake*Repository` in ViewModel tests; extend fakes when adding repository methods
-- `python3 ~/.claude-personal/scripts/check_tracker.py android` (from the budget folder) prints OK
+- `python3 ~/.claude-personal/scripts/check_tracker.py /Users/joseluna/dev/personal/budget/android` prints OK
 
 ## Reporting
 Plain language: what's done, what's saved but not live, what's next, and the next decision for the user.
