@@ -122,8 +122,12 @@ fun NavGraphSetup(
                 composable<Routes.AuthRoute> {
                     val viewModel: AuthViewModel = koinViewModel()
                     AuthRoute(
-                        navController = navController,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onSignedIn = {
+                            navController.navigate(Routes.ExpensePresetRoute) {
+                                popUpTo(Routes.AuthRoute) { inclusive = true }
+                            }
+                        }
                     )
                 }
                 composable<Routes.ExpensePresetRoute> {
