@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.migration
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -61,14 +63,14 @@ fun MigrationScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Cloud Sync",
+            text = stringResource(R.string.migration_title),
             style = MaterialTheme.typography.headlineMedium
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Would you like to migrate your local data to the cloud? This will allow you to access your expenses from any device.",
+            text = stringResource(R.string.migration_message),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center
         )
@@ -78,12 +80,12 @@ fun MigrationScreen(
         if (state.isLoading) {
             CircularProgressIndicator()
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Migrating data...")
+            Text(text = stringResource(R.string.migration_in_progress))
         } else {
             Button(
                 onClick = { onEvent(MigrationEvent.StartMigration) }
             ) {
-                Text(text = "Migrate to Cloud")
+                Text(text = stringResource(R.string.migration_start))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -91,7 +93,7 @@ fun MigrationScreen(
             OutlinedButton(
                 onClick = { onEvent(MigrationEvent.SkipMigration) }
             ) {
-                Text(text = "Keep Data Local (Not Recommended)")
+                Text(text = stringResource(R.string.migration_skip))
             }
         }
 

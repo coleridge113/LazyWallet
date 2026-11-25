@@ -141,7 +141,7 @@ fun BudgetDialog(
                         trailingIcon = {
                             Icon(
                                 Icons.Default.KeyboardArrowDown,
-                                contentDescription = "Dropdown Arrow"
+                                contentDescription = stringResource(R.string.cd_dropdown_arrow)
                             )
                         },
                         colors = ExposedDropdownMenuDefaults.textFieldColors(),

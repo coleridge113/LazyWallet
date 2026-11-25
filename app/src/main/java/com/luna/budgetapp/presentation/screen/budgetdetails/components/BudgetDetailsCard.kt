@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.budgetdetails.components
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,7 +48,9 @@ fun BudgetDetailsCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val status = if (remaining >= 0) "Remaining" else "Exceeded"
+            val status = stringResource(
+                if (remaining >= 0) R.string.budget_status_remaining else R.string.budget_status_exceeded
+            )
             Text(
                 text = status,
                 style = MaterialTheme.typography.titleSmall
@@ -65,7 +69,7 @@ fun BudgetDetailsCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Spent",
+                    text = stringResource(R.string.budget_stat_spent),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
@@ -77,7 +81,7 @@ fun BudgetDetailsCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Limit",
+                    text = stringResource(R.string.budget_stat_limit),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(

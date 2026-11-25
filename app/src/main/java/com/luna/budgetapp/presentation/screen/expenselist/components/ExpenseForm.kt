@@ -1,5 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expenselist.components
 
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -106,12 +108,12 @@ fun ExpenseForm(
                         }
                         showDatePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.btn_ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.btn_cancel))
                     }
                 }
             ) {
@@ -134,7 +136,7 @@ fun ExpenseForm(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Edit Expense",
+                    text = stringResource(R.string.edit_expense),
                     style = MaterialTheme.typography.headlineSmall
                 )
 
@@ -178,7 +180,7 @@ fun ExpenseForm(
 
                 OutlinedTextField(
                     state = typeState,
-                    label = { Text("Type") },
+                    label = { Text(stringResource(R.string.form_type)) },
                     placeholder = {
                         Text(selectedExpense.type)
                     },
@@ -190,7 +192,7 @@ fun ExpenseForm(
 
                 OutlinedTextField(
                     state = amountState,
-                    label = { Text("Amount") },
+                    label = { Text(stringResource(R.string.form_amount)) },
                     lineLimits = TextFieldLineLimits.SingleLine,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Decimal
@@ -216,13 +218,13 @@ fun ExpenseForm(
                 OutlinedTextField(
                     value = selectedDate.formatToDisplay(),
                     onValueChange = {},
-                    label = { Text("Date") },
+                    label = { Text(stringResource(R.string.form_date)) },
                     singleLine = true,
                     readOnly = true,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = "Select Date",
+                            contentDescription = stringResource(R.string.select_date),
                             modifier = Modifier.clickable { showDatePicker = true }
                         )
                     },
@@ -241,7 +243,7 @@ fun ExpenseForm(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismissRequest) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.btn_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(onClick = {
@@ -262,7 +264,7 @@ fun ExpenseForm(
                     },
                         enabled = !isSaving
                     ) {
-                        Text("Confirm")
+                        Text(stringResource(R.string.btn_confirm))
                     }
                 }
             }

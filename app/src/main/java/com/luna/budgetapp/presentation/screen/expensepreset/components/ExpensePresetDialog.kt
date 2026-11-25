@@ -167,12 +167,12 @@ fun ExpensePresetDialog(
                             if (!isLocked) {
                                 Icon(
                                     Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "Dropdown Arrow"
+                                    contentDescription = stringResource(R.string.cd_dropdown_arrow)
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Lock,
-                                    contentDescription = "Lock"
+                                    contentDescription = stringResource(R.string.cd_lock)
                                 )
                             }
                         },
