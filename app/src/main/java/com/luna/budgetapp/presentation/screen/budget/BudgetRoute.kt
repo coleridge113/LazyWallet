@@ -99,7 +99,7 @@ fun BudgetContent(
             modifier = Modifier
         ) {
             BudgetOutlookCard(
-                modifier = Modifier,
+                modifier = Modifier.padding(4.dp),
                 details = monthlyOutlook
             )
 

@@ -4,10 +4,10 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.luna.budgetapp.R
@@ -49,7 +48,7 @@ fun BudgetOutlookCard(
     val projected = details.projectedSpend.toPeso()
     val remaining = abs(details.remaining).toPeso()
     val suffix = stringResource(
-        if (details.remaining > 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
+        if (details.remaining >= 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
     )
     val noBudgets = stringResource(R.string.outlook_no_budgets)
     val description = if (hasBudgets) {
@@ -84,8 +83,7 @@ fun BudgetOutlookCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(200.dp)
-                    .aspectRatio(1f),
+                    .size(200.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Canvas(modifier = Modifier.matchParentSize()) {
@@ -129,15 +127,17 @@ fun BudgetOutlookCard(
                     }
                 }
                 Column(
-                    modifier = Modifier.padding(horizontal = 32.dp),
+                    modifier = Modifier.padding(horizontal = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (hasBudgets) {
                         Text(
-                            text = abs(details.remaining).toPeso(),
+                            text = remaining,
                             style = MaterialTheme.typography.titleLarge,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            autoSize = TextAutoSize.StepBased(
+                                maxFontSize = MaterialTheme.typography.titleLarge.fontSize
+                            )
                         )
                         Text(
                             text = suffix,
@@ -161,8 +161,6 @@ fun BudgetOutlookCard(
         }
     }
 }
-
-private operator fun Offset.times(f: Float) = Offset(x * f, y * f)
 
 @Preview(name = "UnderPace")
 @Preview(name = "UnderPace dark", uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)

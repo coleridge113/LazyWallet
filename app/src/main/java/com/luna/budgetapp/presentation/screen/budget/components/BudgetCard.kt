@@ -159,7 +159,7 @@ fun BudgetCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val suffix = stringResource(
-                    if (remaining > 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
+                    if (remaining >= 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
                 )
                 Text(
                     text = "${remaining.toPeso()} $suffix",
