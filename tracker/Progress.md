@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | P26 | Auth now has one `AuthUiState` (`isLoading`, `dialog`, `isUserSignedIn`, `signedIn`) exposed as `uiState`. Buttons and fields are disabled with a spinner while a sign-in runs, repeat events are ignored, and `completeSignIn` runs outside the sign-in `try`. 70 tests (66 before), build ok. On `polish/auth-ui-state`, not committed, not device-tested. |
 | 2026-11-26 | Preset buttons | ExpensePreset buttons show the amount with `toCurrency()` instead of `toPeso()`: the ₱ symbol was redundant on every preset button. Done by Jose on `polish/remove-peso-symbol-from-preset-buttons` (`fa2de84`), merged to master (`bafa166`). |
 | 2026-11-26 | F03 | PR #9 merged (`b7b947e`) after device check. F03 moved to Features-done. P26 unblocked. |
 | 2026-11-26 | F03 | Build finished on `feat/firebase-out-of-presentation` (3 tasks + final-review cleanups, 66 tests, 43 before). No Firebase, Play services or `data` imports left under `presentation/` or `domain/`. `AuthRepository` is suspend + domain `AuthException` (mapper in `data/local/repository/AuthErrorMapper.kt`); `CloudSyncRepository`, `LocalDataRepository`, guest mode on `SettingsRepository`; use cases CompleteSignIn / SignOut / IsSignedIn / MigrateLocalData. Not pushed, not device-tested. Left: device check, PR. P26 unblocked once merged. |

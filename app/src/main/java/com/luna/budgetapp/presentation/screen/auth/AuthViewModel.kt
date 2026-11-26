@@ -21,13 +21,10 @@ class AuthViewModel(
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
-    val isUserSignedIn: Boolean = authUseCases.isSignedIn()
-
-    private val _signedIn = MutableStateFlow(false)
-    val signedIn: StateFlow<Boolean> = _signedIn.asStateFlow()
-
-    private val _dialogState = MutableStateFlow<DialogState?>(null)
-    val dialogState = _dialogState.asStateFlow()
+    private val _uiState = MutableStateFlow(
+        AuthUiState(isUserSignedIn = authUseCases.isSignedIn())
+    )
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun onEvent(event: Event) {
         when (event) {
@@ -41,64 +38,81 @@ class AuthViewModel(
     }
 
     fun onSignedInHandled() {
-        _signedIn.value = false
+        _uiState.update { it.copy(signedIn = false, isLoading = false) }
+    }
+
+    /** Returns false (and does nothing) if a sign-in is already in flight. */
+    private fun startLoading(): Boolean {
+        var started = false
+        _uiState.update {
+            if (it.isLoading) it else {
+                started = true
+                it.copy(isLoading = true)
+            }
+        }
+        return started
     }
 
     private fun handleSignInSuccess(isGuest: Boolean) {
+        if (!startLoading()) return
         viewModelScope.launch { completeSignIn(isGuest) }
     }
 
     private suspend fun completeSignIn(isGuest: Boolean) {
-        authUseCases.completeSignIn(isGuest)
-        _signedIn.value = true
+        try {
+            authUseCases.completeSignIn(isGuest)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _uiState.update { it.copy(isLoading = false) }
+            return
+        }
+        _uiState.update { it.copy(signedIn = true) }
     }
 
     private fun signInGoogle(
         credential: Credential?
     ) {
+        if (credential !is CustomCredential ||
+            credential.type != TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+        ) return
+        if (!startLoading()) return
         viewModelScope.launch {
             try {
-                if (credential is CustomCredential &&
-                    credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                ) {
-                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                    authUseCases.signInGoogle(googleIdTokenCredential.idToken)
-                    completeSignIn(false)
-                }
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                authUseCases.signInGoogle(googleIdTokenCredential.idToken)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                if (e is CancellationException) throw e
                 showError(e)
+                return@launch
             }
+            completeSignIn(false)
         }
     }
 
     private fun signInEmailPassword(
         email: String,
         password: String
-    ) {
-        viewModelScope.launch {
-            try {
-                authUseCases.signInEmailPassword(email, password)
-                completeSignIn(false)
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                showError(e)
-            }
-        }
-    }
+    ) = launchSignIn { authUseCases.signInEmailPassword(email, password) }
 
     private fun signUp(
         email: String,
         password: String
-    ) {
+    ) = launchSignIn { authUseCases.signUp(email, password) }
+
+    private fun launchSignIn(signIn: suspend () -> Unit) {
+        if (!startLoading()) return
         viewModelScope.launch {
             try {
-                authUseCases.signUp(email, password)
-                completeSignIn(false)
+                signIn()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                if (e is CancellationException) throw e
                 showError(e)
+                return@launch
             }
+            completeSignIn(false)
         }
     }
 
@@ -123,12 +137,12 @@ class AuthViewModel(
                 else -> R.string.auth_error_generic
             }
 
-        _dialogState.update {
-            DialogState.ErrorMessage(message)
+        _uiState.update {
+            it.copy(isLoading = false, dialog = DialogState.ErrorMessage(message))
         }
     }
 
     private fun dismissDialog() {
-        _dialogState.update { null }
+        _uiState.update { it.copy(dialog = null) }
     }
 }
