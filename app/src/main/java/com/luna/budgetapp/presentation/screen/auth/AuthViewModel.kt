@@ -1,6 +1,5 @@
 package com.luna.budgetapp.presentation.screen.auth
 
-import android.util.Log
 import com.luna.budgetapp.R
 import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel

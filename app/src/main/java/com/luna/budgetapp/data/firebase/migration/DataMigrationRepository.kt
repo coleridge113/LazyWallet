@@ -81,10 +81,7 @@ class DataMigrationRepository(
         }
     }
 
-    override suspend fun downloadCloudData() = syncFromCloud()
-
-    // Kept until AuthViewModel moves to CompleteSignInUseCase (F03 Task 3).
-    suspend fun syncFromCloud() = withContext(Dispatchers.IO) {
+    override suspend fun downloadCloudData() = withContext(Dispatchers.IO) {
         val user = auth.currentUser ?: return@withContext
         val userId = user.uid
         val userRef = firestore.collection("users").document(userId)

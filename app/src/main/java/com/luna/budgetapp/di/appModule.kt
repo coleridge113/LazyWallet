@@ -169,8 +169,7 @@ val appModule = module {
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
     singleOf(::SettingsDataStore)
-    singleOf(::DataMigrationRepository)
-    single<CloudSyncRepository> { get<DataMigrationRepository>() }
+    singleOf(::DataMigrationRepository) { bind<CloudSyncRepository>() }
     singleOf(::LocalDataRepositoryImpl) { bind<LocalDataRepository>() }
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }

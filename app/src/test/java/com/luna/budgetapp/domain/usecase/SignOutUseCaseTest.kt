@@ -11,7 +11,8 @@ import org.junit.Test
 class SignOutUseCaseTest {
 
     private val authFake = FakeAuthRepository()
-    private val localFake = FakeLocalDataRepository()
+    private var callsAtClear: List<String>? = null
+    private val localFake = FakeLocalDataRepository { callsAtClear = authFake.calls.toList() }
 
     @Test
     fun accountUser_signsOutThenClearsLocalData() = runTest {
@@ -19,6 +20,7 @@ class SignOutUseCaseTest {
 
         assertThat(authFake.calls).containsExactly("signOut")
         assertThat(localFake.clearCount).isEqualTo(1)
+        assertThat(callsAtClear).containsExactly("signOut")
     }
 
     @Test
