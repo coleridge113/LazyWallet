@@ -149,6 +149,15 @@ class FakeExpenseRepository : ExpenseRepository {
         }
     }
 
+    override fun getAllDailyTotals(): Flow<List<DailyTotal>> {
+        return expensesFlow.throwIfRequested().map { expenses ->
+            expenses
+                .groupBy { it.date.toLocalDate() }
+                .map { (date, list) -> DailyTotal(date, list.sumOf { it.amount }) }
+                .sortedBy { it.date }
+        }
+    }
+
     override fun getTotalAmountByCategories(
         categories: List<String>,
         start: LocalDateTime,

@@ -137,6 +137,15 @@ interface ExpenseDao {
     """)
     fun getDailyTotals(categories: List<String>): Flow<List<DailyTotalProjection>>
 
+    @Query("""
+        SELECT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime') AS day,
+               SUM(amount) AS total
+        FROM expenses
+        GROUP BY day
+        ORDER BY day
+    """)
+    fun getAllDailyTotals(): Flow<List<DailyTotalProjection>>
+
     @Insert
     suspend fun addExpense(expense: ExpenseEntity)
 

@@ -65,6 +65,7 @@ class AnalysisViewModelTest {
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
             observeSpendingHistory = ObserveSpendingHistoryUseCase(expenseRepo, clock),
+            observeAllDailyTotals = mockk(),
             editExpense = mockk(),
         )
         val profileUseCases = ProfileUseCases(

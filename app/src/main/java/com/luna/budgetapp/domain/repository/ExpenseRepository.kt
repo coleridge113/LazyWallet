@@ -57,6 +57,8 @@ interface ExpenseRepository {
 
     fun getDailyTotals(categories: List<String>): Flow<List<DailyTotal>>
 
+    fun getAllDailyTotals(): Flow<List<DailyTotal>>
+
     fun getTotalAmountByCategories(
         categories: List<String>,
         start: LocalDateTime,

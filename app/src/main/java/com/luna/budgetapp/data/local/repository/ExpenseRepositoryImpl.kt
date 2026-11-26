@@ -196,6 +196,11 @@ class ExpenseRepositoryImpl(
             rows.map { DailyTotal(LocalDate.parse(it.day), it.total) }
         }.flowOn(Dispatchers.IO)
 
+    override fun getAllDailyTotals(): Flow<List<DailyTotal>> =
+        dao.getAllDailyTotals().map { rows ->
+            rows.map { DailyTotal(LocalDate.parse(it.day), it.total) }
+        }.flowOn(Dispatchers.IO)
+
     override suspend fun addExpense(expense: Expense) {
         val userId = auth.currentUser?.uid
         val remoteId = UUID.randomUUID().toString()
