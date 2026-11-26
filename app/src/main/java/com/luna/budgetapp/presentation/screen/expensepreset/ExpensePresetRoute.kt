@@ -3,28 +3,14 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import androidx.compose.material3.IconButton
 import com.luna.budgetapp.presentation.screen.components.LoadingContent
 import com.luna.budgetapp.presentation.screen.components.ErrorContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -35,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.AndroidUiModes
@@ -48,11 +33,14 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
-import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
-import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetHero
+import com.luna.budgetapp.presentation.screen.expensepreset.components.LastLoggedStrip
+import com.luna.budgetapp.presentation.screen.expensepreset.components.PresetTileGrid
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import kotlinx.coroutines.delay
+import java.time.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -95,8 +83,14 @@ fun ExpensePresetContent(
     onEvent: (Event) -> Unit
 ) {
     val expensePresets = uiState.expensesState.expensePresets
-    val totalAmount = uiState.expensesState.totalAmount
-    var isMenuExpanded by remember { mutableStateOf(false) }
+    val expensesState = uiState.expensesState
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000)
+            now = LocalDateTime.now()
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -119,19 +113,28 @@ fun ExpensePresetContent(
                 }
             )
 
-            ExpenseAmountDisplay(
-                totalAmount = totalAmount,
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
+            ExpensePresetHero(
+                total = expensesState.totalAmount,
+                sparkline = expensesState.sparkline
             )
 
-            ExpensePresetTable(
-                expensePresets = expensePresets,
-                onClickIcon = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
-                onClickItem = { onEvent(Event.AddExpense(it)) },
+            expensesState.lastLogged?.let { last ->
+                LastLoggedStrip(
+                    expense = last,
+                    now = now,
+                    onOpen = { /* Task 4 opens the recently added sheet */ },
+                    onUndo = { onEvent(Event.RemoveExpense(last)) }
+                )
+            }
+
+            PresetTileGrid(
+                presets = expensePresets,
+                onLog = { onEvent(Event.AddExpense(it)) },
+                onCustom = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
                 onEdit = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.EDIT)) },
                 onDelete = { onEvent(Event.ShowConfirmationDialog(it)) },
-                modifier = Modifier.weight(3f)
+                onNewPreset = { onEvent(Event.AddExpensePreset(null, ExpenseFormAction.ADD)) },
+                modifier = Modifier.weight(1f)
             )
 
             when (val dialog = uiState.dialogState) {
@@ -182,69 +185,6 @@ fun ExpensePresetContent(
                 else -> {}
             }
         }
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 72.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            val iconSize = 24.dp
-            val fabSize = 56.dp
-            val offset = fabSize / 2 + 16.dp
-            val noElevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp,
-                focusedElevation = 0.dp,
-                hoveredElevation = 0.dp
-            )
-
-            AnimatedVisibility(
-                visible = isMenuExpanded,
-                enter = slideInVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy
-                    )
-                ) { it },
-                exit = slideOutVertically { it } + shrinkVertically(),
-                modifier = Modifier.padding(bottom = offset)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.padding(top = 18.dp, bottom = 28.dp)
-                ) {
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.AddExpensePreset(action = ExpenseFormAction.ADD))
-                            isMenuExpanded = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircleOutline,
-                            contentDescription = stringResource(R.string.cd_add),
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                }
-            }
-
-            FloatingActionButton(
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondary,
-                elevation = noElevation,
-                onClick = { isMenuExpanded = !isMenuExpanded }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = stringResource(R.string.cd_menu),
-                    modifier = Modifier.size(iconSize)
-                )
-            }
-        }
     }
 }
 
@@ -264,7 +204,9 @@ fun ExpenseRoutePreviewLight() {
             Expense(id = 1, amount = 5000, category = Category.FOOD, type = "Lunch"),
             Expense(id = 2, amount = 1500, category = Category.BEVERAGE, type = "Coffee"),
             Expense(id = 3, amount = 20000, category = Category.LEISURE, type = "Groceries")
-        )
+        ),
+        sparkline = listOf(21000, 3000, 51000, 23000, 17000, 20000, 26500),
+        lastLogged = Expense(id = 3, amount = 20000, category = Category.LEISURE, type = "Groceries")
     )
 
     val uiState = UiState.Success(

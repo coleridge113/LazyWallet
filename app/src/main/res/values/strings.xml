@@ -36,7 +36,6 @@
 
     # Dialogs
     <string name="confirm_sign_out">Are you sure you want to sign out?</string>
-    <string name="confirm_delete_last_expense">Delete the last expense?</string>
     <string name="confirm_delete_item">Delete this item?</string>
     <string name="confirm_delete_expense">Delete this expense?</string>
     <string name="confirm_delete_budget">Are you sure you want to delete this budget?</string>
@@ -75,7 +74,6 @@
     <string name="auth_password">Password</string>
     <string name="auth_or_continue_with">Or continue with</string>
     <string name="cd_add">Add</string>
-    <string name="cd_undo">Undo</string>
     <string name="cd_menu">Menu</string>
     <string name="cd_add_budget">Add budget</string>
     <string name="cd_expense_preset_icon">Expense preset icon</string>
@@ -125,4 +123,16 @@
     <string name="analysis_no_spending">No spending</string>
     <string name="cd_open_analysis">Spending over time</string>
     <string name="cd_back">Back</string>
+    <string name="expense_preset_today">Today</string>
+    <string name="expense_preset_new_preset">New preset</string>
+    <string name="expense_preset_undo">Undo</string>
+    <string name="expense_preset_just_now">just now</string>
+    <string name="expense_preset_minutes_ago">%1$d min ago</string>
+    <string name="expense_preset_hours_ago">%1$d h ago</string>
+    <string name="cd_expense_preset_today_total">Today, %1$s</string>
+    <string name="cd_log_preset">Log %1$s, %2$s</string>
+    <string name="cd_custom_preset">Add custom %1$s expense</string>
+    <string name="cd_edit_or_delete">Edit or delete</string>
+    <string name="cd_last_added">Last added: %1$s %2$s, %3$s. Show recently added</string>
+    <string name="cd_undo_expense">Undo %1$s %2$s</string>
 </resources>
