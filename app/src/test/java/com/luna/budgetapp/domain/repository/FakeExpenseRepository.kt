@@ -20,6 +20,9 @@ class FakeExpenseRepository : ExpenseRepository {
     /** When true, the date-range / category read flows throw on collection. */
     var shouldThrow = false
 
+    /** When true, deleteExpenseById throws. */
+    var shouldThrowOnDelete = false
+
     override fun getAllExpenses(): Flow<PagingData<Expense>> {
         return expensesFlow.map { PagingData.from(it) }
     }
@@ -183,6 +186,7 @@ class FakeExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun deleteExpenseById(expenseId: Long) {
+        if (shouldThrowOnDelete) throw IllegalStateException("fake delete failure")
         expensesFlow.update {
             it.filter { e -> e.id != expenseId }
         }

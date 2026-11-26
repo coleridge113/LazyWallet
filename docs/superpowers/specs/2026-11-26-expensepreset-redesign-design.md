@@ -120,7 +120,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 
 ## Decided details (Claude's calls, confirmed by the user: "go with your proposals")
 
-- **"Last logged"** = highest `id` among today's (category-filtered) expenses.
+- **"Last logged"** = highest `id` among today's expenses (all categories).
 - **Relative time:**
   - "just now" under 1 minute;
   - "N min ago" under 60 minutes;

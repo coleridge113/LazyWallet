@@ -138,10 +138,9 @@ fun PresetTile(
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(12.dp)
-                .size(36.dp)
+                .padding(6.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.35f))
                 .clickable(onClick = onCustom)
                 .clearAndSetSemantics {
                     contentDescription = customDescription
@@ -150,12 +149,20 @@ fun PresetTile(
                 },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = getIconForCategory(preset.category),
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(20.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(color.copy(alpha = 0.35f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = getIconForCategory(preset.category),
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             DropdownMenuItem(

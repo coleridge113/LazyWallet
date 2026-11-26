@@ -354,6 +354,8 @@ class ExpensePresetViewModelTest {
 
         viewModel.onEvent(Event.RemoveExpense(a))
         runCurrent()
+        advanceTimeBy(500)
+        runCurrent()
         viewModel.onEvent(Event.RemoveExpense(b))
         runCurrent()
         viewModel.onEvent(Event.UndoRemove)
@@ -410,6 +412,44 @@ class ExpensePresetViewModelTest {
         runCurrent()
 
         assertThat(todayExpenses.map { it.type }).containsExactly("A")
+        job.cancel()
+    }
+
+    @Test
+    fun `failed delete posts no message and a following undo adds nothing`() = runTest {
+        val a = seedToday("A", 100L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        fakeExpenseRepo.shouldThrowOnDelete = true
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        runCurrent()
+        assertThat(success.userMessage).isNull()
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.type }).containsExactly("A")
+        job.cancel()
+    }
+
+    @Test
+    fun `second remove inside the lock window is ignored until it passes`() = runTest {
+        val a = seedToday("A", 100L)
+        val b = seedToday("B", 200L)
+        val c = seedToday("C", 300L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        viewModel.onEvent(Event.RemoveExpense(b))
+        runCurrent()
+        assertThat(todayExpenses.map { it.type }).containsExactly("B", "C")
+
+        advanceTimeBy(500)
+        runCurrent()
+        viewModel.onEvent(Event.RemoveExpense(c))
+        runCurrent()
+        assertThat(todayExpenses.map { it.type }).containsExactly("B")
         job.cancel()
     }
 

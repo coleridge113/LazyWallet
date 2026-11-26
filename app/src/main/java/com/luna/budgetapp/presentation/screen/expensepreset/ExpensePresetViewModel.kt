@@ -19,6 +19,7 @@ import com.luna.budgetapp.presentation.screen.expensepreset.model.lastLogged
 import com.luna.budgetapp.presentation.screen.expensepreset.model.lastSevenDays
 import com.luna.budgetapp.presentation.screen.expensepreset.model.recentFirst
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 private const val TAG = "ExpensePresetVM"
+private const val REMOVE_LOCK_MS = 500L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
@@ -53,6 +55,8 @@ class ExpensePresetViewModel(
     private val _dateState = MutableStateFlow(DateState())
     private val _userMessage = MutableStateFlow<UserMessage?>(null)
     private var lastRemoved: Expense? = null
+    /** True while a removal is in flight and for [REMOVE_LOCK_MS] after it completes. */
+    private var removeLocked = false
     private val allCategoryNames = Category.entries.map { it.name }
 
     private val _expensesState = combine(
@@ -203,12 +207,17 @@ class ExpensePresetViewModel(
     ) {
         val amount = customAmount?.let { parseAmountExpression(it) } ?: expensePreset.amount
         viewModelScope.launch {
-            expenseUseCases.addExpense(
-                category = expensePreset.category.name,
-                type = customType ?: expensePreset.type,
-                amount = amount,
-                date = customDate ?: LocalDateTime.now(clock)
-            )
+            try {
+                expenseUseCases.addExpense(
+                    category = expensePreset.category.name,
+                    type = customType ?: expensePreset.type,
+                    amount = amount,
+                    date = customDate ?: LocalDateTime.now(clock)
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to add expense", e)
+            }
 
             if (_dialogState.value != null) {
                 dismissDialog()
@@ -218,10 +227,22 @@ class ExpensePresetViewModel(
 
     private fun removeExpense(expense: Expense) {
         val id = expense.id ?: return
-        lastRemoved = expense
+        if (removeLocked) return
+        removeLocked = true
         viewModelScope.launch {
-            expenseUseCases.deleteExpense(id)
-            _userMessage.value = UserMessage.Removed(id, expense.type, expense.amount)
+            try {
+                try {
+                    expenseUseCases.deleteExpense(id)
+                    lastRemoved = expense
+                    _userMessage.value = UserMessage.Removed(id, expense.type, expense.amount)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    Log.e(TAG, "Failed to remove expense", e)
+                }
+                delay(REMOVE_LOCK_MS)
+            } finally {
+                removeLocked = false
+            }
         }
     }
 
@@ -230,12 +251,17 @@ class ExpensePresetViewModel(
         lastRemoved = null
         _userMessage.value = null
         viewModelScope.launch {
-            expenseUseCases.addExpense(
-                category = expense.category.name,
-                type = expense.type,
-                amount = expense.amount,
-                date = expense.date
-            )
+            try {
+                expenseUseCases.addExpense(
+                    category = expense.category.name,
+                    type = expense.type,
+                    amount = expense.amount,
+                    date = expense.date
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to undo expense removal", e)
+            }
         }
     }
 

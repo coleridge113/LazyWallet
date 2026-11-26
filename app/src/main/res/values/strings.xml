@@ -73,10 +73,7 @@
     <string name="auth_email">Email</string>
     <string name="auth_password">Password</string>
     <string name="auth_or_continue_with">Or continue with</string>
-    <string name="cd_add">Add</string>
-    <string name="cd_menu">Menu</string>
     <string name="cd_add_budget">Add budget</string>
-    <string name="cd_expense_preset_icon">Expense preset icon</string>
     <string name="edit_expense">Edit Expense</string>
     <string name="cd_previous_year">Previous year</string>
     <string name="cd_next_year">Next year</string>
