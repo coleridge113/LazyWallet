@@ -136,13 +136,13 @@ class BudgetViewModel(
         }
     }
 
-    fun showDeleteConfirmationDialog(budget: Budget) {
+    private fun showDeleteConfirmationDialog(budget: Budget) {
         _dialogState.update {
             DialogState.DeleteDialog(budget)
         }
     }
 
-    fun deleteBudget(budget: Budget) {
+    private fun deleteBudget(budget: Budget) {
         viewModelScope.launch {
             dismissDialog()
             budgetUseCases.deleteBudget(budget)

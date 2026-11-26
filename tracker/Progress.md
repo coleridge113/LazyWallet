@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | P27 | `BudgetViewModel.showDeleteConfirmationDialog` and `deleteBudget` made private; `onEvent` is the only entry point. No outside callers, no behaviour change. 36 tests pass, assembleDebug ok |
 | 2026-11-26 | P30 | Category filter dialog is now preview-then-Apply: dropdown pick loads that profile's map into `UiState.Success.categoryPreview` (active profile unchanged); Apply activates it, Cancel/dismiss clears it. `SelectCategoryProfile` replaced by `PreviewCategoryProfile` + `ClearCategoryPreview`; map conversion extracted to `domain/utils/CategoryFilterMapping.kt`. Tests 33 -> 36, build ok. Not device-tested. |
 | 2026-11-26 | P24 | Picker open/close moved to UI state: `rememberSaveable` flags in ExpenseListRoute (calendar, category filter) and BudgetDetailsRoute (date and year-month pickers). Removed `ShowCalendarForm`, `ShowCategoryFilterDialog`, `ClickCalendar`, `DialogState.CalendarForm/CategoryFilterForm/DatePicker/YearMonthPicker`. Tests 34 -> 33 (3 picker-open tests removed, 2 result tests added/kept), build ok. Not device-tested. |
 | 2026-11-26 | F02 | Build finished: 5 tasks via task-runner + per-task reviews (b116309..1ff3ada), final Opus review found AuthRoute recompose re-running cloud sync on interactive sign-in; fixed in 976aa2a (`remember { auth.currentUser != null }`). 34 tests pass, debug build ok. Not merged; not device-tested. Follow-ups: P29 (logout popUpTo), notes on P28/F11. |
