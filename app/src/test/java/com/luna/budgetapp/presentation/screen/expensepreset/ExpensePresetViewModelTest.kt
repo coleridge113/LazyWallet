@@ -103,6 +103,7 @@ class ExpensePresetViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
+            observeSpendingHistory = mockk(),
             editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
         val profileUseCases = ProfileUseCases(

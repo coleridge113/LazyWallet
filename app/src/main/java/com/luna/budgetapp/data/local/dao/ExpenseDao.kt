@@ -9,6 +9,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
+import com.luna.budgetapp.domain.model.DailyTotalProjection
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -125,6 +126,16 @@ interface ExpenseDao {
         start: LocalDateTime,
         end: LocalDateTime
     ): Flow<List<CategoryTotalProjection>>
+
+    @Query("""
+        SELECT strftime('%Y-%m-%d', date / 1000, 'unixepoch', 'localtime') AS day,
+               SUM(amount) AS total
+        FROM expenses
+        WHERE category IN (:categories)
+        GROUP BY day
+        ORDER BY day
+    """)
+    fun getDailyTotals(categories: List<String>): Flow<List<DailyTotalProjection>>
 
     @Insert
     suspend fun addExpense(expense: ExpenseEntity)

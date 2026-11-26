@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.luna.budgetapp.common.Resource
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
+import com.luna.budgetapp.domain.model.DailyTotal
 import com.luna.budgetapp.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -132,6 +133,16 @@ class FakeExpenseRepository : ExpenseRepository {
                         total = expenses.sumOf { it.amount }
                     )
                 }
+        }
+    }
+
+    override fun getDailyTotals(categories: List<String>): Flow<List<DailyTotal>> {
+        return expensesFlow.throwIfRequested().map { expenses ->
+            expenses
+                .filter { it.category.name in categories }
+                .groupBy { it.date.toLocalDate() }
+                .map { (date, list) -> DailyTotal(date, list.sumOf { it.amount }) }
+                .sortedBy { it.date }
         }
     }
 

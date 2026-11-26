@@ -78,6 +78,7 @@ class ExpenseListViewModelTest {
             },
             getPagingExpensesByDateRange = mockk(relaxed = true),
             getExpensesByType = mockk(),
+            observeSpendingHistory = mockk(),
             editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
         profileUseCases = ProfileUseCases(

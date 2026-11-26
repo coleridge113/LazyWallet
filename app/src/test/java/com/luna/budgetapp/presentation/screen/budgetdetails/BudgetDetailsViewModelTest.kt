@@ -49,6 +49,7 @@ class BudgetDetailsViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
+            observeSpendingHistory = mockk(),
             editExpense = mockk(),
         )
         return BudgetDetailsViewModel(
