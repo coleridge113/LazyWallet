@@ -49,7 +49,10 @@ import com.luna.budgetapp.presentation.screen.expensepreset.components.PresetTil
 import com.luna.budgetapp.presentation.screen.expensepreset.components.RecentlyAddedSheet
 import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import androidx.compose.ui.platform.LocalAccessibilityManager
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -118,17 +121,34 @@ fun ExpensePresetContent(
     DisposableEffect(Unit) {
         onDispose { onEvent(Event.ClearUndo) }
     }
+    val accessibilityManager = LocalAccessibilityManager.current
     LaunchedEffect(userMessage) {
         if (userMessage is UserMessage.Removed) {
-            val result = snackbarHostState.showSnackbar(
-                message = context.getString(
-                    R.string.expense_preset_removed,
-                    userMessage.type,
-                    userMessage.amount.toPeso()
-                ),
-                actionLabel = undoLabel,
-                duration = SnackbarDuration.Short
-            )
+            val timeoutMs = accessibilityManager?.calculateRecommendedTimeoutMillis(
+                4000L,
+                containsIcons = true,
+                containsText = true,
+                containsControls = true
+            ) ?: 4000L
+            val result = coroutineScope {
+                // The Route owns the timeout: each SnackbarHost restarts its own timer when
+                // the host moves between the screen and the sheet.
+                val timer = launch {
+                    delay(timeoutMs)
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                }
+                val r = snackbarHostState.showSnackbar(
+                    message = context.getString(
+                        R.string.expense_preset_removed,
+                        userMessage.type,
+                        userMessage.amount.toPeso()
+                    ),
+                    actionLabel = undoLabel,
+                    duration = SnackbarDuration.Indefinite
+                )
+                timer.cancel()
+                r
+            }
             // Only reached on normal return: a newer message cancels this effect,
             // and the old one must not clear the new message.
             if (result == SnackbarResult.ActionPerformed) onEvent(Event.UndoRemove)
