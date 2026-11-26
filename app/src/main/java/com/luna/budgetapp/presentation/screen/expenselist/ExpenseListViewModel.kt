@@ -12,6 +12,7 @@ import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
+import com.luna.budgetapp.domain.utils.toCategoryMap
 import com.luna.budgetapp.presentation.model.ChartData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -39,6 +41,7 @@ class ExpenseListViewModel(
 
     private val _errorState = MutableStateFlow<String?>(null)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
+    private val _categoryPreview = MutableStateFlow<CategoryProfilePreview?>(null)
     private val _dateState = MutableStateFlow(DateState())
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -107,13 +110,21 @@ class ExpenseListViewModel(
 
     private val _successState = combine(
         _dialogState,
+        _categoryPreview,
         _dateState,
         _categoryProfileState,
         _chartDataState,
         _expensesState
-    ) { dialogState, dateState, categoryProfileState, chartDataState, expensesState ->
+    ) { values ->
+        val dialogState = values[0] as DialogState?
+        val categoryPreview = values[1] as CategoryProfilePreview?
+        val dateState = values[2] as DateState
+        val categoryProfileState = values[3] as CategoryProfileState
+        val chartDataState = values[4] as ChartDataState
+        val expensesState = values[5] as ExpensesState
         UiState.Success(
             dialogState = dialogState,
+            categoryPreview = categoryPreview,
             dateState = dateState,
             categoryProfileState = categoryProfileState,
             chartDataState = chartDataState,
@@ -152,7 +163,8 @@ class ExpenseListViewModel(
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.ApplyCategoryFilters -> applyCategoryFilters(event.profileName, event.selectedCategoryMap)
-            is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
+            is Event.PreviewCategoryProfile -> previewCategoryProfile(event.profileName)
+            Event.ClearCategoryPreview -> _categoryPreview.value = null
             is Event.SaveCategoryProfile -> saveCategoryProfile(event.profileName, event.selectedCategoryMap)
             is Event.DeleteCategoryProfile -> deleteCategoryProfile(event.profileName)
         }
@@ -207,7 +219,15 @@ class ExpenseListViewModel(
             if (profileName == CUSTOM) saveCategoryProfileInternal(profileName, filters)
             profileUseCases.setActiveCategoryProfile(profileName)
         }
+        _categoryPreview.value = null
         dismissDialog()
+    }
+
+    private fun previewCategoryProfile(profileName: String) {
+        viewModelScope.launch {
+            val filters = profileUseCases.getCategoryProfile(profileName).first()
+            _categoryPreview.value = CategoryProfilePreview(profileName, filters.toCategoryMap())
+        }
     }
 
     private fun resetCategoryFilters() {
@@ -239,13 +259,6 @@ class ExpenseListViewModel(
         }
 
         profileUseCases.saveCategoryProfile(filters)
-    }
-
-    private fun setActiveCategoryProfile(profileName: String) {
-        viewModelScope.launch {
-            profileUseCases.setActiveCategoryProfile(profileName)
-            dismissDialog()
-        }
     }
 
     private fun deleteCategoryProfile(profileName: String) {

@@ -11,6 +11,7 @@ sealed interface UiState {
     data class Error(val message: String? = null) : UiState
     data class Success(
         val dialogState: DialogState? = null,
+        val categoryPreview: CategoryProfilePreview? = null,
         val dateState: DateState = DateState(),
         val categoryProfileState: CategoryProfileState = CategoryProfileState(),
         val chartDataState: ChartDataState = ChartDataState(),
@@ -27,6 +28,12 @@ data class DateState(
 ) {
     val dateRange = dateFilter.resolve()
 }
+
+/** A saved profile being previewed in the category filter dialog; not yet the active profile. */
+data class CategoryProfilePreview(
+    val profileName: String,
+    val categoryMap: Map<Category, Boolean>
+)
 
 data class CategoryProfileState(
     val selectedCategoryMap: Map<Category, Boolean> = Category.entries.associateWith { true },
@@ -58,7 +65,8 @@ sealed interface Event {
     data class DeleteExpense(val expenseId: Long) : Event
     data class SearchQueryChanged(val query: String) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
-    data class SelectCategoryProfile(val profileName: String) : Event
+    data class PreviewCategoryProfile(val profileName: String) : Event
+    data object ClearCategoryPreview : Event
     data class DeleteCategoryProfile(val profileName: String) : Event
     data class ShowExpenseForm(val selectedExpense: Expense) : Event
     data class EditExpense(

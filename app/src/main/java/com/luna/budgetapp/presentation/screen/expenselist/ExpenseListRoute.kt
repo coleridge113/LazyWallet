@@ -225,16 +225,21 @@ fun ExpenseListContent(
         }
         if (showCategoryFilter) {
             CategoryFilterDialog(
-                selectedCategoryMap = uiState.categoryProfileState.selectedCategoryMap,
-                selectedProfile = uiState.categoryProfileState.activeProfile,
+                selectedCategoryMap = uiState.categoryPreview?.categoryMap
+                    ?: uiState.categoryProfileState.selectedCategoryMap,
+                selectedProfile = uiState.categoryPreview?.profileName
+                    ?: uiState.categoryProfileState.activeProfile,
                 profileList = uiState.categoryProfileState.profileList,
-                onDismiss = onDismissCategoryFilter,
+                onDismiss = {
+                    onEvent(Event.ClearCategoryPreview)
+                    onDismissCategoryFilter()
+                },
                 onApply = { profileName, filters ->
                     onEvent(Event.ApplyCategoryFilters(profileName, filters))
                     onDismissCategoryFilter()
                 },
                 onSelectedChange = { profileName ->
-                    onEvent(Event.SelectCategoryProfile(profileName))
+                    onEvent(Event.PreviewCategoryProfile(profileName))
                 },
                 onSave = { newProfileName, filters ->
                     onEvent(Event.SaveCategoryProfile(newProfileName, filters))

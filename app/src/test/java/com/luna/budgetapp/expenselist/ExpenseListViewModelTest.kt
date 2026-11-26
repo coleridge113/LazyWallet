@@ -207,6 +207,70 @@ class ExpenseListViewModelTest {
         job.cancel()
     }
 
+    private suspend fun saveWorkProfile() {
+        fakeCategoryRepo.saveProfile(
+            Category.entries.map {
+                com.luna.budgetapp.domain.model.CategoryFilter("Work", it, it == Category.FOOD)
+            }
+        )
+    }
+
+    @Test
+    fun `previewing a profile exposes its map and keeps the active profile`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryPreview?.profileName).isEqualTo("Work")
+        assertThat(state.categoryPreview?.categoryMap?.get(Category.FOOD)).isTrue()
+        assertThat(state.categoryPreview?.categoryMap?.get(Category.BEVERAGE)).isFalse()
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("All")
+        assertThat(state.categoryProfileState.selectedCategoryMap.values.all { it }).isTrue()
+
+        job.cancel()
+    }
+
+    @Test
+    fun `applying after a preview activates the previewed profile and clears the preview`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+        val previewMap = (viewModel.uiState.value as UiState.Success).categoryPreview!!.categoryMap
+        viewModel.onEvent(Event.ApplyCategoryFilters("Work", previewMap))
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("Work")
+        assertThat(state.categoryPreview).isNull()
+
+        job.cancel()
+    }
+
+    @Test
+    fun `clearing the preview leaves the active profile unchanged`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+        viewModel.onEvent(Event.ClearCategoryPreview)
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryPreview).isNull()
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("All")
+
+        job.cancel()
+    }
+
     @Test
     fun `selecting a custom date range updates the date filter`() = runTest {
         val job = launch {
