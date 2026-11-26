@@ -11,7 +11,8 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F12 | Budget outlook arc (UI rebuild: Budget screen) | Building | [design](../docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-outlook-arc.md) | Built 2026-11-26 on `feat/outlook-arc`; device check, then PR |
+| F12 | Budget outlook arc (UI rebuild: Budget screen) | Building | [design](../docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-outlook-arc.md) | Pushed `feat/outlook-arc` 2026-11-26 (no PR yet). Your call: device check, then open PR or request changes |
+| F13 | UI rebuild: Home (ExpensePreset) screen | Idea | – | – | Brainstorm (started 2026-11-26, paused for F12); first question: what bothers you about Home / what should it feel like |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
@@ -71,3 +72,9 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 - Open for the spec: snackbar vs dialog, keep form open on failure with `isSaving`, shared shape across screens, strings via P23 pattern.
 - Sign-out failure (F02 final review 2026-11-26): `signOutUser` now catches and logs, but the confirm dialog stays open with no feedback; `SignOutUseCase` calls `auth.signOut()` before `clearAllTables()`, so a failed clear leaves the user signed out of Firebase with local data still shown. Include in the same write-failure pattern.
 
+### F13 seed notes (brainstorm started 2026-11-26)
+
+- Screen-by-screen UI rebuild (user, 2026-11-26); F12 (Budget outlook arc) went first, Home is next.
+- Home today (top→bottom): empty TopAppBar with only a sign-out icon; today's total in `displayMedium` ("-" when 0, ~¼ of the screen, `ExpenseAmountDisplay`); 2-column `ExpensePresetTable` where each preset is a round category icon (tap = custom-amount form) + a pill (tap = log instantly), swipe for edit/delete; a FAB with a ☰ icon expanding to Add preset + Undo (delete latest expense, confirmed).
+- Overlaps it would absorb: P14 (translucent preset containers contrast), P16 (empty top bar, hard-coded `padding(bottom = 72.dp)`, ☰ reads as nav drawer), P18 (undo FAB → snackbar "Expense added · Undo"), F04/F05 chrome questions. Figma file (F01) mirrors the current Home.
+- Open question asked, not yet answered: what bothers you about Home today / what should it do or feel like after the rebuild (visual refresh vs rethink of logging).
