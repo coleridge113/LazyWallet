@@ -26,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetHeatGridCard
+import com.luna.budgetapp.presentation.screen.budget.components.OutlookSheet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -71,14 +72,16 @@ fun BudgetContent(
     val listState = rememberLazyListState()
     // Plain remember: the tab back stack restores saved state, so an open popover would reappear.
     var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
-    // Consumed by the outlook sheet (F14 Task 5).
-    @Suppress("UNUSED_VARIABLE")
     var showOutlookSheet by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(listState.isScrollInProgress) {
         if (listState.isScrollInProgress) selectedDay = null
     }
     LaunchedEffect(outlook.today.year, outlook.today.month) { selectedDay = null }
+
+    if (showOutlookSheet) {
+        OutlookSheet(outlook = outlook, onDismiss = { showOutlookSheet = false })
+    }
 
     Box(
         modifier = modifier.fillMaxSize()

@@ -95,6 +95,20 @@
     <string name="outlook_running_total">Running total</string>
     <string name="outlook_projected_month">Projected month</string>
     <string name="outlook_too_early">Too early</string>
+    <string name="outlook_sheet_title">%1$s outlook</string>
+    <string name="outlook_spent_so_far">Spent so far</string>
+    <plurals name="outlook_days_count">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="outlook_projected">Projected</string>
+    <string name="outlook_by_date">by %1$s</string>
+    <string name="outlook_too_early_to_project">Too early to project</string>
+    <string name="outlook_budget_label">Budget %1$s</string>
+    <string name="outlook_avg_day">avg/day</string>
+    <string name="outlook_highest_on">highest · %1$s</string>
+    <string name="outlook_highest">highest</string>
+    <string name="outlook_days_left">days left</string>
     <string name="migration_title">Cloud Sync</string>
     <string name="migration_message">Would you like to migrate your local data to the cloud? This will allow you to access your expenses from any device.</string>
     <string name="migration_in_progress">Migrating data...</string>
