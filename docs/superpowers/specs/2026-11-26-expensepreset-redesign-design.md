@@ -138,6 +138,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
   - A second removal overwrites `lastRemoved`, so only the latest can be undone.
   - The Route calls `Event.UserMessageShown` when `showSnackbar` returns, whether it was dismissed or acted on.
   - If the user leaves the ExpensePreset screen, the snackbar goes with it and that Undo is lost (accepted).
+  - Opening or closing the Recently added sheet dismisses the current snackbar, and that Undo is lost (user, 2026-11-26, after device testing). A removal made inside the open sheet shows its snackbar in the sheet.
 - **Undo across midnight** (Claude's call): Undo restores the original date without clamping. A removal undone after midnight comes back as yesterday's expense and leaves the ExpensePreset screen's "today" views (accepted).
 - **Day boundaries** (Claude's call): days in the sparkline are local calendar dates, the same as `ObserveSpendingHistoryUseCase`. The ViewModel reads the repository's daily totals through a small new use case (or the existing one with `Granularity.DAY`, whichever the plan finds simpler) and windows them on `todayFlow(clock)`.
 - **Date filter** (answered by the code): the ExpensePreset `DateState` is always `DateFilter.Daily` and the screen has no date-filter control, so "today's expenses" = the existing `expenses` list.

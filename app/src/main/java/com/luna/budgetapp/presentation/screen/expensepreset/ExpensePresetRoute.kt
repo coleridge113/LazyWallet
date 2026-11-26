@@ -25,6 +25,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,6 +54,7 @@ import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,7 +117,15 @@ fun ExpensePresetContent(
         if (recent.isEmpty()) showRecent = false
     }
 
+    val sheetShown = showRecent && recent.isNotEmpty()
+    val sheetShownState by rememberUpdatedState(sheetShown)
     val snackbarHostState = remember { SnackbarHostState() }
+    // The snackbar is dismissed whenever the sheet opens or closes (not on first composition).
+    LaunchedEffect(snackbarHostState) {
+        snapshotFlow { sheetShownState }.drop(1).collect {
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
     val userMessage = uiState.userMessage
     val context = LocalContext.current
     val undoLabel = stringResource(R.string.expense_preset_undo)
@@ -131,8 +142,8 @@ fun ExpensePresetContent(
                 containsControls = true
             ) ?: 4000L
             val result = coroutineScope {
-                // The Route owns the timeout: each SnackbarHost restarts its own timer when
-                // the host moves between the screen and the sheet.
+                // The Route owns the timeout: the snackbar is dismissed when the
+                // sheet opens or closes, so it never moves between the two hosts.
                 val timer = launch {
                     delay(timeoutMs)
                     snackbarHostState.currentSnackbarData?.dismiss()
@@ -250,7 +261,6 @@ fun ExpensePresetContent(
             }
         }
 
-        val sheetShown = showRecent && recent.isNotEmpty()
         if (!sheetShown) {
             SnackbarHost(
                 hostState = snackbarHostState,
