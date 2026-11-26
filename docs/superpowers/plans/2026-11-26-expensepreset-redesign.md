@@ -1,8 +1,8 @@
-# F13 Home Redesign Implementation Plan
+# F13 ExpensePreset Redesign Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the Home (ExpensePreset) screen with the accepted "Alt B" design. Its parts:
+**Goal:** Replace the ExpensePreset screen with the accepted "Alt B" design. Its parts:
 - a hero row with today's total and a 7-day sparkline;
 - a "Last logged" strip with Undo;
 - a 3-column grid of category-coloured tiles plus a "New preset" tile;
@@ -11,23 +11,23 @@
 
 **Architecture:**
 - All state stays in `ExpensePresetViewModel`: one `uiState` built with `combine` and input through `onEvent`.
-- Home stops reading the category filter.
-- The sparkline reuses `ObserveSpendingHistoryUseCase` (DAY granularity, all categories). Small pure helpers in a new `HomeSummary.kt` keep the logic unit-testable.
+- The ExpensePreset screen stops reading the category filter.
+- The sparkline reuses `ObserveSpendingHistoryUseCase` (DAY granularity, all categories). Small pure helpers in a new `ExpensePresetSummary.kt` keep the logic unit-testable.
 - The UI is new small composables under `expensepreset/components/`.
 - The snackbar is state (`userMessage`) that the Route shows and acknowledges.
 
 **Tech Stack:** Kotlin, Jetpack Compose + Material 3 (`ModalBottomSheet`, `SnackbarHost`, `DropdownMenu`), Koin, coroutines/Flow. Tests use JUnit4, Truth, MockK, coroutines-test and the hand-written fakes.
 
-**Spec:** `docs/superpowers/specs/2026-11-26-home-redesign-design.md` (read it; values below are copied from it). Mockups: `docs/screens/redesign/expensepreset/` (git-ignored, local; unzip to a temp dir to view).
+**Spec:** `docs/superpowers/specs/2026-11-26-expensepreset-redesign-design.md` (read it; values below are copied from it). Mockups: `docs/screens/redesign/expensepreset/` (git-ignored, local; unzip to a temp dir to view).
 
 ## Global Constraints
 
 - **Paths:** all code is under `app/src/main/java/com/luna/budgetapp/`; tests are under `app/src/test/java/com/luna/budgetapp/`.
 - **Money:** amounts are `Long` cents. Display with `toPeso()` (hero, strip, sheet, snackbar) or `toCurrency()` (tile amount, no ₱).
-- **Home ignores the category filter.** Hero, strip, sheet and sparkline count every category.
+- **The ExpensePreset screen ignores the category filter.** Hero, strip, sheet and sparkline count every category.
 - **"Last logged"** = the expense with the highest non-null `id` among today's expenses.
 - **Undo re-adds** with the same `category`, `type`, `amount` and `date` through `AddExpenseUseCase`. The expense gets a new `id`, and the date is never clamped to today.
-- **Only the latest removal can be undone.** Leaving Home drops the snackbar and its Undo.
+- **Only the latest removal can be undone.** Leaving the ExpensePreset screen drops the snackbar and its Undo.
 - **Strings** go in `res/values/strings.xml`, with apostrophes escaped (`\'`).
 - **Tests:**
   - ViewModel tests must `launch { viewModel.uiState.collect {} }` and then `runCurrent()` before reading `.value`.
@@ -59,18 +59,18 @@
 
 ---
 
-### Task 1: ViewModel data for the hero, sparkline, strip and sheet (Home ignores the filter)
+### Task 1: ViewModel data for the hero, sparkline, strip and sheet (ExpensePreset ignores the filter)
 
 **Files:**
-- Create: `presentation/screen/expensepreset/model/HomeSummary.kt`
+- Create: `presentation/screen/expensepreset/model/ExpensePresetSummary.kt`
 - Modify: `presentation/screen/expensepreset/ExpensePresetStateEvents.kt`
 - Modify: `presentation/screen/expensepreset/ExpensePresetViewModel.kt`
 - Modify (test fake): `app/src/test/java/com/luna/budgetapp/domain/repository/FakeExpenseRepository.kt`. `addExpense` gives an expense with `id == null` the id `(max existing id ?: 0) + 1`, so ids behave like Room's auto-generated ones.
-- Test: `app/src/test/java/com/luna/budgetapp/presentation/screen/expensepreset/HomeSummaryTest.kt` (new)
+- Test: `app/src/test/java/com/luna/budgetapp/presentation/screen/expensepreset/ExpensePresetSummaryTest.kt` (new)
 - Test: `app/src/test/java/com/luna/budgetapp/presentation/screen/expensepreset/ExpensePresetViewModelTest.kt`
 
 **Interfaces:**
-- Produces (`HomeSummary.kt`, package `...presentation.screen.expensepreset.model`):
+- Produces (`ExpensePresetSummary.kt`, package `...presentation.screen.expensepreset.model`):
   - `fun lastSevenDays(periods: List<PeriodTotal>): List<Long>` returns exactly 7 totals, oldest first, ending with the last period. If there are fewer than 7 periods it left-pads with `0L`.
   - `fun lastLogged(todayExpenses: List<Expense>): Expense?` returns the item with the highest non-null `id`, or null.
   - `fun recentFirst(todayExpenses: List<Expense>): List<Expense>` sorts by `id` descending, with null ids last.
@@ -91,7 +91,7 @@
   - `expenseUseCases.getExpensesByDateRange(categories = null, start, end)`: `null` means unfiltered.
   - `expenseUseCases.observeSpendingHistory(Category.entries.map { it.name }, Granularity.DAY)`, which emits `SpendingHistory(today, periods)`.
 
-- [ ] **Step 1: Write the failing pure-helper tests in `HomeSummaryTest`**
+- [ ] **Step 1: Write the failing pure-helper tests in `ExpensePresetSummaryTest`**
 
   - **`lastSevenDays pads a short history with zeros`**
     - Input: periods with totals `[500, 0, 300]`.
@@ -122,10 +122,10 @@
 
 - [ ] **Step 2: Run them; expect compile failure**
 
-Run: `./gradlew testDebugUnitTest --tests "*HomeSummaryTest"`
+Run: `./gradlew testDebugUnitTest --tests "*ExpensePresetSummaryTest"`
 Expected: FAIL (unresolved references).
 
-- [ ] **Step 3: Implement `HomeSummary.kt` per the Interfaces block**
+- [ ] **Step 3: Implement `ExpensePresetSummary.kt` per the Interfaces block**
 
 - [ ] **Step 4: Write the failing ViewModel tests in `ExpensePresetViewModelTest`**
 
@@ -134,7 +134,7 @@ Expected: FAIL (unresolved references).
   - Fix `clock` to a known instant, e.g. 2026-11-26T18:05 in the system zone, so "today" is deterministic.
 
   Add these tests:
-  - **`home total counts categories the active filter excludes`**
+  - **`expense preset total counts categories the active filter excludes`**
     - Make the active profile exclude FOOD; reuse the profile setup pattern from `ExpenseListViewModelTest`.
     - Add a FOOD expense today.
     - Expect `totalAmount` to include it and `lastLogged` to be it.
@@ -180,7 +180,7 @@ Expected: PASS. Fix the compile errors from removing `categoryProfileState` (Rou
 
 ```bash
 git add app/src/main/java/com/luna/budgetapp/presentation/screen/expensepreset/ app/src/test/java/com/luna/budgetapp/
-git commit -m "feat(F13): Home state for sparkline, last-logged and recent; Home ignores the category filter"
+git commit -m "feat(F13): ExpensePreset state for sparkline, last-logged and recent; ignores the category filter"
 ```
 
 ---
@@ -201,7 +201,7 @@ git commit -m "feat(F13): Home state for sparkline, last-logged and recent; Home
   - `Event.RemoveExpense(val expense: Expense)`: used by both the strip's Undo and the sheet's remove button.
   - `Event.UndoRemove`: no payload; re-adds the VM-private `lastRemoved: Expense?` and clears it and `userMessage`.
   - `Event.UserMessageShown`: clears `userMessage` but keeps `lastRemoved` until the next removal, so an Undo tapped while the snackbar is still showing works.
-- Removes: `Event.DeleteLatestExpense`, `Event.ShowDeleteConfirmationDialog`, `DialogState.ConfirmDeleteExpense` and the `deleteLatestExpense()` VM function. `DeleteLatestExpenseUseCase` stays in `ExpenseUseCases`, unused by Home.
+- Removes: `Event.DeleteLatestExpense`, `Event.ShowDeleteConfirmationDialog`, `DialogState.ConfirmDeleteExpense` and the `deleteLatestExpense()` VM function. `DeleteLatestExpenseUseCase` stays in `ExpenseUseCases`, unused by the ExpensePreset screen.
 
 - [ ] **Step 1: Write the failing tests (replace `invoking the undo button deletes the latest expense`)**
 
@@ -249,11 +249,11 @@ git commit -m "feat(F13): remove expense with Removed message and snackbar undo;
 
 ---
 
-### Task 3: New Home layout: hero, sparkline, strip, category tiles, New preset tile, no FAB
+### Task 3: New ExpensePreset layout: hero, sparkline, strip, category tiles, New preset tile, no FAB
 
 **Files:**
 - Modify: `ui/theme/Color.kt` (the colour table in Global Constraints: retarget `BillsChartColor`, `FitnessChartColor`, `HouseChartColor`, `PersonalChartColor`, `LeisureChartColor`)
-- Create: `presentation/screen/expensepreset/components/HomeHero.kt`, which holds `HomeHero(total: Long, sparkline: List<Long>, modifier: Modifier = Modifier)` and a private `Sparkline` (Canvas)
+- Create: `presentation/screen/expensepreset/components/ExpensePresetHero.kt`, which holds `ExpensePresetHero(total: Long, sparkline: List<Long>, modifier: Modifier = Modifier)` and a private `Sparkline` (Canvas)
 - Create: `presentation/screen/expensepreset/components/LastLoggedStrip.kt`, which holds `LastLoggedStrip(expense: Expense, now: LocalDateTime, onOpen: () -> Unit, onUndo: () -> Unit, modifier: Modifier = Modifier)`
 - Create: `presentation/screen/expensepreset/components/PresetTileGrid.kt`, which holds:
   - `PresetTileGrid(presets: List<ExpensePreset>, onLog: (ExpensePreset) -> Unit, onCustom: (ExpensePreset) -> Unit, onEdit: (ExpensePreset) -> Unit, onDelete: (Long) -> Unit, onNewPreset: () -> Unit, modifier: Modifier = Modifier)`
@@ -274,13 +274,13 @@ git commit -m "feat(F13): remove expense with Removed message and snackbar undo;
 
   | Key | Value |
   |---|---|
-  | `home_today` | `Today` |
-  | `home_new_preset` | `New preset` |
-  | `home_undo` | `Undo` |
-  | `home_just_now` | `just now` |
-  | `home_minutes_ago` | `%1$d min ago` |
-  | `home_hours_ago` | `%1$d h ago` |
-  | `cd_home_today_total` | `Today, %1$s` |
+  | `expense_preset_today` | `Today` |
+  | `expense_preset_new_preset` | `New preset` |
+  | `expense_preset_undo` | `Undo` |
+  | `expense_preset_just_now` | `just now` |
+  | `expense_preset_minutes_ago` | `%1$d min ago` |
+  | `expense_preset_hours_ago` | `%1$d h ago` |
+  | `cd_expense_preset_today_total` | `Today, %1$s` |
   | `cd_log_preset` | `Log %1$s, %2$s` |
   | `cd_custom_preset` | `Add custom %1$s expense` |
   | `cd_edit_or_delete` | `Edit or delete` |
@@ -294,7 +294,7 @@ git commit -m "feat(F13): remove expense with Removed message and snackbar undo;
   - **Hero:**
     - 8dp horizontal padding, 20dp bottom margin.
     - "Today" in labelLarge, onSurfaceVariant; the total at 28sp bold.
-    - Semantics merged: `cd_home_today_total`.
+    - Semantics merged: `cd_expense_preset_today_total`.
     - Sparkline:
       - 120×40dp, inset 4dp, primary colour;
       - 2dp stroke with round join and cap;
@@ -324,7 +324,7 @@ git commit -m "feat(F13): remove expense with Removed message and snackbar undo;
 
   - Column order, with 16dp horizontal padding:
     - the existing TopAppBar (Sign-out only);
-    - `HomeHero`;
+    - `ExpensePresetHero`;
     - `LastLoggedStrip`, only when `lastLogged != null`. `onOpen` is a no-op stub until Task 4. `onUndo` sends `RemoveExpense(lastLogged)`;
     - `PresetTileGrid`, which takes the remaining height.
   - Wire the grid callbacks:
@@ -350,7 +350,7 @@ Expected: BUILD SUCCESSFUL. Check that the Expenses donut file (`expenselist/com
 
 ```bash
 git add app/src/main/java/com/luna/budgetapp/ui/theme/Color.kt app/src/main/java/com/luna/budgetapp/presentation/screen/expensepreset/ app/src/main/res/values/strings.xml
-git commit -m "feat(F13): Home hero with sparkline, last-logged strip, category tile grid; FAB removed"
+git commit -m "feat(F13): ExpensePreset hero with sparkline, last-logged strip, category tile grid; FAB removed"
 ```
 
 ---
@@ -373,13 +373,13 @@ git commit -m "feat(F13): Home hero with sparkline, last-logged strip, category 
 
   | Key | Value |
   |---|---|
-  | `home_recently_added` | `Recently added` |
-  | `home_today_total` | `Today · %1$s` |
-  | `home_see_all_expenses` | `See all expenses` |
-  | `home_removed` | `Removed %1$s %2$s` |
+  | `expense_preset_recently_added` | `Recently added` |
+  | `expense_preset_today_total` | `Today · %1$s` |
+  | `expense_preset_see_all_expenses` | `See all expenses` |
+  | `expense_preset_removed` | `Removed %1$s %2$s` |
   | `cd_remove_expense` | `Remove %1$s %2$s` |
 
-  Reuse `home_undo` for the snackbar action.
+  Reuse `expense_preset_undo` for the snackbar action.
 
 - [ ] **Step 2: Build `RecentlyAddedSheet` to the mockup**
 
@@ -388,7 +388,7 @@ git commit -m "feat(F13): Home hero with sparkline, last-logged strip, category 
     - `containerColor` = primary at 11% composited over surface;
     - 28dp top corners (the M3 default);
     - content padding 0/24/24dp.
-  - **Header** (16dp top): "Recently added" in titleLarge, with `home_today_total` in bodyMedium, onSurfaceVariant, aligned to its baseline at the end.
+  - **Header** (16dp top): "Recently added" in titleLarge, with `expense_preset_today_total` in bodyMedium, onSurfaceVariant, aligned to its baseline at the end.
   - **List** (12dp top, −12dp horizontal so rows bleed):
     - Each row: padding 8/4/8/12dp; a 40dp circle (category colour at 35%) holding a 20dp icon; 12dp gap.
     - Then a column: the type in bodyLarge, then the time in bodySmall, onSurfaceVariant. The time format is `h:mm a`; on the first row only, add " · <relative label>" when the label is non-null.
@@ -406,8 +406,8 @@ git commit -m "feat(F13): Home hero with sparkline, last-logged strip, category 
     - `onSeeAll`: hide the sheet, then call `onOpenExpenses()`.
     - `onRemove`: send `RemoveExpense(it)`.
   - **Snackbar:**
-    - Remember a `SnackbarHostState` and put a `SnackbarHost` at the bottom of the Home `Box`.
-    - `LaunchedEffect(userMessage)`: when `userMessage` is a `Removed`, call `showSnackbar(message = home_removed(type, amount.toPeso()), actionLabel = home_undo, duration = SnackbarDuration.Short)`.
+    - Remember a `SnackbarHostState` and put a `SnackbarHost` at the bottom of the ExpensePreset content `Box`.
+    - `LaunchedEffect(userMessage)`: when `userMessage` is a `Removed`, call `showSnackbar(message = expense_preset_removed(type, amount.toPeso()), actionLabel = expense_preset_undo, duration = SnackbarDuration.Short)`.
     - When it returns, send `UndoRemove` on `ActionPerformed`, then always send `UserMessageShown`.
     - Resolve the string with `LocalContext.current.getString(...)`, or with `stringResource` read outside the effect.
   - **Nav:** pass `onOpenExpenses` from `NavGraph`.
