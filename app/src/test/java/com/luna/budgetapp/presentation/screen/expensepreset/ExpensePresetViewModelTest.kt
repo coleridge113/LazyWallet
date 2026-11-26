@@ -31,6 +31,8 @@ import com.luna.budgetapp.domain.usecase.expense.DeleteExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.DeleteLatestExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.EditExpenseUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetExpensesByDateRangeUseCase
+import com.luna.budgetapp.domain.usecase.expense.ObserveSpendingHistoryUseCase
+import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
@@ -61,7 +63,7 @@ class ExpensePresetViewModelTest {
     private lateinit var fakeSettingsRepo: FakeSettingsRepository
     private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpensePresetViewModel
-    private val clock = MutableClock(Instant.now())
+    private val clock = MutableClock(Instant.parse("2026-11-26T18:05:00Z"))
     private lateinit var fakeAuthRepo: FakeAuthRepository
 
     val dummyPreset = ExpensePreset(
@@ -103,7 +105,7 @@ class ExpensePresetViewModelTest {
             getCategoryTotalsByDateRange = mockk(),
             getPagingExpensesByDateRange = mockk(),
             getExpensesByType = mockk(),
-            observeSpendingHistory = mockk(),
+            observeSpendingHistory = ObserveSpendingHistoryUseCase(fakeExpenseRepo, clock),
             editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
         val profileUseCases = ProfileUseCases(
@@ -344,6 +346,82 @@ class ExpensePresetViewModelTest {
         clock.current = Instant.parse("2026-03-11T00:00:30Z")
         advanceTimeBy(61_000)
         assertThat(totalAmount).isEqualTo(500L)
+        job.cancel()
+    }
+
+    private val lastLogged get() = success.expensesState.lastLogged
+    private val recent get() = success.expensesState.recent
+    private val sparkline get() = success.expensesState.sparkline
+
+    @Test
+    fun `expense preset total counts categories the active filter excludes`() = runTest {
+        fakeCategoryRepo.saveProfile(
+            Category.entries.map { CategoryFilter("Work", it, it != Category.FOOD) }
+        )
+        fakeSettingsRepo.setActiveProfile("Work")
+        val food = Expense(amount = 700L, category = Category.FOOD, type = "Lunch", date = LocalDateTime.of(2026, 11, 26, 12, 0))
+        fakeExpenseRepo.addExpense(food)
+
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        assertThat(totalAmount).isEqualTo(700L)
+        assertThat(lastLogged?.type).isEqualTo("Lunch")
+        job.cancel()
+    }
+
+    @Test
+    fun `lastLogged is today's highest id and ignores yesterday`() = runTest {
+        fakeExpenseRepo.addExpense(Expense(amount = 100L, category = Category.FOOD, type = "Yesterday", date = LocalDateTime.of(2026, 11, 25, 12, 0)))
+        fakeExpenseRepo.addExpense(Expense(amount = 200L, category = Category.FOOD, type = "First", date = LocalDateTime.of(2026, 11, 26, 9, 0)))
+        fakeExpenseRepo.addExpense(Expense(amount = 300L, category = Category.FOOD, type = "Second", date = LocalDateTime.of(2026, 11, 26, 10, 0)))
+
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        assertThat(lastLogged?.type).isEqualTo("Second")
+        assertThat(recent.map { it.type }).containsExactly("Second", "First").inOrder()
+        job.cancel()
+    }
+
+    @Test
+    fun `lastLogged is null when today has no expenses`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        assertThat(lastLogged).isNull()
+        assertThat(recent).isEmpty()
+        job.cancel()
+    }
+
+    @Test
+    fun `sparkline has seven days ending today`() = runTest {
+        fakeExpenseRepo.addExpense(Expense(amount = 600L, category = Category.FOOD, type = "A", date = LocalDateTime.of(2026, 11, 24, 12, 0)))
+        fakeExpenseRepo.addExpense(Expense(amount = 450L, category = Category.FOOD, type = "B", date = LocalDateTime.of(2026, 11, 26, 12, 0)))
+
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        assertThat(sparkline).containsExactly(0L, 0L, 0L, 0L, 600L, 0L, 450L).inOrder()
+        job.cancel()
+    }
+
+    @Test
+    fun `sparkline and strip roll over at midnight`() = runTest {
+        fakeExpenseRepo.addExpense(Expense(amount = 600L, category = Category.FOOD, type = "A", date = LocalDateTime.of(2026, 11, 24, 12, 0)))
+        fakeExpenseRepo.addExpense(Expense(amount = 450L, category = Category.FOOD, type = "B", date = LocalDateTime.of(2026, 11, 26, 12, 0)))
+
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(lastLogged).isNotNull()
+
+        clock.current = Instant.parse("2026-11-27T00:00:30Z")
+        advanceTimeBy(6 * 60 * 60 * 1000L)
+        runCurrent()
+
+        assertThat(sparkline.takeLast(4)).containsExactly(600L, 0L, 450L, 0L).inOrder()
+        assertThat(lastLogged).isNull()
+        assertThat(recent).isEmpty()
         job.cancel()
     }
 }

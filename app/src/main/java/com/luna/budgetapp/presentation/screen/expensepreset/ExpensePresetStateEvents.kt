@@ -12,24 +12,22 @@ sealed interface UiState {
     data class Success(
         val dialogState: DialogState? = null,
         val dateState: DateState = DateState(),
-        val categoryProfileState: CategoryProfileState = CategoryProfileState(),
         val expensesState: ExpensesState = ExpensesState()
     ) : UiState
 }
 
 data class ExpensesState(
     val expensePresets: List<ExpensePreset> = emptyList(),
-    val expenses: List<Expense> = emptyList()
+    val expenses: List<Expense> = emptyList(),
+    val sparkline: List<Long> = List(7) { 0L },
+    val recent: List<Expense> = emptyList(),
+    val lastLogged: Expense? = null
 ) {
     val totalAmount = expenses.sumOf { it.amount }
 }
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily
-)
-
-data class CategoryProfileState(
-    val selectedCategoryMap: Map<Category, Boolean> = emptyMap()
 )
 
 sealed interface DialogState {

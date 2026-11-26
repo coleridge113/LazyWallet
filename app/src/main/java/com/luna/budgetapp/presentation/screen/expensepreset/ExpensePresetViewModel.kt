@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.model.Granularity
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
@@ -13,6 +14,9 @@ import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.domain.utils.todayFlow
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
+import com.luna.budgetapp.presentation.screen.expensepreset.model.lastLogged
+import com.luna.budgetapp.presentation.screen.expensepreset.model.lastSevenDays
+import com.luna.budgetapp.presentation.screen.expensepreset.model.recentFirst
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,39 +50,37 @@ class ExpensePresetViewModel(
     private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())
-    private val _categoryProfileState =
-        profileUseCases.observeCategoryProfileState(includeProfileList = false)
-            .map { snapshot ->
-                CategoryProfileState(selectedCategoryMap = snapshot.categoryMap)
-            }
+    private val allCategoryNames = Category.entries.map { it.name }
 
     private val _expensesState = combine(
         _dateState,
         presetUseCases.getAllExpensePresets(),
-        _categoryProfileState,
+        expenseUseCases.observeSpendingHistory(allCategoryNames, Granularity.DAY)
+            .map { lastSevenDays(it.periods) },
         todayFlow(clock)
-    ) { dateState, expensePresets, categoryProfileState, today ->
-        listOf(dateState, expensePresets, categoryProfileState, today)
+    ) { dateState, expensePresets, sparkline, today ->
+        listOf(dateState, expensePresets, sparkline, today)
     }
         .flatMapLatest { values ->
             val dateState = values[0] as DateState
             @Suppress("UNCHECKED_CAST")
             val expensePresets = values[1] as List<ExpensePreset>
-            val categoryProfileState = values[2] as CategoryProfileState
+            @Suppress("UNCHECKED_CAST")
+            val sparkline = values[2] as List<Long>
             val today = values[3] as LocalDate
             val (start, end) = dateState.dateFilter.resolve(today)
+            // The ExpensePreset screen ignores the category filter: null = every category.
             expenseUseCases.getExpensesByDateRange(
                 start = start,
                 end = end,
-                categories = categoryProfileState.selectedCategoryMap
-                    .filter { it.value }
-                    .keys
-                    .map { it.name }
-                    .toList()
+                categories = null
             ).map { expenses ->
                 ExpensesState(
                     expensePresets = expensePresets,
-                    expenses = expenses
+                    expenses = expenses,
+                    sparkline = sparkline,
+                    recent = recentFirst(expenses),
+                    lastLogged = lastLogged(expenses)
                 )
             }
         }
@@ -86,13 +88,11 @@ class ExpensePresetViewModel(
     private val _successState = combine(
         _dateState,
         _dialogState,
-        _categoryProfileState,
         _expensesState
-    ) { dateState, dialogState, categoryProfileState, expensesState ->
+    ) { dateState, dialogState, expensesState ->
         UiState.Success(
             dialogState = dialogState,
             dateState = dateState,
-            categoryProfileState = categoryProfileState,
             expensesState = expensesState
         )
     }

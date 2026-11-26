@@ -159,8 +159,12 @@ class FakeExpenseRepository : ExpenseRepository {
     }
 
     override suspend fun addExpense(expense: Expense) {
-        expensesFlow.update {
-            it + expense
+        expensesFlow.update { list ->
+            // Mirror Room's auto-generated ids for expenses added without one.
+            val stored = if (expense.id == null) {
+                expense.copy(id = (list.mapNotNull { it.id }.maxOrNull() ?: 0L) + 1)
+            } else expense
+            list + stored
         }
     }
 
