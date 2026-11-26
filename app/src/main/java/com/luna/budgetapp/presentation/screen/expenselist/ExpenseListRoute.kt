@@ -121,6 +121,12 @@ fun ExpenseListRoute(
                     title = {},
                     windowInsets = WindowInsets(0, 0, 0, 0),
                     actions = {
+                        IconButton(onClick = onOpenAnalysis) {
+                            Icon(
+                                imageVector = Icons.Filled.BarChart,
+                                contentDescription = stringResource(R.string.cd_open_analysis)
+                            )
+                        }
                         DateRangeSelectorDropdown(
                             selected = state.dateState.dateFilter,
                             onSelectedChange = {
@@ -132,12 +138,6 @@ fun ExpenseListRoute(
                                 }
                             }
                         )
-                        IconButton(onClick = onOpenAnalysis) {
-                            Icon(
-                                imageVector = Icons.Filled.BarChart,
-                                contentDescription = stringResource(R.string.cd_open_analysis)
-                            )
-                        }
                     }
                 )
 
