@@ -11,7 +11,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Idea | – | – | Brainstorm from the handoff note in `docs/screens/redesign/` (Budget "Alt B · Month heat grid", "Dialog 2" sheet, "Dialog 3" popover; accepted 2026-11-26). Replaces the F12 gauge; makes P31 moot |
+| F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Designing | [design](../docs/superpowers/specs/2026-11-26-budget-heat-grid-design.md) | – | Your call: approve the spec, then writing-plans. Branch `feat/budget-heat-grid` |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
