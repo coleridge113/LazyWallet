@@ -83,7 +83,7 @@ class AnalysisViewModelTest {
         )
         categoryRepo.initializeIfNeeded()
         settingsRepo.setActiveProfile("All")
-        return AnalysisViewModel(saved, expenseUseCases, profileUseCases, clock)
+        return AnalysisViewModel(saved, expenseUseCases, profileUseCases)
     }
 
     private fun TestScope.success(vm: AnalysisViewModel): UiState.Success {
@@ -196,6 +196,45 @@ class AnalysisViewModelTest {
         vm.onEvent(Event.Retry)
         runCurrent()
         assertThat(vm.uiState.value).isInstanceOf(UiState.Success::class.java)
+        job.cancel()
+    }
+
+    @Test
+    fun `emptyProfile stillSelectsCurrentPeriod`() = runTest {
+        seed(expense(1, 4000, d(24)))
+        val vm = newViewModel()
+        categoryRepo.saveProfile(
+            Category.entries.map { CategoryFilter(profileName = "Off", category = it, isActive = false) }
+        )
+        settingsRepo.setActiveProfile("Off")
+        val job = launch { vm.uiState.collect {} }
+        val state = success(vm)
+        assertThat(state.historyState.selected?.start).isEqualTo(d(26))
+        assertThat(state.historyState.selected?.total).isEqualTo(0L)
+        job.cancel()
+    }
+
+    @Test
+    fun `unknownSelection fallsBackToNewest`() = runTest {
+        seed(expense(1, 4000, d(24)))
+        val vm = newViewModel(SavedStateHandle(mapOf("selected_start" to d(1, 1).toEpochDay())))
+        val job = launch { vm.uiState.collect {} }
+        val state = success(vm)
+        assertThat(state.historyState.selected?.start).isEqualTo(d(26))
+        job.cancel()
+    }
+
+    @Test
+    fun `oldestPeriod hasNullChange`() = runTest {
+        seed(expense(1, 4000, d(24)), expense(2, 7000, d(26)))
+        val vm = newViewModel()
+        val job = launch { vm.uiState.collect {} }
+        runCurrent()
+        val oldest = (vm.uiState.value as UiState.Success).historyState.periods.first().start
+        vm.onEvent(Event.SelectPeriod(oldest))
+        val state = success(vm)
+        assertThat(state.historyState.selected?.start).isEqualTo(oldest)
+        assertThat(state.historyState.change).isNull()
         job.cancel()
     }
 }

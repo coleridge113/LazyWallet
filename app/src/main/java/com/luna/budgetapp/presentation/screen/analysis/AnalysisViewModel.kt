@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -35,8 +34,7 @@ private const val KEY_SELECTED_START = "selected_start"
 class AnalysisViewModel(
     private val savedStateHandle: SavedStateHandle,
     private val expenseUseCases: ExpenseUseCases,
-    private val profileUseCases: ProfileUseCases,
-    @Suppress("unused") private val clock: Clock
+    private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
 
     private val _granularity = MutableStateFlow(

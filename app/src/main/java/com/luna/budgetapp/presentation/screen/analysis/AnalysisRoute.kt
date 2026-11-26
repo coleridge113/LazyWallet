@@ -154,7 +154,7 @@ fun AnalysisContent(
             }
         } else {
             ExpenseTable(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().weight(1f),
                 expenses = uiState.expensesState.filteredExpenses
             )
         }
@@ -213,7 +213,7 @@ private fun SpendingSummary(
         if (change != null) {
             Spacer(Modifier.height(2.dp))
             Text(
-                text = changeText(change, stringResource(R.string.analysis_vs_previous)),
+                text = changeText(change),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -222,14 +222,19 @@ private fun SpendingSummary(
 }
 
 /** "▲ ₱120.00 (+15%) vs previous"; the percentage is omitted when there is nothing to compare against. */
-private fun changeText(change: PeriodChange, suffix: String): String {
-    val arrow = if (change.amount >= 0) "▲" else "▼"
-    val percent = change.percent?.let {
-        val rounded = it.roundToInt()
-        val sign = if (rounded >= 0) "+" else "-"
-        " ($sign${abs(rounded)}%)"
-    }.orEmpty()
-    return "$arrow ${abs(change.amount).toPeso()}$percent $suffix"
+@Composable
+private fun changeText(change: PeriodChange): String {
+    val amount = abs(change.amount).toPeso()
+    val percent = change.percent?.let { abs(it.roundToInt()) }
+    return when {
+        change.amount > 0 ->
+            if (percent != null) stringResource(R.string.analysis_change_up_pct, amount, percent)
+            else stringResource(R.string.analysis_change_up, amount)
+        change.amount < 0 ->
+            if (percent != null) stringResource(R.string.analysis_change_down_pct, amount, percent)
+            else stringResource(R.string.analysis_change_down, amount)
+        else -> stringResource(R.string.analysis_change_none)
+    }
 }
 
 private fun previewState(): UiState.Success {

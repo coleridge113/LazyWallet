@@ -1,14 +1,13 @@
 package com.luna.budgetapp.presentation.screen.analysis.components
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,12 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,12 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.luna.budgetapp.R
 import com.luna.budgetapp.domain.model.Granularity
 import com.luna.budgetapp.domain.model.PeriodTotal
 import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
+import java.util.Locale
 
 private val ChartHeight = 160.dp
 private val LabelHeight = 20.dp
@@ -69,7 +69,7 @@ fun SpendingHistoryChart(
     val listState = rememberLazyListState()
     val locale = LocalConfiguration.current.locales[0]
 
-    LaunchedEffect(granularity) { listState.scrollToItem(0) }
+    LaunchedEffect(granularity, reversed.firstOrNull()?.start) { listState.scrollToItem(0) }
 
     val visibleTotals by remember(reversed) {
         derivedStateOf {
@@ -85,41 +85,39 @@ fun SpendingHistoryChart(
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val barSlot = maxWidth / barsInView(granularity)
-        Column {
-            LazyRow(
-                state = listState,
-                reverseLayout = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(ChartHeight + LabelHeight)
-                    .drawWithContent {
-                        drawContent()
-                        if (visibleMax > 0L && visibleAverage > 0.0) {
-                            val chartPx = ChartHeight.toPx()
-                            val y = chartPx - chartPx * (visibleAverage / visibleMax).toFloat()
-                            drawLine(
-                                color = lineColor,
-                                start = Offset(0f, y),
-                                end = Offset(size.width, y),
-                                strokeWidth = 1.dp.toPx(),
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 10f)),
-                            )
-                        }
-                    },
-            ) {
-                items(reversed, key = { it.start.toEpochDay() }) { period ->
-                    Bar(
-                        period = period,
-                        granularity = granularity,
-                        width = barSlot,
-                        maxTotal = visibleMax,
-                        selected = period.start == selectedStart,
-                        selectedColor = selectedColor,
-                        mutedColor = mutedColor,
-                        onClick = { onSelect(period.start) },
-                        locale = locale,
-                    )
-                }
+        LazyRow(
+            state = listState,
+            reverseLayout = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = ChartHeight + LabelHeight)
+                .drawWithContent {
+                    drawContent()
+                    if (visibleMax > 0L && visibleAverage > 0.0) {
+                        val chartPx = ChartHeight.toPx()
+                        val y = chartPx - chartPx * (visibleAverage / visibleMax).toFloat()
+                        drawLine(
+                            color = lineColor,
+                            start = Offset(0f, y),
+                            end = Offset(size.width, y),
+                            strokeWidth = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 3.dp.toPx())),
+                        )
+                    }
+                },
+        ) {
+            items(reversed, key = { it.start.toEpochDay() }) { period ->
+                Bar(
+                    period = period,
+                    granularity = granularity,
+                    width = barSlot,
+                    maxTotal = visibleMax,
+                    selected = period.start == selectedStart,
+                    selectedColor = selectedColor,
+                    mutedColor = mutedColor,
+                    onClick = { onSelect(period.start) },
+                    locale = locale,
+                )
             }
         }
     }
@@ -132,10 +130,10 @@ private fun Bar(
     width: Dp,
     maxTotal: Long,
     selected: Boolean,
-    selectedColor: androidx.compose.ui.graphics.Color,
-    mutedColor: androidx.compose.ui.graphics.Color,
+    selectedColor: Color,
+    mutedColor: Color,
     onClick: () -> Unit,
-    locale: java.util.Locale,
+    locale: Locale,
 ) {
     val label = barLabel(period.start, granularity, locale)
     val amount = period.total.toPeso()
@@ -148,9 +146,10 @@ private fun Bar(
         modifier = Modifier
             .width(width)
             .clickable(role = Role.Button, onClick = onClick)
-            .semantics {
+            .clearAndSetSemantics {
                 contentDescription = "$label, $amount"
                 this.selected = selected
+                role = Role.Button
             },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -175,7 +174,7 @@ private fun Bar(
             textAlign = TextAlign.Center,
             color = if (selected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .height(LabelHeight)
+                .heightIn(min = LabelHeight)
                 .padding(top = 4.dp),
         )
     }
