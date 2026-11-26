@@ -1,7 +1,9 @@
 package com.luna.budgetapp.presentation.screen.budget.components
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,27 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TooltipState
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -44,15 +32,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -73,6 +63,7 @@ import java.util.Locale
 private val CELL = 36.dp
 private val GAP = 6.dp
 private val CELL_SHAPE = RoundedCornerShape(8.dp)
+private val GRID_WIDTH = CELL * 7 + GAP * 6
 private val WEEKDAYS = listOf("S", "M", "T", "W", "T", "F", "S")
 
 @Composable
@@ -80,8 +71,8 @@ fun BudgetHeatGridCard(
     outlook: MonthOutlook,
     selectedDay: LocalDate?,
     onDayClick: (LocalDate) -> Unit,
-    onDismissDay: (LocalDate) -> Unit,
-    onClick: () -> Unit,
+    onCollapse: () -> Unit,
+    onOpenOutlook: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val locale = Locale.getDefault()
@@ -103,13 +94,14 @@ fun BudgetHeatGridCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(16.dp),
+            .padding(16.dp)
+            .animateContentSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable(role = Role.Button, onClick = onOpenOutlook)
                 .semantics { contentDescription = heroCd },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom,
@@ -148,9 +140,19 @@ fun BudgetHeatGridCard(
             outlook = outlook,
             selectedDay = selectedDay,
             onDayClick = onDayClick,
-            onDismissDay = onDismissDay,
             locale = locale,
         )
+
+        if (selectedDay != null) {
+            val day = outlook.days.first { it.date == selectedDay }
+            DayDetails(
+                day = day,
+                outlook = outlook,
+                column = (outlook.leadingBlanks + day.date.dayOfMonth - 1) % 7,
+                onCollapse = onCollapse,
+                locale = locale,
+            )
+        }
     }
 }
 
@@ -159,13 +161,12 @@ private fun HeatGrid(
     outlook: MonthOutlook,
     selectedDay: LocalDate?,
     onDayClick: (LocalDate) -> Unit,
-    onDismissDay: (LocalDate) -> Unit,
     locale: Locale,
 ) {
     val cells: List<OutlookDay?> = List(outlook.leadingBlanks) { null } + outlook.days
     val weeks = cells.chunked(7)
     Column(
-        modifier = Modifier.width(CELL * 7 + GAP * 6),
+        modifier = Modifier.width(GRID_WIDTH),
         verticalArrangement = Arrangement.spacedBy(GAP),
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(GAP)) {
@@ -191,10 +192,8 @@ private fun HeatGrid(
                     } else {
                         DayCell(
                             day = day,
-                            outlook = outlook,
                             selected = day.date == selectedDay,
                             onClick = { onDayClick(day.date) },
-                            onDismiss = onDismissDay,
                             locale = locale,
                         )
                     }
@@ -205,24 +204,23 @@ private fun HeatGrid(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DayCell(
     day: OutlookDay,
-    outlook: MonthOutlook,
     selected: Boolean,
     onClick: () -> Unit,
-    onDismiss: (LocalDate) -> Unit,
     locale: Locale,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val date = day.date.format(DateTimeFormatter.ofPattern("d MMMM", locale))
     if (day.kind == DayKind.Future) {
         val dashColor = scheme.onSurfaceVariant
+        val cd = stringResource(R.string.outlook_cell_upcoming_cd, date)
         Box(
             modifier = Modifier
                 .size(CELL)
                 .alpha(0.4f)
-                .semantics { hideFromAccessibility() }
+                .clearAndSetSemantics { contentDescription = cd }
                 .drawBehind {
                     val w = 1.dp.toPx()
                     drawRoundRect(
@@ -240,30 +238,13 @@ private fun DayCell(
         return
     }
 
-    val state = rememberTooltipState(isPersistent = true)
-    val currentSelected by rememberUpdatedState(selected)
-    LaunchedEffect(selected) {
-        if (selected) state.show() else state.dismiss()
-    }
-    LaunchedEffect(state) {
-        var sawVisible = false
-        snapshotFlow { state.isVisible }.collect { visible ->
-            if (visible) sawVisible = true
-            else if (sawVisible) {
-                sawVisible = false
-                if (currentSelected) onDismiss(day.date)
-            }
-        }
-    }
-
-    var openedOnDown by remember { mutableStateOf(false) }
     val hasSpend = day.spent > 0
     val isToday = day.kind == DayKind.Today
-    val cd = run {
-        val date = day.date.format(DateTimeFormatter.ofPattern("EEE d MMM", locale))
-        if (hasSpend) stringResource(R.string.outlook_day_cd, date, day.spent.toWholePeso())
-        else stringResource(R.string.outlook_day_nothing_cd, date)
-    }
+    val base = if (hasSpend) stringResource(R.string.outlook_cell_cd, date, day.spent.toWholePeso())
+    else stringResource(R.string.outlook_cell_no_spend_cd, date)
+    val todaySuffix = if (isToday) stringResource(R.string.outlook_cell_today_suffix) else ""
+    val selectedSuffix = if (selected) stringResource(R.string.outlook_cell_selected_suffix) else ""
+    val cd = base + todaySuffix + selectedSuffix
     val borderModifier = when {
         selected || isToday -> Modifier.border(2.dp, scheme.onSurface, CELL_SHAPE)
         !hasSpend -> Modifier.border(
@@ -272,113 +253,116 @@ private fun DayCell(
         else -> Modifier
     }
 
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberRichTooltipPositionProvider(),
-        tooltip = {
-            RichTooltip(
-                caretShape = TooltipDefaults.caretShape(),
-                colors = TooltipDefaults.richTooltipColors(
-                    containerColor = scheme.primary.copy(alpha = 0.11f).compositeOver(scheme.surface)
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.width(220.dp),
-            ) {
-                DayPopoverContent(day, outlook, locale)
+    Box(
+        modifier = Modifier
+            .size(CELL)
+            .clip(CELL_SHAPE)
+            .then(
+                if (day.intensity != null)
+                    Modifier.background(scheme.primary.copy(alpha = day.intensity))
+                else Modifier
+            )
+            .then(borderModifier)
+            .clickable(role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = cd
+                role = Role.Button
+                this.selected = selected
+                onClick { onClick(); true }
             }
-        },
-        state = state,
-        enableUserInput = false,
-        focusable = false,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(CELL)
-                .clip(CELL_SHAPE)
-                .then(
-                    if (day.intensity != null)
-                        Modifier.background(scheme.primary.copy(alpha = day.intensity))
-                    else Modifier
-                )
-                .then(borderModifier)
-                .pointerInput(state) {
-                    awaitEachGesture {
-                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                        openedOnDown = state.isVisible
-                    }
-                }
-                .clearAndSetSemantics {
-                    contentDescription = cd
-                    role = Role.Button
-                }
-                .clickable(role = Role.Button) {
-                    // A tap that began while this popover was open only closes it.
-                    if (openedOnDown) {
-                        openedOnDown = false
-                        if (currentSelected) onDismiss(day.date)
-                    } else onClick()
-                }
-        )
-    }
+    )
 }
 
 @Composable
-private fun DayPopoverContent(day: OutlookDay, outlook: MonthOutlook, locale: Locale) {
+private fun DayDetails(
+    day: OutlookDay,
+    outlook: MonthOutlook,
+    column: Int,
+    onCollapse: () -> Unit,
+    locale: Locale,
+) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    // RichTooltip text slot already adds 16dp horizontal and 4dp vertical padding.
-    Column(modifier = Modifier.padding(vertical = 10.dp)) {
-        Text(
-            text = day.date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
-            fontSize = 14.sp,
-            lineHeight = 20.sp,
-            fontWeight = FontWeight.Medium,
-            letterSpacing = 0.1.sp,
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.Bottom,
+    val lineColor = MaterialTheme.colorScheme.outlineVariant
+    val centerInGrid = (CELL + GAP) * column + CELL / 2
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(Modifier.height(12.dp))
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(9.dp)
+                .clearAndSetSemantics { }
         ) {
+            val gridLeft = (size.width - GRID_WIDTH.toPx()) / 2
+            val cx = gridLeft + centerInGrid.toPx()
+            val y = 8.5.dp.toPx()
+            val half = 8.dp.toPx()
+            val path = Path().apply {
+                moveTo(0f, y)
+                lineTo(cx - half, y)
+                lineTo(cx, 0.5.dp.toPx())
+                lineTo(cx + half, y)
+                lineTo(size.width, y)
+            }
+            drawPath(
+                path = path,
+                color = lineColor,
+                style = Stroke(width = 1.dp.toPx(), join = StrokeJoin.Miter),
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = day.date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.1.sp,
+            )
+            Spacer(Modifier.weight(1f))
             Text(
                 text = day.spent.toWholePeso(),
                 fontSize = 22.sp,
                 lineHeight = 28.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.alignByBaseline(),
             )
-            Text(
-                text = stringResource(R.string.outlook_spent),
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
-                color = muted,
-                modifier = Modifier.alignByBaseline(),
+            IconButton(onClick = onCollapse, modifier = Modifier.size(48.dp)) {
+                Icon(
+                    imageVector = Icons.Filled.ExpandLess,
+                    contentDescription = stringResource(R.string.outlook_collapse_day),
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            DetailStat(
+                label = stringResource(R.string.outlook_running_total),
+                value = outlook.runningTotal(day.date).toWholePeso(),
+                muted = muted,
+                modifier = Modifier.weight(1f),
+            )
+            DetailStat(
+                label = stringResource(R.string.outlook_projected_month),
+                value = outlook.projected?.toWholePeso() ?: stringResource(R.string.outlook_too_early),
+                muted = muted,
+                modifier = Modifier.weight(1f),
             )
         }
-        HorizontalDivider(
-            modifier = Modifier.padding(vertical = 10.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant,
-        )
-        PopoverRow(
-            label = stringResource(R.string.outlook_running_total),
-            value = outlook.runningTotal(day.date).toWholePeso(),
-            muted = muted,
-        )
-        PopoverRow(
-            label = stringResource(R.string.outlook_projected_month),
-            value = outlook.projected?.toWholePeso() ?: stringResource(R.string.outlook_too_early),
-            muted = muted,
-            modifier = Modifier.padding(top = 4.dp),
-        )
     }
 }
 
 @Composable
-private fun PopoverRow(label: String, value: String, muted: Color, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(text = label, fontSize = 14.sp, lineHeight = 20.sp, color = muted)
-        Text(text = value, fontSize = 14.sp, lineHeight = 20.sp)
+private fun DetailStat(label: String, value: String, muted: Color, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(text = label, fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.4.sp, color = muted)
+        Text(text = value, fontSize = 14.sp, lineHeight = 20.sp, letterSpacing = 0.25.sp)
     }
 }
 
@@ -408,22 +392,33 @@ private fun HeatGridPreview(outlook: MonthOutlook, selected: LocalDate? = null) 
                 outlook = outlook,
                 selectedDay = selected,
                 onDayClick = {},
-                onDismissDay = {},
-                onClick = {},
+                onCollapse = {},
+                onOpenOutlook = {},
             )
         }
     }
 }
 
-@Preview(name = "Mockup", heightDp = 420)
-@Preview(name = "Mockup dark", heightDp = 420, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Collapsed", heightDp = 420)
+@Preview(name = "Collapsed dark", heightDp = 420, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun MockupPreview() = HeatGridPreview(previewOutlook())
+private fun CollapsedPreview() = HeatGridPreview(previewOutlook())
 
-@Preview(name = "Popover 18 Nov", heightDp = 560)
-@Preview(name = "Popover 18 Nov dark", heightDp = 560, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Expanded 18 Nov", heightDp = 560)
+@Preview(name = "Expanded 18 Nov dark", heightDp = 560, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun PopoverPreview() = HeatGridPreview(previewOutlook(), LocalDate.of(2026, 11, 18))
+private fun ExpandedPreview() = HeatGridPreview(previewOutlook(), LocalDate.of(2026, 11, 18))
+
+// 1 Nov 2026 is a Sunday (column 0); 7 Nov is a Saturday (column 6).
+@Preview(name = "Expanded Sunday", heightDp = 560)
+@Preview(name = "Expanded Sunday dark", heightDp = 560, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ExpandedSundayPreview() = HeatGridPreview(previewOutlook(), LocalDate.of(2026, 11, 1))
+
+@Preview(name = "Expanded Saturday", heightDp = 560)
+@Preview(name = "Expanded Saturday dark", heightDp = 560, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ExpandedSaturdayPreview() = HeatGridPreview(previewOutlook(), LocalDate.of(2026, 11, 7))
 
 @Preview(name = "Overspent", heightDp = 420)
 @Preview(name = "Overspent dark", heightDp = 420, uiMode = Configuration.UI_MODE_NIGHT_YES)

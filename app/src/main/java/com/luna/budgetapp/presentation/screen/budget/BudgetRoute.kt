@@ -17,7 +17,6 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,14 +68,10 @@ fun BudgetContent(
     onEvent: (Event) -> Unit
 ) {
     val (budgets, expenses, outlook, dialog) = uiState
-    val listState = rememberLazyListState()
-    // Plain remember: the tab back stack restores saved state, so an open popover would reappear.
+    // Plain remember: the tab back stack restores saved state, so expanded day details would reappear.
     var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
     var showOutlookSheet by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) selectedDay = null
-    }
     LaunchedEffect(outlook.today.year, outlook.today.month) { selectedDay = null }
 
     if (showOutlookSheet) {
@@ -124,14 +119,14 @@ fun BudgetContent(
                 outlook = outlook,
                 selectedDay = selectedDay,
                 onDayClick = { selectedDay = if (selectedDay == it) null else it },
-                onDismissDay = { date -> if (selectedDay == date) selectedDay = null },
-                onClick = {
+                onCollapse = { selectedDay = null },
+                onOpenOutlook = {
                     selectedDay = null
                     showOutlookSheet = true
                 }
             )
 
-            LazyColumn(state = listState, modifier = modifier) {
+            LazyColumn(modifier = modifier) {
                 items(budgets) { budget ->
                     val spent = expenses[budget.id]?.sumOf { it.amount }
                     BudgetCard(

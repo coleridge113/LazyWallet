@@ -90,9 +90,12 @@
     <string name="outlook_over_this_month">over this month</string>
     <string name="outlook_hero_cd">%1$s %2$s. Opens %3$s outlook.</string>
     <string name="outlook_hero_no_budgets_cd">%1$s. Opens %2$s outlook.</string>
-    <string name="outlook_day_cd">%1$s, %2$s spent</string>
-    <string name="outlook_day_nothing_cd">%1$s, nothing spent</string>
-    <string name="outlook_spent">spent</string>
+    <string name="outlook_cell_cd">%1$s, %2$s</string>
+    <string name="outlook_cell_no_spend_cd">%1$s, no spend</string>
+    <string name="outlook_cell_upcoming_cd">%1$s, upcoming</string>
+    <string name="outlook_cell_today_suffix">", today"</string>
+    <string name="outlook_cell_selected_suffix">", selected"</string>
+    <string name="outlook_collapse_day">Collapse day details</string>
     <string name="outlook_running_total">Running total</string>
     <string name="outlook_projected_month">Projected month</string>
     <string name="outlook_too_early">Too early</string>
