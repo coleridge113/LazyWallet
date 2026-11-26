@@ -11,9 +11,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F13 | UI rebuild: Home (ExpensePreset) screen | Building | [design](../docs/superpowers/specs/2026-11-26-expensepreset-redesign-design.md) | [plan](../docs/superpowers/plans/2026-11-26-expensepreset-redesign.md) | PR #13 open (with F15). Your call: finish the device check, then merge PR #13 |
 | F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Idea | – | – | Brainstorm from the handoff note in `docs/screens/redesign/` (Budget "Alt B · Month heat grid", "Dialog 2" sheet, "Dialog 3" popover; accepted 2026-11-26). Replaces the F12 gauge; makes P31 moot |
-| F15 | Reorder presets by long-press drag (ExpensePreset screen) | Building | [design](../docs/superpowers/specs/2026-11-26-preset-reorder-design.md) | [plan](../docs/superpowers/plans/2026-11-26-preset-reorder.md) | PR #13 open (with F13, 137 tests). Your call: device check (plan Task 3 Step 5), then merge PR #13 |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
@@ -72,10 +70,3 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 - Auth already uses `DialogState.ErrorMessage`, so two error mechanisms exist. Google's guidance: transient errors as a `userMessage` in state that the UI shows (usually a snackbar) and acknowledges (https://developer.android.com/topic/architecture/ui-layer/events).
 - Open for the spec: snackbar vs dialog, keep form open on failure with `isSaving`, shared shape across screens, strings via P23 pattern.
 - Sign-out failure (F02 final review 2026-11-26): `signOutUser` now catches and logs, but the confirm dialog stays open with no feedback; `SignOutUseCase` calls `auth.signOut()` before `clearAllTables()`, so a failed clear leaves the user signed out of Firebase with local data still shown. Include in the same write-failure pattern.
-
-### F13 seed notes (brainstorm started 2026-11-26)
-
-- Screen-by-screen UI rebuild (user, 2026-11-26); F12 (Budget outlook arc) went first, Home is next.
-- Home today (top→bottom): empty TopAppBar with only a sign-out icon; today's total in `displayMedium` ("-" when 0, ~¼ of the screen, `ExpenseAmountDisplay`); 2-column `ExpensePresetTable` where each preset is a round category icon (tap = custom-amount form) + a pill (tap = log instantly), swipe for edit/delete; a FAB with a ☰ icon expanding to Add preset + Undo (delete latest expense, confirmed).
-- Overlaps it would absorb: P14 (translucent preset containers contrast), P16 (empty top bar, hard-coded `padding(bottom = 72.dp)`, ☰ reads as nav drawer), P18 (undo FAB → snackbar "Expense added · Undo"), F04/F05 chrome questions. Figma file (F01) mirrors the current Home.
-- Open question asked, not yet answered: what bothers you about Home today / what should it do or feel like after the rebuild (visual refresh vs rethink of logging).

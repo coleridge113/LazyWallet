@@ -4,6 +4,8 @@ Finished features, newest first.
 
 | ID | Feature | Done | Spec | Plan | Merge |
 |---|---|---|---|---|---|
+| F15 | Reorder presets by long-press drag | 2026-11-26 | [design](../docs/superpowers/specs/2026-11-26-preset-reorder-design.md) | [plan](../docs/superpowers/plans/2026-11-26-preset-reorder.md) | PR #13 merged 2026-11-26 (`a575fe5`) |
+| F13 | UI rebuild: ExpensePreset screen | 2026-11-26 | [design](../docs/superpowers/specs/2026-11-26-expensepreset-redesign-design.md) | [plan](../docs/superpowers/plans/2026-11-26-expensepreset-redesign.md) | PR #13 merged 2026-11-26 (`a575fe5`) |
 | F12 | Budget outlook arc | 2026-11-26 | [design](../docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-outlook-arc.md) | PR #12 merged 2026-11-26 (`6b4c812`) |
 | F10 | Analysis history and timelines | 2026-11-26 | [design](../docs/superpowers/specs/2026-11-26-analysis-history-design.md) | [plan](../docs/superpowers/plans/2026-11-26-analysis-history.md) | PR #11 merged 2026-11-26 (`f13afb1`) |
 | F03 | Firebase out of presentation | 2026-11-26 | [design](../docs/superpowers/specs/2026-11-26-firebase-out-of-presentation-design.md) | [plan](../docs/superpowers/plans/2026-11-26-firebase-out-of-presentation.md) | PR #9 merged 2026-11-26 (`b7b947e`) |
