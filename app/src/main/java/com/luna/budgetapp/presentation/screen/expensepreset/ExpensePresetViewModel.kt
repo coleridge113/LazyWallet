@@ -146,6 +146,7 @@ class ExpensePresetViewModel(
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset, event.action)
             is Event.EditExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
+            is Event.ReorderPresets -> reorderPresets(event.orderedIds)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(
                 event.id, event.category, event.type, event.amount, event.date
@@ -274,6 +275,17 @@ class ExpensePresetViewModel(
                 Log.e(TAG, "Failed to delete expense preset", e)
             } finally {
                 dismissDialog()
+            }
+        }
+    }
+
+    private fun reorderPresets(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            try {
+                presetUseCases.reorderExpensePresets(orderedIds)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to reorder expense presets", e)
             }
         }
     }

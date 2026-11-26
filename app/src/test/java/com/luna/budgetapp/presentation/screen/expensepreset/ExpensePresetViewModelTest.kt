@@ -37,6 +37,7 @@ import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCas
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.expensepreset.ReorderExpensePresetsUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.UpdateExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.SetActiveCategoryProfileUseCase
@@ -94,6 +95,7 @@ class ExpensePresetViewModelTest {
             addExpensePreset = AddExpensePresetUseCase(fakeExpensePresetRepo),
             deleteExpensePreset = DeleteExpensePresetUseCase(fakeExpensePresetRepo),
             updateExpensePreset = UpdateExpensePresetUseCase(fakeExpensePresetRepo),
+            reorderExpensePresets = ReorderExpensePresetsUseCase(fakeExpensePresetRepo),
         )
         val expenseUseCases = ExpenseUseCases(
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
@@ -253,6 +255,59 @@ class ExpensePresetViewModelTest {
 
         runCurrent()
         assertEquals(1, presets.size)
+        job.cancel()
+    }
+
+    private suspend fun seedThreeAndReorder() {
+        listOf(1L, 2L, 3L).forEach {
+            fakeExpensePresetRepo.addExpensePreset(dummyPreset.copy(id = it, type = "P$it"))
+        }
+        viewModel.onEvent(Event.ReorderPresets(listOf(3L, 1L, 2L)))
+    }
+
+    @Test
+    fun `reorder presets updates the preset order`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
+        seedThreeAndReorder()
+        runCurrent()
+
+        assertThat(presets.map { it.id }).containsExactly(3L, 1L, 2L).inOrder()
+        job.cancel()
+    }
+
+    @Test
+    fun `new preset is added last`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
+        seedThreeAndReorder()
+        runCurrent()
+
+        viewModel.onEvent(Event.AddExpensePreset(null, ExpenseFormAction.ADD))
+        runCurrent()
+        viewModel.onEvent(
+            Event.ConfirmExpenseFormDialog(id = null, category = Category.FOOD, type = "New", amount = "10")
+        )
+        runCurrent()
+
+        assertThat(presets.map { it.type }).containsExactly("P3", "P1", "P2", "New").inOrder()
+        job.cancel()
+    }
+
+    @Test
+    fun `edit keeps preset position`() = runTest {
+        val job = launch { viewModel.uiState.collect {} }
+        seedThreeAndReorder()
+        runCurrent()
+
+        val first = presets.first { it.id == 1L }
+        viewModel.onEvent(Event.EditExpensePreset(first, ExpenseFormAction.EDIT))
+        runCurrent()
+        viewModel.onEvent(
+            Event.ConfirmExpenseFormDialog(id = 1L, category = Category.FOOD, type = "Edited", amount = "20")
+        )
+        runCurrent()
+
+        assertThat(presets.map { it.id }).containsExactly(3L, 1L, 2L).inOrder()
+        assertThat(presets.first { it.id == 1L }.type).isEqualTo("Edited")
         job.cancel()
     }
 

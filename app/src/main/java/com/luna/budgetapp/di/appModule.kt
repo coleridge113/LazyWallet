@@ -47,6 +47,7 @@ import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUse
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.expensepreset.ReorderExpensePresetsUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.UpdateExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveDateFilterUseCase
@@ -191,6 +192,7 @@ val appModule = module {
     factoryOf(::ObserveSpendingHistoryUseCase)
     factoryOf(::AddExpensePresetUseCase)
     factoryOf(::UpdateExpensePresetUseCase)
+    factoryOf(::ReorderExpensePresetsUseCase)
     factoryOf(::GetPagingExpensesByDateRangeUseCase)
     factoryOf(::DeleteExpensePresetUseCase)
     factoryOf(::GetCategoryProfileUseCase)

@@ -63,6 +63,7 @@ sealed interface Event {
         val amount: String,
         val date: java.time.LocalDateTime? = null
     ) : Event
+    data class ReorderPresets(val orderedIds: List<Long>) : Event
     data class DeleteExpensePreset(val expensePresetId: Long) : Event
     data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null, val customDate: java.time.LocalDateTime? = null) : Event
     data class AddCustomExpense(
