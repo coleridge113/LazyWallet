@@ -35,6 +35,7 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.screen.components.SwipeableTableItem
 import com.luna.budgetapp.presentation.screen.utils.getIconForCategory
+import com.luna.budgetapp.presentation.screen.utils.toCurrency
 import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.icons.CoffeeIcon
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
@@ -119,7 +120,7 @@ fun ExpensePresetItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = item.amount.toPeso(),
+                    text = item.amount.toCurrency(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
