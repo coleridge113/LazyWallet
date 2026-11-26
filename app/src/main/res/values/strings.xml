@@ -134,7 +134,7 @@
     <string name="cd_expense_preset_today_total">Today, %1$s</string>
     <string name="cd_log_preset">Log %1$s, %2$s</string>
     <string name="cd_custom_preset">Add custom %1$s expense</string>
-    <string name="cd_edit_or_delete">Edit or delete</string>
+    <string name="cd_preset_options">Options for %1$s</string>
     <string name="cd_last_added">Last added: %1$s %2$s, %3$s. Show recently added</string>
     <string name="cd_undo_expense">Undo %1$s %2$s</string>
 </resources>

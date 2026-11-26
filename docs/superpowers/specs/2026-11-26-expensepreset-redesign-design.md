@@ -38,7 +38,7 @@ The redesign aims to:
    - Behaviours that stay the same as today:
      - tap the tile → log the preset now (`Event.AddExpense`);
      - tap the icon circle → "Add Custom Expense" dialog (unchanged).
-   - Edit and Delete move from swipe to **long-press → a small menu (Edit, Delete)**. Edit opens "Edit Expense Preset" (unchanged). Delete opens the existing "Delete this item?" confirm (kept, because a preset is not one tap to recreate).
+   - Edit and Delete move from swipe to **a ⋮ (MoreVert) button at the tile's top right → a small menu (Edit, Delete)**, matching BudgetCard (user, 2026-11-26, after device testing; replaces the earlier long-press). Edit opens "Edit Expense Preset" (unchanged). Delete opens the existing "Delete this item?" confirm (kept, because a preset is not one tap to recreate).
    - The last cell is always a **"New preset" tile**: 1.5dp dashed onSurfaceVariant border, `add` icon, "New preset" text. It opens "Add Expense Preset". With no presets, the grid shows only this tile.
 4. **Recently added sheet** (a Material 3 `ModalBottomSheet`).
    - Opens from the strip body. Swiping down or tapping the scrim closes it (M3 default scrim).
@@ -115,7 +115,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 - **A separate "recent" ViewModel or a shared sheet component.** Rejected: only the ExpensePreset screen uses it.
 
 **Edit/Delete gesture on a 3-column grid**
-- **Long-press menu (chosen, as the handoff suggests).**
+- **Long-press menu (first choice, as the handoff suggested; replaced by a visible ⋮ button after device testing).**
 - **Keep the swipe.** Rejected: a 96dp reveal doesn't fit a 118dp tile.
 
 ## Decided details (Claude's calls, confirmed by the user: "go with your proposals")
@@ -157,7 +157,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 
 ## Accessibility
 
-- **Tile:** one merged node: "Log <name>, ₱<amount>" (click). The icon circle is its own button, "Add custom <name> expense". The long-press label is "Edit or delete".
+- **Tile:** one merged node: "Log <name>, ₱<amount>" (click). The icon circle is its own button, "Add custom <name> expense". The ⋮ button is its own button, "Options for <name>".
 - **Strip:** body = "Last added: <name> ₱<amount>, <relative time>. Show recently added". Undo = "Undo <name> ₱<amount>".
 - **Sheet rows:** the remove button reads "Remove <name> ₱<amount>".
 - **Sizes:** all touch targets are at least 48dp. The tile name and amount keep one line, ellipsized.
@@ -165,7 +165,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 ## Left to the builder
 
 - Exact composable split and file names under `expensepreset/components/`.
-- How the long-press menu is anchored (a `DropdownMenu` on the tile is fine).
+- How the ⋮ menu is anchored (a `DropdownMenu` on the button is fine).
 - Snackbar duration (M3 default `Short` with an action is fine) and how the message string is assembled.
 - Whether the sparkline is a `Canvas` or a `Path`.
 - Previews for each new composable.
@@ -176,7 +176,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 - Behaviour:
   - tap a tile → logs;
   - tap its icon → custom dialog;
-  - long-press → Edit / Delete;
+  - ⋮ → Edit / Delete;
   - strip Undo and sheet remove → expense gone + snackbar;
   - snackbar Undo → expense back with the same date;
   - "See all expenses" → Expenses tab.

@@ -1,9 +1,7 @@
 package com.luna.budgetapp.presentation.screen.expensepreset.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,9 +18,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -87,7 +87,6 @@ fun PresetTileGrid(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PresetTile(
     preset: ExpensePreset,
@@ -102,7 +101,7 @@ fun PresetTile(
     var menuOpen by remember { mutableStateOf(false) }
     val logDescription = stringResource(R.string.cd_log_preset, preset.type, amount)
     val customDescription = stringResource(R.string.cd_custom_preset, preset.type)
-    val menuLabel = stringResource(R.string.cd_edit_or_delete)
+    val optionsDescription = stringResource(R.string.cd_preset_options, preset.type)
     val shape = RoundedCornerShape(20.dp)
 
     Box(modifier = modifier.aspectRatio(1f)) {
@@ -111,11 +110,7 @@ fun PresetTile(
                 .fillMaxSize()
                 .clip(shape)
                 .background(color.copy(alpha = 0.18f))
-                .combinedClickable(
-                    onClick = onLog,
-                    onLongClick = { menuOpen = true },
-                    onLongClickLabel = menuLabel
-                )
+                .clickable(onClick = onLog)
                 .clearAndSetSemantics { contentDescription = logDescription }
                 .padding(12.dp)
         ) {
@@ -164,15 +159,25 @@ fun PresetTile(
                 )
             }
         }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.btn_edit)) },
-                onClick = { menuOpen = false; onEdit() }
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.btn_delete)) },
-                onClick = { menuOpen = false; onDelete() }
-            )
+        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+            IconButton(onClick = { menuOpen = true }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = optionsDescription,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.btn_edit)) },
+                    onClick = { menuOpen = false; onEdit() }
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.btn_delete)) },
+                    onClick = { menuOpen = false; onDelete() }
+                )
+            }
         }
     }
 }
