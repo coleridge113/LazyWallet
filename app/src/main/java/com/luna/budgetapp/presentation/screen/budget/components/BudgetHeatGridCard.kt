@@ -76,6 +76,8 @@ fun BudgetHeatGridCard(
     modifier: Modifier = Modifier,
 ) {
     val locale = Locale.getDefault()
+    // A selected date outside this month (month rolled over before the Route cleared it) counts as collapsed.
+    val selectedDetailsDay = selectedDay?.let { sel -> outlook.days.firstOrNull { it.date == sel } }
     val monthName = outlook.today.format(DateTimeFormatter.ofPattern("MMMM", locale))
     val noBudgets = stringResource(R.string.outlook_no_budgets)
     val over = outlook.remaining < 0
@@ -138,17 +140,16 @@ fun BudgetHeatGridCard(
 
         HeatGrid(
             outlook = outlook,
-            selectedDay = selectedDay,
+            selectedDay = selectedDetailsDay?.date,
             onDayClick = onDayClick,
             locale = locale,
         )
 
-        if (selectedDay != null) {
-            val day = outlook.days.first { it.date == selectedDay }
+        if (selectedDetailsDay != null) {
             DayDetails(
-                day = day,
+                day = selectedDetailsDay,
                 outlook = outlook,
-                column = (outlook.leadingBlanks + day.date.dayOfMonth - 1) % 7,
+                column = (outlook.leadingBlanks + selectedDetailsDay.date.dayOfMonth - 1) % 7,
                 onCollapse = onCollapse,
                 locale = locale,
             )
