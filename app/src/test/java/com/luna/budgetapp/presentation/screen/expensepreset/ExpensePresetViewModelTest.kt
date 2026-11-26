@@ -173,6 +173,21 @@ class ExpensePresetViewModelTest {
     }
 
     @Test
+    fun `Retry after the fault clears restores Success`() = runTest {
+        fakeExpenseRepo.shouldThrow = true
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(viewModel.uiState.value).isInstanceOf(UiState.Error::class.java)
+
+        fakeExpenseRepo.shouldThrow = false
+        viewModel.onEvent(Event.Retry)
+        runCurrent()
+
+        assertThat(viewModel.uiState.value).isInstanceOf(UiState.Success::class.java)
+        job.cancel()
+    }
+
+    @Test
     fun `uiState becomes Error when the expense flow throws`() = runTest {
         fakeExpenseRepo.shouldThrow = true
         val job = launch { viewModel.uiState.collect {} }

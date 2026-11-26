@@ -45,6 +45,7 @@ sealed interface DialogState {
 }
 
 sealed interface Event {
+    data object Retry : Event
     data object DismissDialog : Event
     data object ShowDeleteConfirmationDialog : Event
     data object ShowSignOutDialog : Event

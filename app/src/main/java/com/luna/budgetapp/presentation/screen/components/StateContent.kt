@@ -38,9 +38,9 @@ fun LoadingContent(modifier: Modifier = Modifier) {
 
 @Composable
 fun ErrorContent(
-    message: String,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    onRetry: (() -> Unit)? = null
+    message: String? = null
 ) {
     Box(
         modifier = modifier
@@ -58,15 +58,14 @@ fun ErrorContent(
                 color = MaterialTheme.colorScheme.error
             )
             Text(
-                text = message,
+                text = message?.takeIf { it.isNotBlank() }
+                    ?: stringResource(R.string.state_error_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            if (onRetry != null) {
-                Button(onClick = onRetry) {
-                    Text(stringResource(R.string.state_retry))
-                }
+            Button(onClick = onRetry) {
+                Text(stringResource(R.string.state_retry))
             }
         }
     }
@@ -85,7 +84,7 @@ fun LoadingContentPreview() {
 fun ErrorContentPreview() {
     LazyWalletTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            ErrorContent(message = "Could not load expenses", onRetry = {})
+            ErrorContent(onRetry = {})
         }
     }
 }

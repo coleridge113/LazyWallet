@@ -43,7 +43,8 @@ class ExpensePresetViewModel(
     private val clock: Clock
 ): ViewModel() {
 
-    private val _errorState = MutableStateFlow<String?>(null)
+    /** Bumped by [Event.Retry]; each bump restarts the load pipeline. */
+    private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())
     private val _categoryProfileState =
@@ -97,20 +98,15 @@ class ExpensePresetViewModel(
         )
     }
 
-    val uiState: StateFlow<UiState> = combine(
-        _errorState,
-        _successState
-    ) { error, success ->
-        if (error != null) {
-            UiState.Error(error)
-        } else {
-            success
-        }
-    }
-        .onStart { profileUseCases.initializeCategoryProfile() }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            emit(UiState.Error(e.message ?: "Something went wrong"))
+    val uiState: StateFlow<UiState> = _retryTrigger
+        .flatMapLatest {
+            _successState
+                .map<UiState.Success, UiState> { it }
+                .onStart { profileUseCases.initializeCategoryProfile() }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    emit(UiState.Error(e.message))
+                }
         }
         .stateIn(
             scope = viewModelScope,
@@ -129,6 +125,7 @@ class ExpensePresetViewModel(
         when (event) {
             Event.ShowSignOutDialog -> showSignOutDialog()
             Event.DismissDialog -> dismissDialog()
+            Event.Retry -> _retryTrigger.update { it + 1 }
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
             is Event.SignOut -> signOutUser(event.auth)

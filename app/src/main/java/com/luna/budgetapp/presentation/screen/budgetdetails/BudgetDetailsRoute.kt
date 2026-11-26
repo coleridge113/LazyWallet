@@ -4,6 +4,7 @@ import androidx.compose.ui.res.stringResource
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.budgetdetails.components.BudgetDetailsCard
 import com.luna.budgetapp.presentation.screen.budgetdetails.components.MonthYearPickerDialog
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
 import com.luna.budgetapp.presentation.screen.components.ExpenseTable
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import com.luna.budgetapp.presentation.screen.expenselist.components.ExpenseForm
@@ -56,7 +57,9 @@ fun BudgetDetailsRoute(
 
     when (val state = uiState) {
         UiState.Loading -> {}
-        is UiState.Error -> {}
+        is UiState.Error -> ErrorContent(
+            onRetry = { onEvent(Event.Retry) }
+        )
         is UiState.Success -> {
             Scaffold(
                 topBar = {

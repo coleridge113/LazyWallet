@@ -11,7 +11,11 @@ import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -52,17 +56,28 @@ class BudgetDetailsViewModel(
             )
         }
 
-    val uiState = combine(
-        _budget,
-        _expenses,
-        _dialogState
-    ) { budget, expenses, dialog ->
-        UiState.Success(
-            budget = budget,
-            expenses = expenses,
-            dialog = dialog
-        )
-    }
+    /** Bumped by [Event.Retry]; each bump restarts the load pipeline. */
+    private val _retryTrigger = MutableStateFlow(0)
+
+    val uiState: StateFlow<UiState> = _retryTrigger
+        .flatMapLatest {
+            combine(
+                _budget,
+                _expenses,
+                _dialogState
+            ) { budget, expenses, dialog ->
+                UiState.Success(
+                    budget = budget,
+                    expenses = expenses,
+                    dialog = dialog
+                )
+            }
+                .map<UiState.Success, UiState> { it }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    emit(UiState.Error(e.message))
+                }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000.milliseconds),
@@ -72,6 +87,7 @@ class BudgetDetailsViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
+            Event.Retry -> _retryTrigger.update { it + 1 }
             is Event.ConfirmDate -> updateDateRange(event.date)
             is Event.ConfirmYearMonth -> updateDateRange(event.yearMonth)
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)

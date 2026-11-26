@@ -59,6 +59,7 @@ sealed interface DialogState {
 }
 
 sealed interface Event {
+    data object Retry : Event
     data object DismissDialog : Event
     data object ResetCategoryFilters : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event

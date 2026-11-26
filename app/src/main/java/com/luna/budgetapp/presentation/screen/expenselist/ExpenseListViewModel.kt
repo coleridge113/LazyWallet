@@ -39,13 +39,15 @@ class ExpenseListViewModel(
     private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
 
-    private val _errorState = MutableStateFlow<String?>(null)
+    /** Bumped by [Event.Retry]; each bump restarts the load pipeline. */
+    private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _categoryPreview = MutableStateFlow<CategoryProfilePreview?>(null)
     private val _dateState = MutableStateFlow(DateState())
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-    private val _categoryProfileState = profileUseCases.observeCategoryProfileState()
+    // Cold: collected inside the uiState pipeline so a failure reaches UiState.Error and Retry restarts it.
+    private val _categoryProfileFlow = profileUseCases.observeCategoryProfileState()
         .map { snapshot ->
             CategoryProfileState(
                 profileList = snapshot.profileList,
@@ -53,10 +55,11 @@ class ExpenseListViewModel(
                 selectedCategoryMap = snapshot.categoryMap
             )
         }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            _errorState.value = e.message ?: "Something went wrong"
-        }
+
+    // Hot copy for the paging flow only; a failure is swallowed here (it must not crash viewModelScope)
+    // and the screen shows the error through uiState instead.
+    private val _categoryProfileState = _categoryProfileFlow
+        .catch { e -> if (e is CancellationException) throw e }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -65,7 +68,7 @@ class ExpenseListViewModel(
 
     private val _expensesState: Flow<ExpensesState> = combine(
         _dateState,
-        _categoryProfileState
+        _categoryProfileFlow
     ) { dateState, categoryProfileState ->
         dateState to categoryProfileState
     }
@@ -84,7 +87,7 @@ class ExpenseListViewModel(
 
     private val _chartDataState: Flow<ChartDataState> = combine(
         _dateState,
-        _categoryProfileState
+        _categoryProfileFlow
     ) { dateState, categoryProfileState ->
         dateState.dateRange to categoryProfileState.activeCategories
     }
@@ -112,7 +115,7 @@ class ExpenseListViewModel(
         _dialogState,
         _categoryPreview,
         _dateState,
-        _categoryProfileState,
+        _categoryProfileFlow,
         _chartDataState,
         _expensesState
     ) { values ->
@@ -132,19 +135,14 @@ class ExpenseListViewModel(
         )
     }
 
-    val uiState: StateFlow<UiState> = combine(
-        _errorState,
-        _successState
-    ) { error, success ->
-        if (error != null) {
-            UiState.Error(error)
-        } else {
-            success
-        }
-    }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            emit(UiState.Error(e.message ?: "Something went wrong"))
+    val uiState: StateFlow<UiState> = _retryTrigger
+        .flatMapLatest {
+            _successState
+                .map<UiState.Success, UiState> { it }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    emit(UiState.Error(e.message))
+                }
         }
         .stateIn(
             scope = viewModelScope,
@@ -155,6 +153,7 @@ class ExpenseListViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
+            Event.Retry -> _retryTrigger.update { it + 1 }
             Event.ResetCategoryFilters -> resetCategoryFilters()
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
             is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)

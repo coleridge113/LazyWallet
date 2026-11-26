@@ -77,7 +77,9 @@ fun ExpensePresetRoute(
 
     when (val state = uiState) {
         is UiState.Loading -> LoadingContent()
-        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
+        is UiState.Error -> ErrorContent(
+            onRetry = { onEvent(Event.Retry) }
+        )
         is UiState.Success -> {
             ExpensePresetContent(
                 uiState = state,

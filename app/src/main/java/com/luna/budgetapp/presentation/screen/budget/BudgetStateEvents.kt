@@ -20,6 +20,7 @@ sealed interface UiState {
 }
 
 sealed interface Event {
+    data object Retry : Event
     data object DismissDialog : Event
     data class ShowDeleteDialog(val budget: Budget) : Event
     data class ShowBudgetFormDialog(val budget: Budget? = null) : Event
