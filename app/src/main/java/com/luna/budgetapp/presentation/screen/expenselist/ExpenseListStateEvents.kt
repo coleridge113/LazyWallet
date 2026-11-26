@@ -44,8 +44,6 @@ data class ChartDataState(
 )
 
 sealed interface DialogState {
-    data object CalendarForm : DialogState
-    data class CategoryFilterForm(val filteredCategories: Map<Category, Boolean>) : DialogState
     data class ConfirmDeleteExpense(val expenseId: Long) : DialogState
     data class ExpenseForm(
         val selectedExpense: Expense,
@@ -54,8 +52,6 @@ sealed interface DialogState {
 }
 
 sealed interface Event {
-    data object ShowCalendarForm : Event
-    data object ShowCategoryFilterDialog : Event
     data object DismissDialog : Event
     data object ResetCategoryFilters : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event

@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | P24 | Picker open/close moved to UI state: `rememberSaveable` flags in ExpenseListRoute (calendar, category filter) and BudgetDetailsRoute (date and year-month pickers). Removed `ShowCalendarForm`, `ShowCategoryFilterDialog`, `ClickCalendar`, `DialogState.CalendarForm/CategoryFilterForm/DatePicker/YearMonthPicker`. Tests 34 -> 33 (3 picker-open tests removed, 2 result tests added/kept), build ok. Not device-tested. |
 | 2026-11-26 | F02 | Build finished: 5 tasks via task-runner + per-task reviews (b116309..1ff3ada), final Opus review found AuthRoute recompose re-running cloud sync on interactive sign-in; fixed in 976aa2a (`remember { auth.currentUser != null }`). 34 tests pass, debug build ok. Not merged; not device-tested. Follow-ups: P29 (logout popUpTo), notes on P28/F11. |
 | 2026-11-26 | Research | android-researcher MVVM/UDF audit: `onEvent` + sealed Event + single combined uiState kept (valid UDF, matches state-production guidance). Added P24 (picker events to UI state, user-decided), P25–P28, F11 (write-failure feedback); typo noted on P23. Cache: `~/.claude-personal/research/android/`. |
 | 2026-11-25 | F02 | Spec and plan approved (state flags for result navigation, resume-guarded click lambdas, dead events removed; 5 tasks). F09 (guest to account upgrade) and F10 (Analysis history and timelines) shaped and added as Ideas with seed notes. Not built yet. |

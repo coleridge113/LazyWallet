@@ -144,8 +144,6 @@ class ExpenseListViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
-            Event.ShowCategoryFilterDialog -> showCategoryFilterDialog()
-            Event.ShowCalendarForm -> showCalendarForm()
             Event.ResetCategoryFilters -> resetCategoryFilters()
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
             is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)
@@ -195,12 +193,6 @@ class ExpenseListViewModel(
         }
     }
 
-    private fun showCalendarForm() {
-        _dialogState.update {
-            DialogState.CalendarForm
-        }
-    }
-
     private fun selectDateRange(selectedFilter: DateFilter) {
         _dateState.update {
             it.copy(
@@ -208,13 +200,6 @@ class ExpenseListViewModel(
             )
         }
         dismissDialog()
-    }
-
-    private fun showCategoryFilterDialog() {
-        val categoryMap = _categoryProfileState.value.selectedCategoryMap
-        _dialogState.update {
-            DialogState.CategoryFilterForm(categoryMap)
-        }
     }
 
     private fun applyCategoryFilters(profileName: String, filters: Map<Category, Boolean>) {

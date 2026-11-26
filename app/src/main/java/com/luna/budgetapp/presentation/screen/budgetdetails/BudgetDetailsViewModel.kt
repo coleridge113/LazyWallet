@@ -72,7 +72,6 @@ class BudgetDetailsViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
-            is Event.ClickCalendar -> showCalendarForm(event.type)
             is Event.ConfirmDate -> updateDateRange(event.date)
             is Event.ConfirmYearMonth -> updateDateRange(event.yearMonth)
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
@@ -82,22 +81,6 @@ class BudgetDetailsViewModel(
             is Event.EditExpense -> 
                 editExpense(event.expenseId, event.type, event.amount, event.date)
 
-        }
-    }
-
-    private fun showCalendarForm(type: DateFilter) {
-        when (type) {
-            DateFilter.Daily -> {
-                _dialogState.update {
-                    DialogState.DatePicker
-                }
-            }
-            DateFilter.Monthly -> {
-                _dialogState.update {
-                    DialogState.YearMonthPicker
-                }
-            }
-            else -> {}
         }
     }
 

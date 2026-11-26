@@ -1,7 +1,6 @@
 package com.luna.budgetapp.presentation.screen.budgetdetails
 
 import com.luna.budgetapp.domain.model.Budget
-import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,7 +20,6 @@ sealed interface UiState {
 sealed interface Event {
     data object DismissDialog : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
-    data class ClickCalendar(val type: DateFilter) : Event
     data class ConfirmDate(val date: LocalDate) : Event
     data class ConfirmYearMonth(val yearMonth: YearMonth) : Event
     data class DeleteExpense(val expenseId: Long) : Event
@@ -35,8 +33,6 @@ sealed interface Event {
 }
 
 sealed interface DialogState {
-    data object DatePicker : DialogState
-    data object YearMonthPicker : DialogState
     data class ExpenseForm(
         val selectedExpense: Expense,
         val isSaving: Boolean = false
