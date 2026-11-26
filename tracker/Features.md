@@ -11,7 +11,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Building | [design](../docs/superpowers/specs/2026-11-26-budget-heat-grid-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-heat-grid.md) | Built on `feat/budget-heat-grid` (not pushed; popover replaced by expanding card). Your call: device check (spec §7), then merge / PR / keep |
+| F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Building | [design](../docs/superpowers/specs/2026-11-26-budget-heat-grid-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-heat-grid.md) | PR #14 open (`feat/budget-heat-grid`). Your call: device checks in the PR, then merge; after merge move to Features-done |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
