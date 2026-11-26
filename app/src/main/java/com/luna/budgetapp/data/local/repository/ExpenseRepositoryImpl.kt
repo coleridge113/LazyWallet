@@ -16,6 +16,7 @@ import com.luna.budgetapp.data.mapper.toModel
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.data.local.entity.ExpenseEntity
 import com.luna.budgetapp.domain.model.CategoryTotalProjection
+import com.luna.budgetapp.domain.model.DailyTotal
 import com.luna.budgetapp.domain.repository.ExpenseRepository
 import com.luna.budgetapp.network.ExpenseService
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -188,6 +190,11 @@ class ExpenseRepositoryImpl(
         end: LocalDateTime
     ): Flow<List<CategoryTotalProjection>> =
         dao.getCategoryTotalsByCategory(categories, start, end)
+
+    override fun getDailyTotals(categories: List<String>): Flow<List<DailyTotal>> =
+        dao.getDailyTotals(categories).map { rows ->
+            rows.map { DailyTotal(LocalDate.parse(it.day), it.total) }
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun addExpense(expense: Expense) {
         val userId = auth.currentUser?.uid

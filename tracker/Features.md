@@ -10,7 +10,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
-| F10 | Analysis history and timelines | Idea | – | – | Brainstorm spec (layout A agreed 2026-11-25) |
+| F10 | Analysis history and timelines | Building | [design](../docs/superpowers/specs/2026-11-26-analysis-history-design.md) | [plan](../docs/superpowers/plans/2026-11-26-analysis-history.md) | Built 2026-11-26 on `feat/analysis-history`; device check, then PR |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
@@ -63,13 +63,6 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 - Decided (user, option B): on sign-in after guest use, show the Cloud Sync page. Account empty → confirm "Move your data to your account". Account has data → choose **Merge** (default, recommended) or **Keep only my account's data** (warns this phone's data will be deleted).
 - Open for the spec: what counts as a duplicate when merging (presets/category profiles by name?), show only to former guests, offline/failure handling, sign-in entry point for a guest (without signing out first?).
 
-### F10 seed notes (brainstorm 2026-11-25)
-
-- Intent (user): compare spending over time: today vs previous days, this week vs previous weeks, this month vs previous months. Analysis used to be reachable; hidden because the bar chart couldn't scroll back past 7 days.
-- Today (code): custom `Canvas` chart (`DailyExpenseBarChart`, `toLast7DaysExpenses()`), fixed last 7 days; tap a bar → that day's expenses; category profile filter applies; screen not in the bottom bar and its only entry events are dead (see F02).
-- Decided (user): layout **A "compare-first"**: Day / Week / Month switch; newest bar on the right, drag to go back in time (no hard limit); selected period's total and change vs the previous period at the top; dashed line = average of bars in view; tap a bar → list that period's expenses (day/week/month). Tap behaviour "good enough for now".
-- Proposed (not yet confirmed): opens on Day with the current period selected; ~7 bars in view (Day), 5–6 (Week), 6 (Month); weeks Mon–Sun; empty periods show a zero bar; scale fits bars in view; category filter still applies.
-- Open for the spec: chart library vs custom scrolling Canvas; how Analysis is reached (ties to F05/P17 Analysis tab).
 
 ### F11 seed notes (MVVM research 2026-11-26)
 

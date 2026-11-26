@@ -1,51 +1,62 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
-import com.luna.budgetapp.presentation.screen.components.LoadingContent
-import com.luna.budgetapp.presentation.screen.components.ErrorContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.luna.budgetapp.R
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
-import com.luna.budgetapp.presentation.screen.analysis.components.DailyExpenseBarChart
-import com.luna.budgetapp.presentation.screen.components.ExpenseTable
+import com.luna.budgetapp.domain.model.Granularity
+import com.luna.budgetapp.domain.model.PeriodChange
+import com.luna.budgetapp.domain.model.PeriodTotal
+import com.luna.budgetapp.presentation.screen.analysis.components.SpendingHistoryChart
+import com.luna.budgetapp.presentation.screen.analysis.components.SummaryLabel
+import com.luna.budgetapp.presentation.screen.analysis.components.summaryLabel
 import com.luna.budgetapp.presentation.screen.components.CategoryProfileSelectorDropdown
+import com.luna.budgetapp.presentation.screen.components.ErrorContent
+import com.luna.budgetapp.presentation.screen.components.ExpenseTable
+import com.luna.budgetapp.presentation.screen.components.LoadingContent
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
-import java.time.LocalDateTime
+import java.time.LocalDate
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalysisRoute(
-    viewModel: AnalysisViewModel
+    viewModel: AnalysisViewModel,
+    onBack: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -62,6 +73,14 @@ fun AnalysisRoute(
                     modifier = Modifier,
                     title = {},
                     windowInsets = WindowInsets(0, 0, 0, 0),
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.cd_back)
+                            )
+                        }
+                    },
                     actions = {
                         CategoryProfileSelectorDropdown(
                             selectedProfile = state.categoryProfileState.activeProfile,
@@ -89,59 +108,154 @@ fun AnalysisContent(
     uiState: UiState.Success,
     onEvent: (Event) -> Unit,
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    val history = uiState.historyState
+    val selected = history.selected
 
     Column(
-        modifier = modifier.fillMaxSize()
-            .padding(16.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        DailyExpenseBarChart(
-            modifier = Modifier,
-            expenses = uiState.expensesState.expenses,
-            selectedDate = uiState.dateState.selectedDate,
-            onClickBar = { date ->
-                onEvent(Event.SelectBar(date))
-                isExpanded = true
-            }
+        GranularityPicker(
+            selected = history.granularity,
+            onSelect = { onEvent(Event.SelectGranularity(it)) }
         )
 
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = slideInVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy
-                )
-            ) { -it },
-            exit = slideOutVertically { -it },
-            modifier = Modifier.clipToBounds()
-        ) {
-            Column (
-                modifier = Modifier.padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ExpenseTable(
-                    modifier = Modifier,
-                    expenses = uiState.expensesState.filteredExpenses
-                )
+        if (selected != null && history.today != null) {
+            SpendingSummary(
+                period = selected,
+                granularity = history.granularity,
+                today = history.today,
+                change = history.change
+            )
+        }
 
-                Button(
-                    onClick = {
-                        isExpanded = false
-                        onEvent(Event.DeselectBar)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+        SpendingHistoryChart(
+            periods = history.periods,
+            granularity = history.granularity,
+            selectedStart = selected?.start,
+            onSelect = { onEvent(Event.SelectPeriod(it)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (uiState.expensesState.filteredExpenses.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.analysis_no_spending),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            ExpenseTable(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                expenses = uiState.expensesState.filteredExpenses
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GranularityPicker(
+    selected: Granularity,
+    onSelect: (Granularity) -> Unit,
+) {
+    val options = listOf(
+        Granularity.DAY to R.string.analysis_day,
+        Granularity.WEEK to R.string.analysis_week,
+        Granularity.MONTH to R.string.analysis_month,
+    )
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        options.forEachIndexed { index, (granularity, label) ->
+            SegmentedButton(
+                selected = granularity == selected,
+                onClick = { onSelect(granularity) },
+                shape = SegmentedButtonDefaults.itemShape(index, options.size)
+            ) {
+                Text(stringResource(label))
             }
         }
     }
+}
+
+@Composable
+private fun SpendingSummary(
+    period: PeriodTotal,
+    granularity: Granularity,
+    today: LocalDate,
+    change: PeriodChange?,
+) {
+    val locale = LocalConfiguration.current.locales[0]
+    val label = when (val l = summaryLabel(period, granularity, today, locale)) {
+        SummaryLabel.Today -> stringResource(R.string.analysis_today)
+        SummaryLabel.ThisWeek -> stringResource(R.string.analysis_this_week)
+        SummaryLabel.ThisMonth -> stringResource(R.string.analysis_this_month)
+        is SummaryLabel.Text -> l.value
+    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = period.total.toPeso(),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
+        if (change != null) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = changeText(change),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/** "▲ ₱120.00 (+15%) vs previous"; the percentage is omitted when there is nothing to compare against. */
+@Composable
+private fun changeText(change: PeriodChange): String {
+    val amount = abs(change.amount).toPeso()
+    val percent = change.percent?.let { abs(it.roundToInt()) }
+    return when {
+        change.amount > 0 ->
+            if (percent != null) stringResource(R.string.analysis_change_up_pct, amount, percent)
+            else stringResource(R.string.analysis_change_up, amount)
+        change.amount < 0 ->
+            if (percent != null) stringResource(R.string.analysis_change_down_pct, amount, percent)
+            else stringResource(R.string.analysis_change_down, amount)
+        else -> stringResource(R.string.analysis_change_none)
+    }
+}
+
+private fun previewState(): UiState.Success {
+    val today = LocalDate.of(2026, 11, 26)
+    val periods = (6 downTo 0).map { i ->
+        val d = today.minusDays(i.toLong())
+        PeriodTotal(d, d, if (i % 3 == 0) 0L else 15000L * (7 - i))
+    }
+    val expenses = listOf(
+        Expense(1L, "Coffee", 9000, Category.FOOD, "Expense", today.atTime(9, 0)),
+        Expense(2L, "Lunch", 15000, Category.FOOD, "Expense", today.atTime(12, 0)),
+    )
+    return UiState.Success(
+        historyState = HistoryState(
+            periods = periods,
+            selected = periods.last(),
+            change = PeriodChange(12000, 15.0),
+            today = today
+        ),
+        expensesState = ExpensesState(filteredExpenses = expenses)
+    )
 }
 
 @Preview(
@@ -151,28 +265,9 @@ fun AnalysisContent(
 )
 @Composable
 private fun AnalysisContentPreviewLight() {
-    val now = LocalDateTime.now()
-    val dummyExpenses = listOf(
-        Expense(1L, "Coffee", 9000, Category.FOOD, "Expense", now.minusDays(6)),
-        Expense(2L, "Lunch", 15000, Category.FOOD, "Expense", now.minusDays(6)),
-    )
-
-    val successState = UiState.Success(
-        expensesState = ExpensesState(
-            expenses = dummyExpenses,
-            filteredExpenses = dummyExpenses
-        )
-    )
-
     LazyWalletTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
-            AnalysisContent(
-                modifier = Modifier,
-                uiState = successState,
-                onEvent = {}
-            )
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AnalysisContent(modifier = Modifier, uiState = previewState(), onEvent = {})
         }
     }
 }
@@ -184,37 +279,9 @@ private fun AnalysisContentPreviewLight() {
 )
 @Composable
 private fun AnalysisContentPreviewDark() {
-    val now = LocalDateTime.now()
-    val dummyExpenses = listOf(
-        Expense(1L, "Coffee", 9000, Category.FOOD, "Expense", now.minusDays(6)),
-        Expense(2L, "Lunch", 15000, Category.FOOD, "Expense", now.minusDays(6)),
-        Expense(3L, "Grab", 20000,  Category.COMMUTE, "Expense", now.minusDays(5)),
-        Expense(4L, "Dinner", 18000, Category.FOOD, "Expense", now.minusDays(4)),
-        Expense(5L, "Snacks", 7000, Category.FOOD, "Expense", now.minusDays(4)),
-        Expense(6L, "Groceries", 50000, Category.GROCERY, "Expense", now.minusDays(3)),
-        Expense(7L, "Coffee", 9500, Category.FOOD, "Expense", now.minusDays(2)),
-        Expense(8L, "Taxi", 18000, Category.COMMUTE, "Expense", now.minusDays(2)),
-        Expense(9L, "Lunch", 16000, Category.FOOD, "Expense", now.minusDays(1)),
-        Expense(10L, "Breakfast", 8000, Category.FOOD, "Expense", now),
-        Expense(11L, "Dinner", 20000, Category.FOOD, "Expense", now)
-    )
-
-    val successState = UiState.Success(
-        expensesState = ExpensesState(
-            expenses = dummyExpenses,
-            filteredExpenses = dummyExpenses
-        )
-    )
-
     LazyWalletTheme {
-        Surface(
-            color = MaterialTheme.colorScheme.background
-        ) {
-            AnalysisContent(
-                modifier = Modifier,
-                uiState = successState,
-                onEvent = {}
-            )
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AnalysisContent(modifier = Modifier, uiState = previewState(), onEvent = {})
         }
     }
 }

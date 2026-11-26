@@ -111,4 +111,18 @@
     <string name="auth_error_invalid_credentials">Invalid credentials</string>
     <string name="auth_error_generic">Something went wrong.</string>
     <string name="migration_error">Migration failed. Please try again.</string>
+    <string name="analysis_day">Day</string>
+    <string name="analysis_week">Week</string>
+    <string name="analysis_month">Month</string>
+    <string name="analysis_today">Today</string>
+    <string name="analysis_this_week">This week</string>
+    <string name="analysis_this_month">This month</string>
+    <string name="analysis_change_up">▲ %1$s vs previous</string>
+    <string name="analysis_change_up_pct">▲ %1$s (+%2$d%%) vs previous</string>
+    <string name="analysis_change_down">▼ %1$s vs previous</string>
+    <string name="analysis_change_down_pct">▼ %1$s (−%2$d%%) vs previous</string>
+    <string name="analysis_change_none">Same as previous</string>
+    <string name="analysis_no_spending">No spending</string>
+    <string name="cd_open_analysis">Spending over time</string>
+    <string name="cd_back">Back</string>
 </resources>
