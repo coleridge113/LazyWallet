@@ -92,7 +92,7 @@ fun MigrationScreen(
         state.error?.let { error ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = error,
+                text = stringResource(error),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )

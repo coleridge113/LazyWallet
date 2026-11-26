@@ -20,6 +20,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -115,15 +117,18 @@ fun DateRangeSelectorDropdownPreview() {
     )
 }
 
-fun DateFilter.displayName() =
-    when (this) {
-        DateFilter.Daily -> "Today"
-        DateFilter.Weekly -> "Week"
-        DateFilter.Monthly -> "Month"
-        DateFilter.Last7Days -> "Last 7 days"
-        DateFilter.BiWeekly -> "Bi-Weekly"
-        DateFilter.Quarterly -> "Quarterly"
-        DateFilter.BiYearly -> "Bi-Yearly"
-        DateFilter.Yearly -> "Yearly"
-        is DateFilter.Custom -> "Custom"
-    }
+@Composable
+fun DateFilter.displayName(): String =
+    stringResource(
+        when (this) {
+            DateFilter.Daily -> R.string.date_filter_today
+            DateFilter.Weekly -> R.string.date_filter_week
+            DateFilter.Monthly -> R.string.date_filter_month
+            DateFilter.Last7Days -> R.string.date_filter_last_7_days
+            DateFilter.BiWeekly -> R.string.date_filter_bi_weekly
+            DateFilter.Quarterly -> R.string.date_filter_quarterly
+            DateFilter.BiYearly -> R.string.date_filter_bi_yearly
+            DateFilter.Yearly -> R.string.date_filter_yearly
+            is DateFilter.Custom -> R.string.title_custom
+        }
+    )

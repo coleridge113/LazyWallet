@@ -96,4 +96,19 @@
     <string name="migration_in_progress">Migrating data...</string>
     <string name="migration_start">Migrate to Cloud</string>
     <string name="migration_skip">Keep Data Local (Not Recommended)</string>
+    <string name="date_filter_today">Today</string>
+    <string name="date_filter_week">Week</string>
+    <string name="date_filter_month">Month</string>
+    <string name="date_filter_last_7_days">Last 7 days</string>
+    <string name="date_filter_bi_weekly">Bi-Weekly</string>
+    <string name="date_filter_quarterly">Quarterly</string>
+    <string name="date_filter_bi_yearly">Bi-Yearly</string>
+    <string name="date_filter_yearly">Yearly</string>
+    <string name="auth_error_no_google_account">Your device is not logged in to a Google account.</string>
+    <string name="auth_error_invalid_input">Please enter a valid email or password.</string>
+    <string name="auth_error_invalid_email">Invalid email format.</string>
+    <string name="auth_error_user_not_found">User not found.</string>
+    <string name="auth_error_invalid_credentials">Invalid credentials</string>
+    <string name="auth_error_generic">Something went wrong.</string>
+    <string name="migration_error">Migration failed. Please try again.</string>
 </resources>

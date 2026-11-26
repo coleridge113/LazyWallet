@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.auth
 
+import androidx.annotation.StringRes
 import androidx.credentials.Credential
 
 sealed interface Event {
@@ -12,5 +13,5 @@ sealed interface Event {
 }
 
 sealed interface DialogState {
-    data class ErrorMessage(val message: String?) : DialogState
+    data class ErrorMessage(@StringRes val messageRes: Int) : DialogState
 }

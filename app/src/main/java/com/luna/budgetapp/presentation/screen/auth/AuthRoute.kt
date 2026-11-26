@@ -115,7 +115,7 @@ fun AuthContent(
     modifier: Modifier = Modifier
 ) {
     when (val dialog = dialog) {
-        is DialogState.ErrorMessage -> ErrorDialog(dialog.message) {
+        is DialogState.ErrorMessage -> ErrorDialog(stringResource(dialog.messageRes)) {
             onEvent(Event.DismissDialog)
         }
         null -> {}
@@ -319,7 +319,7 @@ fun LoginScreenPreviewDialog() {
         Surface(
             color = MaterialTheme.colorScheme.background
         ) {
-            val dialog = DialogState.ErrorMessage("Something went wrong")
+            val dialog = DialogState.ErrorMessage(R.string.auth_error_generic)
             AuthContent(
                 isUserSignedIn = false,
                 onEvent = {},

@@ -17,16 +17,18 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.luna.budgetapp.R
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfirmationDialog(
     modifier: Modifier = Modifier,
-    title: String = "Confirm",
+    title: String = stringResource(R.string.btn_confirm),
     message: String,
-    confirmText: String = "Ok",
-    dismissText: String = "Cancel",
+    confirmText: String = stringResource(R.string.btn_ok),
+    dismissText: String = stringResource(R.string.btn_cancel),
     isDestructive: Boolean = false,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
