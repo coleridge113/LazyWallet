@@ -227,3 +227,38 @@ Strings (exact copy): `outlook_sheet_title` "%1$s outlook", `outlook_spent_so_fa
 - [ ] **Step 4: Commit** — `feat(F14): outlook bottom sheet with labelled budget chart`
 
 Device check (user): spec §7 device list.
+
+---
+
+### Task 6: Replace the day popover with an expanding card (revised design, 2026-11-26)
+
+Spec §5.2 (revised TalkBack + amount-row-only click) and §5.3 (rewritten) are the requirements; read both. Tasks 1–5 are done.
+
+**Files:**
+- Modify: `app/src/main/java/com/luna/budgetapp/presentation/screen/budget/components/BudgetHeatGridCard.kt` (remove TooltipBox/RichTooltip, the `openedOnDown` pointer-input guard and the date-scoped dismiss plumbing; add the details section)
+- Modify: `app/src/main/java/com/luna/budgetapp/presentation/screen/budget/BudgetRoute.kt` (drop the list-scroll clearing; keep month-change and sheet-open clearing)
+- Modify: `app/src/main/res/values/strings.xml`
+
+**Interfaces:**
+- Consumes: `MonthOutlook`, `OutlookDay`, `DayKind`, `toWholePeso()` (Task 2).
+- Produces:
+
+```kotlin
+@Composable fun BudgetHeatGridCard(
+    outlook: MonthOutlook,
+    selectedDay: LocalDate?,
+    onDayClick: (LocalDate) -> Unit,   // Route toggles: same day → null, else that day
+    onCollapse: () -> Unit,            // ⌃ button → Route sets null
+    onOpenOutlook: () -> Unit,         // amount row only → Route opens the sheet
+    modifier: Modifier = Modifier,
+)
+```
+
+Notch geometry: the notch's centre x = the selected column's centre within the grid (column = `(leadingBlanks + dayOfMonth - 1) % 7`; cell width = (288dp − 6×6dp) / 7 = 36dp; centre = col × 42dp + 18dp), offset by the grid's left inset inside the card content (grid is 288dp, centred). Draw the divider with `Canvas`/`Path` across the full content width.
+
+Strings: remove the now-unused popover strings (`outlook_day_cd`, `outlook_day_nothing_cd`, `outlook_spent` if unused). Add (exact copy): `outlook_cell_cd` "%1$s, %2$s", `outlook_cell_no_spend_cd` "%1$s, no spend", `outlook_cell_upcoming_cd` "%1$s, upcoming", `outlook_cell_today_suffix` ", today", `outlook_cell_selected_suffix` ", selected", `outlook_collapse_day` "Collapse day details". Cell date in TalkBack: pattern `"d MMMM"` ("18 November"). Details date: `"EEE, d MMM"`. Keep `outlook_running_total`, `outlook_projected_month`, `outlook_too_early`.
+
+- [ ] **Step 1: Update `@Preview`s** (dark + light): mockup month collapsed; expanded on 18 Nov (notch centred, middle column); expanded on a Sunday-column day and a Saturday-column day (notch at the edges); expanded on day 2 ("Too early"); no budgets.
+- [ ] **Step 2: Implement** per spec §5.2–5.3; selected cell gets `selected = true` semantics; only the amount row is clickable (role button) for the sheet.
+- [ ] **Step 3: Verify** — `./gradlew testDebugUnitTest assembleDebug` → BUILD SUCCESSFUL; `grep -rn "TooltipBox\|RichTooltip\|openedOnDown\|isScrollInProgress" app/src/main/java/com/luna/budgetapp/presentation/screen/budget` → no matches.
+- [ ] **Step 4: Commit** — `feat(F14): day details expand the card instead of a popover`

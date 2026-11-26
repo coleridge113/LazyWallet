@@ -8,7 +8,7 @@ Replace the F12 gauge arc at the top of the Budget screen with a design the user
 
 - **Alt B · Month heat grid**: the top card shows "₱X left this month" over a calendar grid of the current month, where each day's colour strength shows how much was spent.
 - **Dialog 2 · Bottom sheet with chart**: tapping the card opens a "<Month> outlook" sheet with spent-so-far, a pace projection, a cumulative-spend chart against the budget, and three quick stats.
-- **Dialog 3 · Day tap popover**: tapping a day shows that day's spend, the running total and the projected month.
+- **Dialog 3 · Day tap expands card** (revised 2026-11-26; first version was a floating popover): tapping a day expands the top card to show that day's spend, the running total and the projected month.
 
 Why: the gauge says "how much is left" but not *when* the money went. The grid shows the month's rhythm at a glance; the sheet answers "where will I end up?"; the popover answers "what happened that day?".
 
@@ -40,6 +40,8 @@ Anti-goals (a failure even if it works)
 - Tests: `BudgetViewModelTest`, `OutlookDetailsTest`, `FakeExpenseRepository` (already implements `getDailyTotals`), `MutableClock`.
 
 ## 4. Approaches considered (for the day popover)
+
+(Revised 2026-11-26: A was built, proved buggy on device, and was replaced by C from a new mockup; see §5.3.)
 
 | | Approach | Trade-off |
 |---|---|---|
@@ -79,7 +81,7 @@ Mockup values (412dp artboard):
 - Row, baseline-aligned, 8dp gap: amount 36sp/44 bold ("₱15,700", whole pesos as in the mockup) + "left this month" 14sp/20, `onSurfaceVariant` (#928374).
 - Over budget: amount = overspend, suffix "over this month", amount in the existing overspent colour (`budgetProgressColor` red band).
 - No budgets: "No budgets yet" (existing string) in place of amount+suffix; grid still shown; the card still opens the sheet (its no-budget variant: tiles unchanged, since "Spent so far" and the pace "Projected" don't need budgets; chart drops the budget line, see 5.4).
-- Whole card is clickable → opens the outlook sheet; TalkBack: "₱15,700 left this month. Opens November outlook." (role button).
+- **Only the amount row** ("₱15,700 left this month") is clickable → opens the outlook sheet (revised 2026-11-26: taps on the grid, gaps or day details never open the sheet); TalkBack on that row: "₱15,700 left this month. Opens November outlook." (role button); no budgets: "No budgets yet. Opens November outlook.".
 
 Grid:
 - 288dp wide, centred, 12dp below the amount row; 7 columns, 6dp gaps; first column **Sunday**.
@@ -90,22 +92,21 @@ Grid:
   - Past/today with no spend: 1dp border `onSurfaceVariant` @50%, no fill.
   - Today: additionally a 2dp border `onSurface` (#d4be98).
   - Future: 1dp **dashed** border `onSurfaceVariant`, whole cell @40% opacity, not clickable.
-  - Selected (popover open): 2dp `onSurface` border (as today's).
+  - Selected (day details open): 2dp `onSurface` border (as today's).
 - No day numbers in cells (mockup has none).
-- TalkBack: each past/today cell focusable, `clearAndSetSemantics` with "Wed 18 Nov, ₱1,150 spent" (or "nothing spent"), role button; future cells hidden from TalkBack. Grid container gets no extra summary label (cells carry it); builder may add a heading "Daily spend, November 2026".
+- TalkBack (revised 2026-11-26, per the new mockup): every cell is focusable with `clearAndSetSemantics`, role button for past/today, reading "18 November, ₱1,150" · "4 November, no spend" · suffix ", today" for today · suffix ", selected" (and selected state) for the selected cell · future cells "27 November, upcoming" (not clickable). Grid container gets no extra summary label (cells carry it); builder may add a heading "Daily spend, November 2026".
 
-### 5.3 Day popover (M3 `RichTooltip`)
+### 5.3 Day details: tap expands the card (revised 2026-11-26)
 
-- Opens on tap of any past/today cell (₱0 days included). Tapping another day moves it; tapping the same day, tapping outside, or scrolling the budget list closes it (my call: observe the `LazyListState`; the hero itself doesn't scroll). Opening the sheet closes it.
-- Container: surface = `primary` 11% over `surface` (#282828) — same as the sheet; 12dp radius; width 220dp; padding 14dp vertical / 16dp horizontal; caret on; shadow as Material default (mockup: `0 2px 6px rgba(0,0,0,.3)`).
-- Content:
-  - "Wed, 18 Nov" — 14sp/20 medium, letterSpacing 0.1.
-  - Row baseline 6dp gap: "₱1,150" 22sp/28 bold + "spent" 12sp/16 `onSurfaceVariant`.
-  - Divider 1dp `outlineVariant` (#49454f), 10dp vertical margin.
-  - Row: "Running total" (`onSurfaceVariant`) … "₱9,100" — 14sp/20, space-between.
-  - Row (4dp top): "Projected month" … "₱14,192"; when `projected == null`: "Too early".
-- Placement: below the cell, caret pointing up; Material flips/clamps near edges.
-- Amounts in the popover and sheet: whole pesos (mockup), via the app's peso formatter.
+Replaces the original M3 `RichTooltip` popover (approach A in §4), which was buggy on device (tap pass-through, close/reopen races). New design reference: `docs/screens/redesign/budget/budget-screen-popover-redesign.zip` ("Dialog 3 · Day tap expands card", git-ignored). This is approach C from §4; no tooltip, popup or pointer-input workaround remains.
+
+- Tapping a past/today cell (₱0 days included) selects it and expands the hero card with a details section under the grid. Tapping another day switches; tapping the selected day again, or the collapse button, collapses. Expand/collapse is animated (`animateContentSize` or `AnimatedVisibility`). Future cells are not tappable.
+- Selected cell: 2dp `onSurface` border (as today's).
+- Details section (mockup values):
+  - Divider 12dp below the grid: 1dp `outlineVariant` (#49454f) line across the card's content width with an upward notch 16dp wide × 8dp tall (path `H162 L170 0.5 L178 8.5` in a 340×9 box). **The notch is centred under the selected day's column** (user-approved reading; the mockup's centring is because 18 Nov sits in the middle column).
+  - Row, 4dp below, vertically centred: date "Wed, 18 Nov" 14sp/20 medium, letterSpacing 0.1 · flexible space · amount "₱1,150" 22sp/28 bold · collapse `IconButton` 48dp with `expand_less` 24dp, `onSurface`, content description "Collapse day details".
+  - Row, 4dp below, two equal columns, 12dp gap: label 12sp/16 letterSpacing 0.4 `onSurfaceVariant` over value 14sp/20 letterSpacing 0.25 — "Running total" / "₱9,100" and "Projected month" / "₱14,192" (value "Too early" while `projected == null`).
+- Selection is Route-local plain `remember` state (not saveable; see ledger ruling): cleared when the month changes and when the sheet opens. List scrolling no longer clears it (nothing floats over the list).
 
 ### 5.4 Outlook sheet (`ModalBottomSheet`)
 
@@ -150,7 +151,7 @@ Repository/DAO: the unfiltered daily-totals query includes an expense whose cate
 
 ViewModel: success state carries the model; midnight rollover moves "today" and starts a new month on the 1st; error path still yields `UiState.Error`.
 
-Device checks (user): grid looks right in dark theme; tap a day → popover with correct figures, near-edge days (Sat/Sun columns) position sensibly; tap card → sheet with labelled budget line; overspent month; month with no spending; TalkBack reads day cells; largest font size doesn't break the hero row.
+Device checks (user): grid looks right in dark theme; tap a day → card expands with correct figures and the notch under that day's column (check Sun and Sat columns); tap another day → switches in one tap; tap the selected day or ⌃ → collapses; tapping the grid or details never opens the sheet; tap card → sheet with labelled budget line; overspent month; month with no spending; TalkBack reads day cells; largest font size doesn't break the hero row.
 
 ## 8. Left to the builder
 
