@@ -1,13 +1,13 @@
-# F13 · Home redesign (category tiles + Recently added sheet): design
+# F13 · ExpensePreset redesign (category tiles + Recently added sheet): design
 
-Status: draft for approval, 2026-11-26. Branch `feat/home-redesign`.
-Source designs: `docs/screens/redesign/expensepreset/` (git-ignored, local only). It holds the handoff note `expensepreset-screen-redesign-handoff.md` and two mockup zips: `-a` = `HomeAltB.dc.html` (Home), `-b` = `HomeAltBRecentSheet.dc.html` (sheet). The mockups are reference values (sizes, colours, type), not code to copy.
+Status: approved 2026-11-26. Branch `feat/home-redesign`.
+Source designs: `docs/screens/redesign/expensepreset/` (git-ignored, local only). It holds the handoff note `expensepreset-screen-redesign-handoff.md` and two mockup zips: `-a` = `HomeAltB.dc.html` (ExpensePreset screen; the file name is the design tool's), `-b` = `HomeAltBRecentSheet.dc.html` (sheet). The mockups are reference values (sizes, colours, type), not code to copy.
 
 ## Intent
 
-This is the second step of the screen-by-screen UI rebuild (F12 Budget went first). The user designed and accepted a new Home ("Alt B · Category tiles" plus "Alt B · Recently added sheet"), and this feature builds it.
+This is the second step of the screen-by-screen UI rebuild (F12 Budget went first). The user designed and accepted a new ExpensePreset screen ("Alt B · Category tiles" plus "Alt B · Recently added sheet"), and this feature builds it.
 
-Today, Home has these problems:
+Today, the ExpensePreset screen has these problems:
 - It spends a quarter of the screen on one number.
 - It hides Add and Undo behind a ☰ FAB that reads like a navigation drawer.
 - Undo needs a confirm dialog.
@@ -53,7 +53,7 @@ The redesign aims to:
    - The newest row has a primary-10% highlight with 12dp corners.
    - Remove button → deletes that expense and shows the snackbar. The sheet stays open, and it closes itself when the list becomes empty.
    - "See all expenses →" text button at the bottom right: closes the sheet and switches to the Expenses tab.
-5. **No FAB on Home.** The ☰ FAB, its Add/Undo menu, and the "Delete the last expense?" dialog are removed. The top bar (Sign-out only) and the bottom nav are unchanged.
+5. **No FAB on the ExpensePreset screen.** The ☰ FAB, its Add/Undo menu, and the "Delete the last expense?" dialog are removed. The top bar (Sign-out only) and the bottom nav are unchanged.
 6. **"Removed · Undo" snackbar.**
    - Every removal from the strip or the sheet shows a snackbar "Removed <name> ₱<amount>" with an "Undo" action.
    - Undo adds the expense back with the same category, name, amount and date. It gets a new local `id` and a new Firestore `remoteId`. Nothing visible depends on either.
@@ -79,20 +79,20 @@ The redesign aims to:
 - The Budget redesign in the same handoff (month heat grid, outlook sheet, day popover). It becomes a separate feature, F14.
 - Expenses, Analysis, Sign in, the dialogs' visual style, the palette clean-up of the M3 baseline roles, and light-theme tuning (F04).
 - Reordering presets or adding new preset fields.
-- Snackbars anywhere other than Home (F11 decides the app-wide pattern; this feature should not block it).
+- Snackbars anywhere other than the ExpensePreset screen (F11 decides the app-wide pattern; this feature should not block it).
 
 ## Anti-goals
 
-- Undo must never remove anything other than the expense the strip shows. The old `deleteLatestExpense` (`MAX(id)` over all expenses) can remove a back-dated expense that is not even in today's list, so Home must not use it any more.
-- A mis-tap must not lose data silently: every removal on Home is undoable from the snackbar.
+- Undo must never remove anything other than the expense the strip shows. The old `deleteLatestExpense` (`MAX(id)` over all expenses) can remove a back-dated expense that is not even in today's list, so the ExpensePreset screen must not use it any more.
+- A mis-tap must not lose data silently: every removal on the ExpensePreset screen is undoable from the snackbar.
 - Don't regress logging speed: tapping a tile logs at once, with no dialog and no navigation.
 
 ## Constraints and facts
 
-- **Data: Home ignores the category filter** (user, 2026-11-26, option A). Home means "everything I logged today", so the hero total, strip, sheet and sparkline all use **every category**. The filter stays an Expenses-screen tool, and a tile you tap always shows up on Home.
-  - Before this, Home's total followed the active category profile. Users with a filter set will see Home's total change, which is intended.
+- **Data: the ExpensePreset screen ignores the category filter** (user, 2026-11-26, option A). The ExpensePreset screen means "everything I logged today", so the hero total, strip, sheet and sparkline all use **every category**. The filter stays an Expenses-screen tool, and a tile you tap always shows up on the ExpensePreset screen.
+  - Before this, the ExpensePreset screen's total followed the active category profile. Users with a filter set will see its total change, which is intended.
   - The ViewModel stops observing the category profile for its data: `getExpensesByDateRange` and the daily totals get all `Category` names, or an unfiltered variant if the plan finds that cleaner.
-  - `CategoryProfileState` leaves Home's `UiState`.
+  - `CategoryProfileState` leaves the ExpensePreset `UiState`.
   - `profileUseCases.initializeCategoryProfile()` stays on start, because the Expenses screen relies on it.
 - **Expense model.** `Expense` has `id`, `type`, `amount` (cents), `category`, `date` (`LocalDateTime`) and no `remoteId`. `AddExpenseUseCase(category: String, type, amount, date)` keeps the date and makes a new `remoteId`. `DeleteExpenseUseCase(id)` deletes locally and from Firestore.
 - **Today rolls over at midnight.** `todayFlow(clock)` (already in the VM) drives this. See Learnings: no `advanceUntilIdle()` while it is collected.
@@ -112,7 +112,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 
 **Where the state lives**
 - **Extend `ExpensePresetViewModel` (chosen).** It already loads presets, today's expenses and the clock. New fields: the 7-day totals, the last-logged expense, the sheet's open state and the user message.
-- **A separate "recent" ViewModel or a shared sheet component.** Rejected: only Home uses it.
+- **A separate "recent" ViewModel or a shared sheet component.** Rejected: only the ExpensePreset screen uses it.
 
 **Edit/Delete gesture on a 3-column grid**
 - **Long-press menu (chosen, as the handoff suggests).**
@@ -137,22 +137,22 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
   - `Event.UndoRemove` has no payload; it re-adds `lastRemoved` and clears it.
   - A second removal overwrites `lastRemoved`, so only the latest can be undone.
   - The Route calls `Event.UserMessageShown` when `showSnackbar` returns, whether it was dismissed or acted on.
-  - If Home leaves the screen, the snackbar goes with it and that Undo is lost (accepted).
-- **Undo across midnight** (Claude's call): Undo restores the original date without clamping. A removal undone after midnight comes back as yesterday's expense and leaves Home's "today" views (accepted).
+  - If the user leaves the ExpensePreset screen, the snackbar goes with it and that Undo is lost (accepted).
+- **Undo across midnight** (Claude's call): Undo restores the original date without clamping. A removal undone after midnight comes back as yesterday's expense and leaves the ExpensePreset screen's "today" views (accepted).
 - **Day boundaries** (Claude's call): days in the sparkline are local calendar dates, the same as `ObserveSpendingHistoryUseCase`. The ViewModel reads the repository's daily totals through a small new use case (or the existing one with `Granularity.DAY`, whichever the plan finds simpler) and windows them on `todayFlow(clock)`.
-- **Date filter** (answered by the code): Home's `DateState` is always `DateFilter.Daily` and Home has no date-filter control, so "today's expenses" = the existing `expenses` list.
+- **Date filter** (answered by the code): the ExpensePreset `DateState` is always `DateFilter.Daily` and the screen has no date-filter control, so "today's expenses" = the existing `expenses` list.
 - **Light theme** (Claude's call; tuning stays with F04): dark theme is the design target. The category colours stay fixed in both themes. In light theme they only need to be legible, and the builder may raise the 18% / 35% tints there if they are not.
 - **"See all expenses"** switches to the Expenses tab the same way the bottom bar does (a new `onOpenExpenses` callback from `NavGraph` into `ExpensePresetRoute`).
-- **The snackbar** lives on Home: a `SnackbarHostState` in the Route, anchored at the bottom of the Home content, above the bottom bar.
+- **The snackbar** lives on the ExpensePreset screen: a `SnackbarHostState` in the Route, anchored at the bottom of the ExpensePreset content, above the bottom bar.
 - **Removed code:**
   - `DialogState.ConfirmDeleteExpense`;
   - `Event.ShowDeleteConfirmationDialog`;
   - `Event.DeleteLatestExpense`;
   - the FAB code;
-  - `SwipeableTableItem` usage on Home (the component stays, because Expenses uses it);
+  - `SwipeableTableItem` usage on the ExpensePreset screen (the component stays, because Expenses uses it);
   - `ExpenseAmountDisplay`, if nothing else uses it.
 
-  `DeleteLatestExpenseUseCase` stays in the codebase but is no longer used by Home.
+  `DeleteLatestExpenseUseCase` stays in the codebase but is no longer used by the ExpensePreset screen.
 
 ## Accessibility
 
@@ -171,7 +171,7 @@ The user picked "A: snackbar 'Removed · Undo'" over a confirm for older entries
 
 ## Done when
 
-- Home matches the two mockups at 412dp in dark theme: hero, strip, 3-column tiles, the "New preset" tile, and no FAB. The sheet opens from the strip.
+- The ExpensePreset screen matches the two mockups at 412dp in dark theme: hero, strip, 3-column tiles, the "New preset" tile, and no FAB. The sheet opens from the strip.
 - Behaviour:
   - tap a tile → logs;
   - tap its icon → custom dialog;
