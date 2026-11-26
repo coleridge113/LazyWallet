@@ -29,5 +29,13 @@ class FakeAuthRepository(var signedIn: Boolean = false) : AuthRepository {
         onFailure: (Exception) -> Unit
     ) = Unit
 
+    val calls = mutableListOf<String>()
+    var signOutError: Exception? = null
+
+    override suspend fun signOut() {
+        signOutError?.let { throw it }
+        calls.add("signOut")
+    }
+
     override fun isSignedIn(): Boolean = signedIn
 }

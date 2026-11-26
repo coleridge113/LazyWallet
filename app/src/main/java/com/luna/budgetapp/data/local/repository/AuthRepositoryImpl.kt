@@ -35,6 +35,10 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun signOut() {
+        firebaseAuth.signOut()
+    }
+
     override fun isSignedIn(): Boolean = firebaseAuth.currentUser != null
 
     override suspend fun signUp(

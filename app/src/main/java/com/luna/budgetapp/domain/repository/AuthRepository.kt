@@ -29,5 +29,7 @@ interface AuthRepository {
         onFailure: (Exception) -> Unit
     )
 
+    suspend fun signOut()
+
     fun isSignedIn(): Boolean
 }

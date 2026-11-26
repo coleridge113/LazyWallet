@@ -9,7 +9,9 @@ import java.time.ZoneOffset
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.repository.FakeAuthRepository
 import com.luna.budgetapp.domain.repository.FakeCategoryRepository
+import com.luna.budgetapp.domain.repository.FakeLocalDataRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
 import com.luna.budgetapp.domain.repository.FakeSettingsRepository
@@ -63,7 +65,7 @@ class ExpensePresetViewModelTest {
     private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpensePresetViewModel
     private val clock = MutableClock(Instant.now())
-    private val signOut = mockk<SignOutUseCase>()
+    private lateinit var fakeAuthRepo: FakeAuthRepository
 
     val dummyPreset = ExpensePreset(
         id = 1,
@@ -85,6 +87,7 @@ class ExpensePresetViewModelTest {
         fakeExpenseRepo = FakeExpenseRepository()
         fakeSettingsRepo = FakeSettingsRepository()
         fakeCategoryRepo = FakeCategoryRepository()
+        fakeAuthRepo = FakeAuthRepository()
 
         val presetUseCases = PresetUseCases(
             getAllExpensePresets = GetAllExpensePresetsUseCase(fakeExpensePresetRepo),
@@ -137,7 +140,7 @@ class ExpensePresetViewModelTest {
                 signInGoogle = mockk(),
                 signInEmailPassword = mockk(),
                 signUp = mockk(),
-                signOut = signOut,
+                signOut = SignOutUseCase(fakeAuthRepo, fakeSettingsRepo, FakeLocalDataRepository()),
                 isSignedIn = mockk(),
                 completeSignIn = mockk()
             ),
@@ -149,11 +152,10 @@ class ExpensePresetViewModelTest {
 
     @Test
     fun `signOut setsSignedOut and handled resets it`() = runTest {
-        coEvery { signOut(any()) } just Runs
         val job = launch { viewModel.uiState.collect {} }
         runCurrent()
 
-        viewModel.onEvent(Event.SignOut(mockk(relaxed = true)))
+        viewModel.onEvent(Event.SignOut)
         runCurrent()
         assertThat(viewModel.signedOut.value).isTrue()
 
@@ -164,11 +166,11 @@ class ExpensePresetViewModelTest {
 
     @Test
     fun `signOut when signOut throws does not set signedOut`() = runTest {
-        coEvery { signOut(any()) } throws RuntimeException("boom")
+        fakeAuthRepo.signOutError = RuntimeException("boom")
         val job = launch { viewModel.uiState.collect {} }
         runCurrent()
 
-        viewModel.onEvent(Event.SignOut(mockk(relaxed = true)))
+        viewModel.onEvent(Event.SignOut)
         runCurrent()
         assertThat(viewModel.signedOut.value).isFalse()
         job.cancel()

@@ -1,24 +1,19 @@
 package com.luna.budgetapp.domain.usecase.auth
 
-import com.google.firebase.auth.FirebaseAuth
-import com.luna.budgetapp.data.datastore.SettingsDataStore
-import com.luna.budgetapp.data.local.AppDatabase
-import kotlinx.coroutines.Dispatchers
+import com.luna.budgetapp.domain.repository.AuthRepository
+import com.luna.budgetapp.domain.repository.LocalDataRepository
+import com.luna.budgetapp.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 
 class SignOutUseCase(
-    private val db: AppDatabase,
-    private val settings: SettingsDataStore
+    private val auth: AuthRepository,
+    private val settings: SettingsRepository,
+    private val localData: LocalDataRepository
 ) {
-    suspend operator fun invoke(
-        auth: FirebaseAuth
-    ) {
+    suspend operator fun invoke() {
         auth.signOut()
-        withContext(Dispatchers.IO) {
-            if (!settings.isGuestFlow.first()) {
-                db.clearAllTables()
-            }
+        if (!settings.isGuestFlow.first()) {
+            localData.clearAll()
         }
     }
 }

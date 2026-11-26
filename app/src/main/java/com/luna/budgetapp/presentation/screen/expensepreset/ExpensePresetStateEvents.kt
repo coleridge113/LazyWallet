@@ -1,6 +1,5 @@
 package com.luna.budgetapp.presentation.screen.expensepreset
 
-import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.DateFilter
@@ -50,7 +49,7 @@ sealed interface Event {
     data object ShowDeleteConfirmationDialog : Event
     data object ShowSignOutDialog : Event
     data object DeleteLatestExpense : Event
-    data class SignOut(val auth: FirebaseAuth) : Event
+    data object SignOut : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
     data class ConfirmExpenseFormDialog(
         val id: Long?,
