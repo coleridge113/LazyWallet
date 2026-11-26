@@ -59,7 +59,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 import com.luna.budgetapp.R
@@ -119,13 +118,13 @@ fun PresetTileGrid(
                 PresetTile(
                     preset = preset,
                     onLog = { if (!clickGuard.blocked()) onLog(preset) },
-                    onCustom = { onCustom(preset) },
+                    onCustom = { if (!clickGuard.blocked()) onCustom(preset) },
                     onEdit = { onEdit(preset) },
                     onDelete = { preset.id?.let(onDelete) },
+                    canOpenMenu = { !clickGuard.blocked() },
                     onMoveEarlier = if (index > 0) ({ move(index, -1) }) else null,
                     onMoveLater = if (index < items.lastIndex) ({ move(index, 1) }) else null,
                     modifier = Modifier
-                        .zIndex(if (isDragging) 1f else 0f)
                         .graphicsLayer {
                             scaleX = lift
                             scaleY = lift
@@ -177,6 +176,7 @@ fun PresetTile(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    canOpenMenu: () -> Boolean = { true },
     onMoveEarlier: (() -> Unit)? = null,
     onMoveLater: (() -> Unit)? = null
 ) {
@@ -256,7 +256,7 @@ fun PresetTile(
             }
         }
         Box(modifier = Modifier.align(Alignment.TopEnd)) {
-            IconButton(onClick = { menuOpen = true }) {
+            IconButton(onClick = { if (canOpenMenu()) menuOpen = true }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = optionsDescription,
