@@ -48,6 +48,8 @@
 
     # Accessibility
     <string name="cd_more_options">More options</string>
+    <string name="cd_move_preset_earlier">Move earlier</string>
+    <string name="cd_move_preset_later">Move later</string>
     <string name="cd_sign_out">Sign out</string>
     <string name="cd_show_password">Show password</string>
     <string name="cd_hide_password">Hide password</string>

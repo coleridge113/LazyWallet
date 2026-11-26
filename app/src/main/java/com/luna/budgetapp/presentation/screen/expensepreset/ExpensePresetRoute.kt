@@ -208,6 +208,7 @@ fun ExpensePresetContent(
                 onCustom = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
                 onEdit = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.EDIT)) },
                 onDelete = { onEvent(Event.ShowConfirmationDialog(it)) },
+                onReorder = { onEvent(Event.ReorderPresets(it)) },
                 onNewPreset = { onEvent(Event.AddExpensePreset(null, ExpenseFormAction.ADD)) },
                 modifier = Modifier.weight(1f)
             )
