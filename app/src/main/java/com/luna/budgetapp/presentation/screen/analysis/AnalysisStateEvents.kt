@@ -39,6 +39,7 @@ data class CategoryProfileState(
 }
 
 sealed interface Event {
+    data object Retry : Event
     data object DeselectBar : Event
     data class SelectBar(val date: LocalDate) : Event
     data class SelectCategoryProfile(val profileName: String) : Event

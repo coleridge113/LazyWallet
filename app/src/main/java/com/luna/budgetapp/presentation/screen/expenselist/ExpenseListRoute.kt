@@ -76,7 +76,9 @@ fun ExpenseListRoute(
 
     when (val state = uiState) {
         is UiState.Loading -> LoadingContent()
-        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
+        is UiState.Error -> ErrorContent(
+            onRetry = { viewModel.onEvent(Event.Retry) }
+        )
         is UiState.Success -> {
             val imeVisible = WindowInsets.isImeVisible
             val fabBottomPadding by animateDpAsState(

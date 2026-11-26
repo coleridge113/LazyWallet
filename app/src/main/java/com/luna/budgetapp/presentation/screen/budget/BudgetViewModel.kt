@@ -87,11 +87,17 @@ class BudgetViewModel(
         )
     }
 
-    val uiState: StateFlow<UiState> = _successState
-        .map<UiState.Success, UiState> { it }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            emit(UiState.Error(e.message ?: "Something went wrong"))
+    /** Bumped by [Event.Retry]; each bump restarts the load pipeline below. */
+    private val _retryTrigger = MutableStateFlow(0)
+
+    val uiState: StateFlow<UiState> = _retryTrigger
+        .flatMapLatest {
+            _successState
+                .map<UiState.Success, UiState> { it }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    emit(UiState.Error(e.message))
+                }
         }
         .stateIn(
             scope = viewModelScope,
@@ -103,6 +109,7 @@ class BudgetViewModel(
     fun onEvent(event: Event) {
         when (event) {
             Event.DismissDialog -> dismissDialog()
+            Event.Retry -> _retryTrigger.update { it + 1 }
             is Event.ShowDeleteDialog -> showDeleteConfirmationDialog(event.budget)
             is Event.ShowBudgetFormDialog -> showBudgetDialog(event.budget)
             is Event.ConfirmBudgetFormDialog -> saveBudget(

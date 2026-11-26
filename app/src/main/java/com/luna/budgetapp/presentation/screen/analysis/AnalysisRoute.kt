@@ -53,7 +53,9 @@ fun AnalysisRoute(
 
     when (val state = uiState) {
         is UiState.Loading -> LoadingContent()
-        is UiState.Error -> ErrorContent(message = state.message.orEmpty())
+        is UiState.Error -> ErrorContent(
+            onRetry = { onEvent(Event.Retry) }
+        )
         is UiState.Success -> {
             Column(modifier = Modifier.fillMaxSize()) {
                 TopAppBar(

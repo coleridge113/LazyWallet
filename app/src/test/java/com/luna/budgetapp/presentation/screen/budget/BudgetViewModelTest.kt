@@ -63,6 +63,22 @@ class BudgetViewModelTest {
     }
 
     @Test
+    fun `a failing read gives Error and Retry after the fault clears gives Success`() = runTest {
+        expenseRepo.shouldThrow = true
+        val vm = viewModel()
+        val job = launch { vm.uiState.collect {} }
+        runCurrent()
+        assertThat(vm.uiState.value).isInstanceOf(UiState.Error::class.java)
+
+        expenseRepo.shouldThrow = false
+        vm.onEvent(Event.Retry)
+        runCurrent()
+
+        assertThat(vm.uiState.value).isInstanceOf(UiState.Success::class.java)
+        job.cancel()
+    }
+
+    @Test
     fun `confirming the budget form saves a budget built from the form`() = runTest {
         val vm = viewModel()
         val job = launch { vm.uiState.collect {} }

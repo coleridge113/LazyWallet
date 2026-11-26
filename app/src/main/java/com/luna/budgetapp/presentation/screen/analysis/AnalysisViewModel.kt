@@ -6,6 +6,7 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,8 @@ class AnalysisViewModel (
 ) : ViewModel() {
 
     private val _dateState = MutableStateFlow(DateState())
-    private val _errorState = MutableStateFlow<String?>(null)
+    /** Bumped by [Event.Retry]; each bump restarts the load pipeline. */
+    private val _retryTrigger = MutableStateFlow(0)
 
     private val _categoryProfileState = profileUseCases.observeCategoryProfileState()
         .map { snapshot ->
@@ -37,7 +39,7 @@ class AnalysisViewModel (
             )
         }
 
-    private val _expensesState: StateFlow<ExpensesState> = combine(
+    private val _expensesState: Flow<ExpensesState> = combine(
         _dateState,
         _categoryProfileState
     ) { dateState, categoryProfileState ->
@@ -59,15 +61,6 @@ class AnalysisViewModel (
                 )
             }
         }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            _errorState.value = e.message ?: "Something went wrong"
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = ExpensesState()
-        )
 
     private val _successState = combine(
         _expensesState,
@@ -81,19 +74,14 @@ class AnalysisViewModel (
         )
     }
 
-    val uiState: StateFlow<UiState> = combine(
-        _successState,
-        _errorState
-    ) { success, error ->
-        if (error != null) {
-            UiState.Error(error)
-        } else {
-            success
-        }
-    }
-        .catch { e ->
-            if (e is CancellationException) throw e
-            emit(UiState.Error(e.message ?: "Something went wrong"))
+    val uiState: StateFlow<UiState> = _retryTrigger
+        .flatMapLatest {
+            _successState
+                .map<UiState.Success, UiState> { it }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    emit(UiState.Error(e.message))
+                }
         }
         .stateIn(
             scope = viewModelScope,
@@ -104,6 +92,7 @@ class AnalysisViewModel (
     fun onEvent(event: Event) {
         when (event) {
             Event.DeselectBar -> setSelectedDate(null)
+            Event.Retry -> _retryTrigger.update { it + 1 }
             is Event.SelectBar -> setSelectedDate(event.date)
             is Event.SelectCategoryProfile -> setActiveCategoryProfile(event.profileName)
         }

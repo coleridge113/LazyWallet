@@ -18,6 +18,7 @@ sealed interface UiState {
 
 
 sealed interface Event {
+    data object Retry : Event
     data object DismissDialog : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class ConfirmDate(val date: LocalDate) : Event
