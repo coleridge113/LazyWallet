@@ -11,7 +11,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F12 | Budget outlook arc (UI rebuild: Budget screen) | Planned | [design](../docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-outlook-arc.md) | Plan written 2026-11-26; run subagent-driven build (2 tasks) |
+| F12 | Budget outlook arc (UI rebuild: Budget screen) | Building | [design](../docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md) | [plan](../docs/superpowers/plans/2026-11-26-budget-outlook-arc.md) | Built 2026-11-26 on `feat/outlook-arc`; device check, then PR |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
