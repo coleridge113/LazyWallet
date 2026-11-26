@@ -59,7 +59,8 @@ fun ExpensePresetEntity.toFirestoreModel(): ExpensePreset {
         amount = this.amount,
         category = this.category.name,
         type = this.type,
-        createdAt = this.createdAt.toDate()
+        createdAt = this.createdAt.toDate(),
+        position = this.position
     )
 }
 

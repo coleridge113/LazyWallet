@@ -21,7 +21,7 @@ import com.luna.budgetapp.data.local.entity.ExpensePresetEntity
         BudgetEntity::class,
         BudgetInteractorCategoryEntity::class
     ], 
-    version =  5,
+    version =  6,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -8,5 +8,6 @@ data class ExpensePreset(
     val amount: Long = 0L,
     val category: String = "",
     val type: String = "",
-    val createdAt: Date = Date()
+    val createdAt: Date = Date(),
+    val position: Int? = null
 )
