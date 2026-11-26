@@ -5,7 +5,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | ID | Feature | Status | Spec | Plan | Next step |
 |---|---|---|---|---|---|
 | F01 | Figma design file | Blocked | – | – | Figma MCP rate limit; resume T02 when it resets |
-| F03 | Firebase out of presentation | Designing | [design](../docs/superpowers/specs/2026-11-26-firebase-out-of-presentation-design.md) | – | Spec approved 2026-11-26; write plan |
+| F03 | Firebase out of presentation | Planned | [design](../docs/superpowers/specs/2026-11-26-firebase-out-of-presentation-design.md) | [plan](../docs/superpowers/plans/2026-11-26-firebase-out-of-presentation.md) | Plan written 2026-11-26; run subagent-driven build (3 tasks) |
 | F04 | Theme, contrast & light theme | Idea | – | – | Your call: does the app need a tuned light theme? |
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
