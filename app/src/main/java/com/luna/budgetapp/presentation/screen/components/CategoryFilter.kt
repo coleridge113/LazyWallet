@@ -72,7 +72,7 @@ fun CategoryFilterDialog(
     val customText = stringResource(R.string.title_custom)
 
     var tempMap by remember(selectedCategoryMap) { mutableStateOf(selectedCategoryMap) }
-    var profileTitle by remember { mutableStateOf(selectedProfile) }
+    var profileTitle by remember(selectedProfile, selectedCategoryMap) { mutableStateOf(selectedProfile) }
     var isSaveMode by remember { mutableStateOf(false) }
     var profileNameInput by remember { mutableStateOf("") }
 
@@ -92,7 +92,15 @@ fun CategoryFilterDialog(
                     CategoryProfileSelectorDropdown(
                         selectedProfile = profileTitle,
                         profileList = profileList,
-                        onSelectedChange = onSelectedChange,
+                        onSelectedChange = { name ->
+                            if (name == selectedProfile) {
+                                // Same profile as shown: state won't change, so reset local edits here.
+                                tempMap = selectedCategoryMap
+                                profileTitle = name
+                            } else {
+                                onSelectedChange(name)
+                            }
+                        },
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
 

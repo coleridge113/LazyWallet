@@ -27,6 +27,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -67,6 +70,9 @@ fun ExpenseListRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val expenses = viewModel.expensesPagingFlow.collectAsLazyPagingItems()
+    // Picker visibility is pure UI state; the ViewModel only receives the picked result.
+    var showCalendar by rememberSaveable { mutableStateOf(false) }
+    var showCategoryFilter by rememberSaveable { mutableStateOf(false) }
 
     when (val state = uiState) {
         is UiState.Loading -> LoadingContent()
@@ -118,7 +124,7 @@ fun ExpenseListRoute(
                                     DateFilter.Daily,
                                     DateFilter.Weekly,
                                     DateFilter.Monthly -> viewModel.onEvent(Event.SelectDateRange(it))
-                                    else -> viewModel.onEvent(Event.ShowCalendarForm)
+                                    else -> showCalendar = true
                                 }
                             }
                         )
@@ -131,7 +137,12 @@ fun ExpenseListRoute(
                     onEvent = viewModel::onEvent,
                     totalAmount = state.expensesState.totalAmount,
                     expenses = expenses,
-                    searchQuery = searchQuery
+                    searchQuery = searchQuery,
+                    showCalendar = showCalendar,
+                    onDismissCalendar = { showCalendar = false },
+                    showCategoryFilter = showCategoryFilter,
+                    onShowCategoryFilter = { showCategoryFilter = true },
+                    onDismissCategoryFilter = { showCategoryFilter = false }
                 )
             }
             ExpandableSearchFab(
@@ -155,7 +166,12 @@ fun ExpenseListContent(
     onEvent: (Event) -> Unit,
     totalAmount: Long,
     expenses: LazyPagingItems<Expense>,
-    searchQuery: String
+    searchQuery: String,
+    showCalendar: Boolean,
+    onDismissCalendar: () -> Unit,
+    showCategoryFilter: Boolean,
+    onShowCategoryFilter: () -> Unit,
+    onDismissCategoryFilter: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -165,7 +181,7 @@ fun ExpenseListContent(
         ExpenseChart(
             chartDataList = uiState.chartDataState.chartDataList,
             totalAmount = totalAmount,
-            showDialog = { onEvent(Event.ShowCategoryFilterDialog) },
+            showDialog = onShowCategoryFilter,
             onClickCenter = { onEvent(Event.ResetCategoryFilters) }
         )
         Spacer(modifier = Modifier.height(48.dp))
@@ -196,34 +212,42 @@ fun ExpenseListContent(
             }
         }
 
-        when (val dialog = uiState.dialogState) {
-            DialogState.CalendarForm ->
-                DateRangePickerDialog(
-                    onDismiss = { onEvent(Event.DismissDialog) },
-                    onConfirm = { start, end ->
-                        when {
-                            start == null -> onEvent(Event.DismissDialog)
-                            else -> onEvent(Event.SelectDateRange(DateFilter.Custom(start, end)))
-                        }
+        if (showCalendar) {
+            DateRangePickerDialog(
+                onDismiss = onDismissCalendar,
+                onConfirm = { start, end ->
+                    if (start != null) {
+                        onEvent(Event.SelectDateRange(DateFilter.Custom(start, end)))
                     }
-                )
-            is DialogState.CategoryFilterForm ->
-                CategoryFilterDialog(
-                    selectedCategoryMap = dialog.filteredCategories,
-                    selectedProfile = uiState.categoryProfileState.activeProfile,
-                    profileList = uiState.categoryProfileState.profileList,
-                    onDismiss = { onEvent(Event.DismissDialog) },
-                    onApply = { profileName, filters ->
-                        onEvent(Event.ApplyCategoryFilters(profileName, filters))
-                    },
-                    onSelectedChange = { profileName ->
-                        onEvent(Event.SelectCategoryProfile(profileName))
-                    },
-                    onSave = { newProfileName, filters ->
-                        onEvent(Event.SaveCategoryProfile(newProfileName, filters))
-                    }
-                )
+                    onDismissCalendar()
+                }
+            )
+        }
+        if (showCategoryFilter) {
+            CategoryFilterDialog(
+                selectedCategoryMap = uiState.categoryPreview?.categoryMap
+                    ?: uiState.categoryProfileState.selectedCategoryMap,
+                selectedProfile = uiState.categoryPreview?.profileName
+                    ?: uiState.categoryProfileState.activeProfile,
+                profileList = uiState.categoryProfileState.profileList,
+                onDismiss = {
+                    onEvent(Event.ClearCategoryPreview)
+                    onDismissCategoryFilter()
+                },
+                onApply = { profileName, filters ->
+                    onEvent(Event.ApplyCategoryFilters(profileName, filters))
+                    onDismissCategoryFilter()
+                },
+                onSelectedChange = { profileName ->
+                    onEvent(Event.PreviewCategoryProfile(profileName))
+                },
+                onSave = { newProfileName, filters ->
+                    onEvent(Event.SaveCategoryProfile(newProfileName, filters))
+                }
+            )
+        }
 
+        when (val dialog = uiState.dialogState) {
             is DialogState.ConfirmDeleteExpense ->
                 ConfirmationDialog(
                     message = stringResource(R.string.confirm_delete_expense),

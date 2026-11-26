@@ -3,6 +3,7 @@ package com.luna.budgetapp.expenselist
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.repository.FakeCategoryRepository
 import com.luna.budgetapp.domain.repository.FakeExpensePresetRepository
@@ -32,6 +33,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -172,36 +174,6 @@ class ExpenseListViewModelTest {
     }
 
     @Test
-    fun `invoking show calendar form opens the calendar form`() = runTest {
-        val job = launch {
-            viewModel.uiState.collect {}
-        }
-
-        viewModel.onEvent(Event.ShowCalendarForm)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value as UiState.Success
-        assertThat(state.dialogState).isInstanceOf(DialogState.CalendarForm::class.java)
-
-        job.cancel()
-    }
-
-    @Test
-    fun `invoking show category filter dialog opens the category filter dialog`() = runTest {
-        val job = launch {
-            viewModel.uiState.collect {}
-        }
-
-        viewModel.onEvent(Event.ShowCategoryFilterDialog)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value as UiState.Success
-        assertThat(state.dialogState).isInstanceOf(DialogState.CategoryFilterForm::class.java)
-
-        job.cancel()
-    }
-
-    @Test
     fun `invoking reset category filters resets the category filters`() = runTest {
         val job = launch {
             viewModel.uiState.collect {}
@@ -217,24 +189,101 @@ class ExpenseListViewModelTest {
     }
 
     @Test
-    fun `applying category filter updates active profile and subsequent show category filter dialog includes all categories`() = runTest {
+    fun `applying category filter updates active profile and exposes the full category map in ui state`() = runTest {
         val job = launch {
             viewModel.uiState.collect {}
         }
+        runCurrent()
 
         val customFilters = mapOf(Category.FOOD to true, Category.BEVERAGE to false)
         viewModel.onEvent(Event.ApplyCategoryFilters("Custom", customFilters))
         advanceUntilIdle()
 
-        var state = viewModel.uiState.value as UiState.Success
+        val state = viewModel.uiState.value as UiState.Success
         assertThat(state.categoryProfileState.activeProfile).isEqualTo("Custom")
+        assertThat(state.categoryProfileState.selectedCategoryMap.keys)
+            .containsAtLeastElementsIn(Category.entries)
 
-        viewModel.onEvent(Event.ShowCategoryFilterDialog)
+        job.cancel()
+    }
+
+    private suspend fun saveWorkProfile() {
+        fakeCategoryRepo.saveProfile(
+            Category.entries.map {
+                com.luna.budgetapp.domain.model.CategoryFilter("Work", it, it == Category.FOOD)
+            }
+        )
+    }
+
+    @Test
+    fun `previewing a profile exposes its map and keeps the active profile`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryPreview?.profileName).isEqualTo("Work")
+        assertThat(state.categoryPreview?.categoryMap?.get(Category.FOOD)).isTrue()
+        assertThat(state.categoryPreview?.categoryMap?.get(Category.BEVERAGE)).isFalse()
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("All")
+        assertThat(state.categoryProfileState.selectedCategoryMap.values.all { it }).isTrue()
+
+        job.cancel()
+    }
+
+    @Test
+    fun `applying after a preview activates the previewed profile and clears the preview`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+        val previewMap = (viewModel.uiState.value as UiState.Success).categoryPreview!!.categoryMap
+        viewModel.onEvent(Event.ApplyCategoryFilters("Work", previewMap))
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("Work")
+        assertThat(state.categoryPreview).isNull()
+
+        job.cancel()
+    }
+
+    @Test
+    fun `clearing the preview leaves the active profile unchanged`() = runTest {
+        saveWorkProfile()
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.PreviewCategoryProfile("Work"))
+        runCurrent()
+        viewModel.onEvent(Event.ClearCategoryPreview)
+        runCurrent()
+
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.categoryPreview).isNull()
+        assertThat(state.categoryProfileState.activeProfile).isEqualTo("All")
+
+        job.cancel()
+    }
+
+    @Test
+    fun `selecting a custom date range updates the date filter`() = runTest {
+        val job = launch {
+            viewModel.uiState.collect {}
+        }
+        runCurrent()
+
+        val custom = DateFilter.Custom(start = 1_000L, end = 2_000L)
+        viewModel.onEvent(Event.SelectDateRange(custom))
         advanceUntilIdle()
 
-        state = viewModel.uiState.value as UiState.Success
-        val dialog = state.dialogState as DialogState.CategoryFilterForm
-        assertThat(dialog.filteredCategories.keys).containsAtLeastElementsIn(Category.entries)
+        val state = viewModel.uiState.value as UiState.Success
+        assertThat(state.dateState.dateFilter).isEqualTo(custom)
 
         job.cancel()
     }

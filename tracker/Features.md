@@ -5,7 +5,6 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | ID | Feature | Status | Spec | Plan | Next step |
 |---|---|---|---|---|---|
 | F01 | Figma design file | Blocked | – | – | Figma MCP rate limit; resume T02 when it resets |
-| F02 | Navigation events | Building | [design](../docs/superpowers/specs/2026-11-25-navigation-events-design.md) | [plan](../docs/superpowers/plans/2026-11-25-navigation-events.md) | Built and reviewed on feat/navigation-events (34 tests); your call: merge locally or PR; then device-check sign-in/sign-out/budget nav |
 | F03 | Firebase out of presentation | Idea | – | – | Brainstorm when wanted |
 | F04 | Theme, contrast & light theme | Idea | – | – | Your call: does the app need a tuned light theme? |
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |

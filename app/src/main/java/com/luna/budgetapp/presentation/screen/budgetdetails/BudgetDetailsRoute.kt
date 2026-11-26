@@ -29,6 +29,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.luna.budgetapp.domain.model.DateFilter
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +51,8 @@ fun BudgetDetailsRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
+    // Picker visibility is pure UI state; the ViewModel only receives the picked result.
+    var showPicker by rememberSaveable { mutableStateOf(false) }
 
     when (val state = uiState) {
         UiState.Loading -> {}
@@ -71,7 +77,11 @@ fun BudgetDetailsRoute(
                         actions = {
                             IconButton(
                                 onClick = {
-                                    onEvent(Event.ClickCalendar(state.budget.frequency))
+                                    if (state.budget.frequency == DateFilter.Daily ||
+                                        state.budget.frequency == DateFilter.Monthly
+                                    ) {
+                                        showPicker = true
+                                    }
                                 }
                             ) {
                                 Icon(
@@ -100,7 +110,9 @@ fun BudgetDetailsRoute(
                 BudgetDetailsContent(
                     modifier = Modifier.padding(innerPadding),
                     state = state,
-                    onEvent = viewModel::onEvent
+                    onEvent = viewModel::onEvent,
+                    showPicker = showPicker,
+                    onDismissPicker = { showPicker = false }
                 )
             }
         }
@@ -111,7 +123,9 @@ fun BudgetDetailsRoute(
 private fun BudgetDetailsContent(
     modifier: Modifier,
     state: UiState.Success,
-    onEvent: (Event) -> Unit
+    onEvent: (Event) -> Unit,
+    showPicker: Boolean,
+    onDismissPicker: () -> Unit
 ) {
     val (budget, expenses, dialog) = state
 
@@ -135,12 +149,13 @@ private fun BudgetDetailsContent(
             )
         }
 
-        when (dialog) {
-            DialogState.DatePicker -> {
+        if (showPicker) {
+            when (budget.frequency) {
+            DateFilter.Daily -> {
                 val datePickerState = rememberDatePickerState()
 
                 DatePickerDialog(
-                    onDismissRequest = { onEvent(Event.DismissDialog) },
+                    onDismissRequest = onDismissPicker,
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -153,6 +168,7 @@ private fun BudgetDetailsContent(
                                         } ?: LocalDate.now()
                                     )
                                 )
+                                onDismissPicker()
                             }
                         ) {
                             Text(stringResource(R.string.btn_ok))
@@ -160,7 +176,7 @@ private fun BudgetDetailsContent(
                     },
                     dismissButton = {
                         TextButton(
-                            onClick = { onEvent(Event.DismissDialog) }
+                            onClick = onDismissPicker
                         ) {
                             Text(stringResource(R.string.btn_cancel))
                         }
@@ -174,12 +190,20 @@ private fun BudgetDetailsContent(
                     )
                 }
             }
-            DialogState.YearMonthPicker -> {
+            DateFilter.Monthly -> {
                 MonthYearPickerDialog(
-                    onMonthYearSelected = { onEvent(Event.ConfirmYearMonth(it)) },
-                    onDismiss = { onEvent(Event.DismissDialog) }
+                    onMonthYearSelected = {
+                        onEvent(Event.ConfirmYearMonth(it))
+                        onDismissPicker()
+                    },
+                    onDismiss = onDismissPicker
                 )
             }
+            else -> {}
+            }
+        }
+
+        when (dialog) {
             is DialogState.ExpenseForm ->
                 ExpenseForm(
                     selectedExpense = dialog.selectedExpense,

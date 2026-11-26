@@ -1,8 +1,8 @@
 package com.luna.budgetapp.domain.usecase.category
 
-import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryProfileSnapshot
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
+import com.luna.budgetapp.domain.utils.toCategoryMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -24,8 +24,7 @@ class ObserveCategoryProfileStateUseCase(
         val activeAndMap = getActiveCategoryProfile()
             .flatMapLatest { activeProfile ->
                 getCategoryProfile(activeProfile).map { filters ->
-                    activeProfile to (Category.entries.associateWith { true } +
-                        filters.associate { it.category to it.isActive })
+                    activeProfile to filters.toCategoryMap()
                 }
             }
         if (!includeProfileList) {

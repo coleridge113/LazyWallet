@@ -11,6 +11,7 @@ sealed interface UiState {
     data class Error(val message: String? = null) : UiState
     data class Success(
         val dialogState: DialogState? = null,
+        val categoryPreview: CategoryProfilePreview? = null,
         val dateState: DateState = DateState(),
         val categoryProfileState: CategoryProfileState = CategoryProfileState(),
         val chartDataState: ChartDataState = ChartDataState(),
@@ -28,6 +29,12 @@ data class DateState(
     val dateRange = dateFilter.resolve()
 }
 
+/** A saved profile being previewed in the category filter dialog; not yet the active profile. */
+data class CategoryProfilePreview(
+    val profileName: String,
+    val categoryMap: Map<Category, Boolean>
+)
+
 data class CategoryProfileState(
     val selectedCategoryMap: Map<Category, Boolean> = Category.entries.associateWith { true },
     val activeProfile: String = "",
@@ -44,8 +51,6 @@ data class ChartDataState(
 )
 
 sealed interface DialogState {
-    data object CalendarForm : DialogState
-    data class CategoryFilterForm(val filteredCategories: Map<Category, Boolean>) : DialogState
     data class ConfirmDeleteExpense(val expenseId: Long) : DialogState
     data class ExpenseForm(
         val selectedExpense: Expense,
@@ -54,15 +59,14 @@ sealed interface DialogState {
 }
 
 sealed interface Event {
-    data object ShowCalendarForm : Event
-    data object ShowCategoryFilterDialog : Event
     data object DismissDialog : Event
     data object ResetCategoryFilters : Event
     data class ShowDeleteConfirmationDialog(val expenseId: Long) : Event
     data class DeleteExpense(val expenseId: Long) : Event
     data class SearchQueryChanged(val query: String) : Event
     data class SelectDateRange(val selectedRange: DateFilter) : Event
-    data class SelectCategoryProfile(val profileName: String) : Event
+    data class PreviewCategoryProfile(val profileName: String) : Event
+    data object ClearCategoryPreview : Event
     data class DeleteCategoryProfile(val profileName: String) : Event
     data class ShowExpenseForm(val selectedExpense: Expense) : Event
     data class EditExpense(
