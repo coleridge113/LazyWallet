@@ -95,7 +95,7 @@ fun BudgetHeatGridCard(
     val heroCd = if (outlook.hasBudgets) {
         stringResource(R.string.outlook_hero_cd, amount, suffix, monthName)
     } else {
-        noBudgets
+        stringResource(R.string.outlook_hero_no_budgets_cd, noBudgets, monthName)
     }
 
     Column(
@@ -288,6 +288,7 @@ private fun DayCell(
         },
         state = state,
         enableUserInput = false,
+        focusable = false,
     ) {
         Box(
             modifier = Modifier

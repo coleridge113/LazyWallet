@@ -89,6 +89,7 @@
     <string name="outlook_left_this_month">left this month</string>
     <string name="outlook_over_this_month">over this month</string>
     <string name="outlook_hero_cd">%1$s %2$s. Opens %3$s outlook.</string>
+    <string name="outlook_hero_no_budgets_cd">%1$s. Opens %2$s outlook.</string>
     <string name="outlook_day_cd">%1$s, %2$s spent</string>
     <string name="outlook_day_nothing_cd">%1$s, nothing spent</string>
     <string name="outlook_spent">spent</string>
