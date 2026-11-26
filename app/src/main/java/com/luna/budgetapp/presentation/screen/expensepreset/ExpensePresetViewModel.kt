@@ -131,6 +131,10 @@ class ExpensePresetViewModel(
             Event.Retry -> _retryTrigger.update { it + 1 }
             Event.UndoRemove -> undoRemove()
             Event.UserMessageShown -> _userMessage.value = null
+            Event.ClearUndo -> {
+                lastRemoved = null
+                _userMessage.value = null
+            }
             is Event.RemoveExpense -> removeExpense(event.expense)
             Event.SignOut -> signOutUser()
             is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType, event.customDate)

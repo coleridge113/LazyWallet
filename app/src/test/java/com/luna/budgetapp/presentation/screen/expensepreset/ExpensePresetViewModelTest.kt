@@ -382,6 +382,25 @@ class ExpensePresetViewModelTest {
     }
 
     @Test
+    fun `clear undo drops the message and makes undo a no-op`() = runTest {
+        val a = seedToday("A", 100L)
+        seedToday("B", 200L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        runCurrent()
+        viewModel.onEvent(Event.ClearUndo)
+        runCurrent()
+        assertThat(success.userMessage).isNull()
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.type }).containsExactly("B")
+        job.cancel()
+    }
+
+    @Test
     fun `undo with nothing removed does nothing`() = runTest {
         seedToday("A", 100L)
         val job = launch { viewModel.uiState.collect {} }

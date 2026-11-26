@@ -52,6 +52,7 @@ sealed interface Event {
     data object ShowSignOutDialog : Event
     data object UndoRemove : Event
     data object UserMessageShown : Event
+    data object ClearUndo : Event
     data class RemoveExpense(val expense: Expense) : Event
     data object SignOut : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event

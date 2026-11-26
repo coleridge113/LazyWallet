@@ -57,7 +57,8 @@ fun RecentlyAddedSheet(
     now: LocalDateTime,
     onRemove: (Expense) -> Unit,
     onSeeAll: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    snackbarHost: @Composable () -> Unit = {}
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -65,7 +66,7 @@ fun RecentlyAddedSheet(
         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.11f)
             .compositeOver(MaterialTheme.colorScheme.background)
     ) {
-        RecentlyAddedContent(recent, total, now, onRemove, onSeeAll)
+        RecentlyAddedContent(recent, total, now, onRemove, onSeeAll, snackbarHost)
     }
 }
 
@@ -75,7 +76,8 @@ private fun RecentlyAddedContent(
     total: Long,
     now: LocalDateTime,
     onRemove: (Expense) -> Unit,
-    onSeeAll: () -> Unit
+    onSeeAll: () -> Unit,
+    snackbarHost: @Composable () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -136,6 +138,7 @@ private fun RecentlyAddedContent(
                 )
             }
         }
+        snackbarHost()
     }
 }
 

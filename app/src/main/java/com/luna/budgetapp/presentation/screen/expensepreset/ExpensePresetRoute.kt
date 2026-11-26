@@ -20,6 +20,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,6 +115,9 @@ fun ExpensePresetContent(
     val userMessage = uiState.userMessage
     val context = LocalContext.current
     val undoLabel = stringResource(R.string.expense_preset_undo)
+    DisposableEffect(Unit) {
+        onDispose { onEvent(Event.ClearUndo) }
+    }
     LaunchedEffect(userMessage) {
         if (userMessage is UserMessage.Removed) {
             val result = snackbarHostState.showSnackbar(
@@ -226,12 +230,15 @@ fun ExpensePresetContent(
             }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        val sheetShown = showRecent && recent.isNotEmpty()
+        if (!sheetShown) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
 
-        if (showRecent && recent.isNotEmpty()) {
+        if (sheetShown) {
             RecentlyAddedSheet(
                 recent = recent,
                 total = expensesState.totalAmount,
@@ -241,7 +248,8 @@ fun ExpensePresetContent(
                     showRecent = false
                     onOpenExpenses()
                 },
-                onDismiss = { showRecent = false }
+                onDismiss = { showRecent = false },
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             )
         }
     }
