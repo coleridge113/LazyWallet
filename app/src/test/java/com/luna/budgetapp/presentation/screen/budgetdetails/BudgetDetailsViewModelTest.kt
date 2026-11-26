@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
 import com.luna.budgetapp.domain.model.Budget
+import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.repository.FakeBudgetRepository
 import com.luna.budgetapp.domain.repository.FakeExpenseRepository
@@ -27,7 +29,7 @@ class BudgetDetailsViewModelTest {
     private val budgetRepo = FakeBudgetRepository()
     private val expenseRepo = FakeExpenseRepository()
 
-    private fun viewModel(): BudgetDetailsViewModel {
+    private fun viewModel(extra: Map<String, Any?> = emptyMap()): BudgetDetailsViewModel {
         val budgetUseCases = BudgetUseCases(
             saveBudget = mockk(),
             saveBudgetForm = mockk(),
@@ -50,7 +52,7 @@ class BudgetDetailsViewModelTest {
             editExpense = mockk(),
         )
         return BudgetDetailsViewModel(
-            SavedStateHandle(mapOf("budgetId" to 1L)),
+            SavedStateHandle(mapOf("budgetId" to 1L) + extra),
             budgetUseCases,
             expenseUseCases
         )
@@ -69,6 +71,20 @@ class BudgetDetailsViewModelTest {
         runCurrent()
 
         assertThat(vm.uiState.value).isInstanceOf(UiState.Success::class.java)
+        job.cancel()
+    }
+
+    @Test
+    fun `date range is restored from saved state`() = runTest {
+        budgetRepo.insertBudget(Budget(name = "Food", limit = 1000L, frequency = DateFilter.Monthly, interactors = listOf(Category.FOOD), startDate = java.time.LocalDate.now()))
+        expenseRepo.addExpense(Expense(amount = 100L, category = Category.FOOD, type = "Jan", date = java.time.LocalDateTime.of(2026, 1, 15, 12, 0)))
+        val vm = viewModel(
+            mapOf("range_start" to "2026-01-01T00:00", "range_end" to "2026-01-31T23:59:59.999999999")
+        )
+        val job = launch { vm.uiState.collect {} }
+        runCurrent()
+        val state = vm.uiState.value as UiState.Success
+        assertThat(state.expenses.map { it.type }).containsExactly("Jan")
         job.cancel()
     }
 }

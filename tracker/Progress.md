@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | P28 | Small input survives process death via `SavedStateHandle`: ExpenseList search query and date filter, Analysis selected date (epoch day), BudgetDetails date range (ISO strings); `DateFilter.toSavedString()` helper added. Form date pickers use `rememberSaveable`. Result-navigation flags left as is. 3 new restore tests; 43 pass, assembleDebug ok. Needs device check |
 | 2026-11-26 | P23 | User-facing text moved out of VMs/helpers into `strings.xml`: Auth `DialogState.ErrorMessage` and Migration `error` are `@StringRes Int` (migration no longer shows raw exception text), ConfirmationDialog defaults and `DateFilter.displayName()` use `stringResource`, `ERROR_USER_NOT_FOUND` typo fixed. MigrationViewModelTest asserts the id; 40 pass, assembleDebug ok |
 | 2026-11-26 | P29 | Sign-out `popUpTo` now targets `navController.graph.id` (inclusive) so Auth is the only back stack entry; was `startDestinationId`, which matched nothing after Auth was popped at sign-in. No NavGraph tests; 40 tests pass, assembleDebug ok. Needs device check |
 | 2026-11-26 | P25 | Load errors consistent across ExpensePreset, ExpenseList, Analysis, Budget, BudgetDetails: catch at end of each uiState pipeline inside a `_retryTrigger.flatMapLatest` (screen no longer freezes, BudgetDetails no longer crashes), `Event.Retry`, shared `ErrorContent` with Retry button and string fallback. Added 4 tests (list, preset, budget, budget details); 40 pass, assembleDebug ok |
