@@ -136,7 +136,7 @@ fun NavGraphSetup(
                         viewModel = viewModel,
                         onSignedOut = {
                             navController.navigate(Routes.AuthRoute) {
-                                popUpTo(navController.graph.startDestinationId) {
+                                popUpTo(navController.graph.id) {
                                     inclusive = true
                                 }
                                 launchSingleTop = true

@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | P29 | Sign-out `popUpTo` now targets `navController.graph.id` (inclusive) so Auth is the only back stack entry; was `startDestinationId`, which matched nothing after Auth was popped at sign-in. No NavGraph tests; 40 tests pass, assembleDebug ok. Needs device check |
 | 2026-11-26 | P25 | Load errors consistent across ExpensePreset, ExpenseList, Analysis, Budget, BudgetDetails: catch at end of each uiState pipeline inside a `_retryTrigger.flatMapLatest` (screen no longer freezes, BudgetDetails no longer crashes), `Event.Retry`, shared `ErrorContent` with Retry button and string fallback. Added 4 tests (list, preset, budget, budget details); 40 pass, assembleDebug ok |
 | 2026-11-26 | P27 | `BudgetViewModel.showDeleteConfirmationDialog` and `deleteBudget` made private; `onEvent` is the only entry point. No outside callers, no behaviour change. 36 tests pass, assembleDebug ok |
 | 2026-11-26 | P30 | Category filter dialog is now preview-then-Apply: dropdown pick loads that profile's map into `UiState.Success.categoryPreview` (active profile unchanged); Apply activates it, Cancel/dismiss clears it. `SelectCategoryProfile` replaced by `PreviewCategoryProfile` + `ClearCategoryPreview`; map conversion extracted to `domain/utils/CategoryFilterMapping.kt`. Tests 33 -> 36, build ok. Not device-tested. |
