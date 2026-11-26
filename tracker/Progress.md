@@ -4,6 +4,7 @@ What each session did, newest first.
 
 | Date | Task | What happened |
 |---|---|---|
+| 2026-11-26 | F10 | PR #11 merged (`f13afb1`). F10 moved to Features-done. `docs/learning/` added to `.gitignore` for local teaching write-ups. |
 | 2026-11-26 | F10 | Build finished on `feat/analysis-history` (4 tasks + final-review fixes, 100 tests, 70 before). Analysis opens from a chart icon on Expenses as a detail screen (back arrow, no bottom bar). Day / Week (Mon–Sun) / Month switch over a scrollable `LazyRow` chart through all history; zero bars for empty periods; scale and dashed average fit the bars in view; selected period total + change vs whole previous period; tap a bar lists its expenses. Daily totals from one Room query grouped in local time, rolled up in Kotlin; midnight-aware "today". Old 7-day Canvas chart deleted. Not pushed, not device-tested. Left: device check, PR. |
 | 2026-11-26 | P26 | Auth now has one `AuthUiState` (`isLoading`, `dialog`, `isUserSignedIn`, `signedIn`) exposed as `uiState`. Buttons and fields are disabled with a spinner while a sign-in runs, repeat events are ignored, and `completeSignIn` runs outside the sign-in `try`. 70 tests (66 before), build ok. On `polish/auth-ui-state`, not committed, not device-tested. |
 | 2026-11-26 | Preset buttons | ExpensePreset buttons show the amount with `toCurrency()` instead of `toPeso()`: the ₱ symbol was redundant on every preset button. Done by Jose on `polish/remove-peso-symbol-from-preset-buttons` (`fa2de84`), merged to master (`bafa166`). |

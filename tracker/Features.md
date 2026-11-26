@@ -10,7 +10,6 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
-| F10 | Analysis history and timelines | Building | [design](../docs/superpowers/specs/2026-11-26-analysis-history-design.md) | [plan](../docs/superpowers/plans/2026-11-26-analysis-history.md) | Built 2026-11-26 on `feat/analysis-history`; device check, then PR |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
