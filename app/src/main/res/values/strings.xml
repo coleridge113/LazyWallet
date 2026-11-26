@@ -88,9 +88,9 @@
     <string name="budget_status_exceeded">Exceeded</string>
     <string name="budget_stat_spent">Spent</string>
     <string name="budget_stat_limit">Limit</string>
-    <string name="outlook_total_remaining">Total Remaining</string>
-    <string name="outlook_projected">Projected</string>
-    <string name="outlook_actual">Actual</string>
+    <string name="outlook_spent_of">%1$s of %2$s</string>
+    <string name="outlook_no_budgets">No budgets yet</string>
+    <string name="outlook_cd">Spent %1$s of %2$s this month, %3$s %4$s</string>
     <string name="migration_title">Cloud Sync</string>
     <string name="migration_message">Would you like to migrate your local data to the cloud? This will allow you to access your expenses from any device.</string>
     <string name="migration_in_progress">Migrating data...</string>
