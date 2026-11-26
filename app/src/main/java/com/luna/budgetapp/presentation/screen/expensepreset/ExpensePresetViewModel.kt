@@ -3,7 +3,6 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.usecase.AuthUseCases
@@ -128,7 +127,7 @@ class ExpensePresetViewModel(
             Event.Retry -> _retryTrigger.update { it + 1 }
             Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
             Event.DeleteLatestExpense -> deleteLatestExpense()
-            is Event.SignOut -> signOutUser(event.auth)
+            Event.SignOut -> signOutUser()
             is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType, event.customDate)
             is Event.AddExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset, event.action)
@@ -246,10 +245,10 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun signOutUser(auth: FirebaseAuth) {
+    private fun signOutUser() {
         viewModelScope.launch {
             try {
-                authUseCases.signOut(auth)
+                authUseCases.signOut()
                 _signedOut.value = true
             } catch (e: CancellationException) {
                 throw e

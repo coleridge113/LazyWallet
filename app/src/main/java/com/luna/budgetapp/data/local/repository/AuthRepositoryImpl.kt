@@ -1,14 +1,13 @@
 package com.luna.budgetapp.data.local.repository
 
 import android.util.Log
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.luna.budgetapp.data.datastore.AuthLocalDataSource
 import com.luna.budgetapp.data.remote.dto.AuthRequest
 import com.luna.budgetapp.data.remote.source.AuthRemoteDataSource
 import com.luna.budgetapp.domain.repository.AuthRepository
+import kotlinx.coroutines.tasks.await
 
 import com.luna.budgetapp.data.utils.JwtUtils
 
@@ -35,48 +34,34 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun signUp(
-        email: String,
-        password: String,
-        onSuccess: (Task<AuthResult>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                onSuccess(task)
-            }
-            .addOnFailureListener { error ->
-                onFailure(error)
-            }
+    override suspend fun signOut() {
+        firebaseAuth.signOut()
     }
 
-    override suspend fun signInEmailPassword(
-        email: String,
-        password: String,
-        onSuccess: (Task<AuthResult>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        firebaseAuth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                onSuccess(task)
-            }
-            .addOnFailureListener { error ->
-                onFailure(error)
-            }
+    override fun isSignedIn(): Boolean = firebaseAuth.currentUser != null
+
+    override suspend fun signUp(email: String, password: String) {
+        try {
+            firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+        } catch (e: Exception) {
+            throw e.toAuthException()
+        }
     }
 
-    override suspend fun signInGoogle(
-        idToken: String,
-        onSuccess: (Task<AuthResult>) -> Unit,
-        onFailure: (Exception) -> Unit
-    )  {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                onSuccess(task)
-            }
-            .addOnFailureListener { error ->
-                onFailure(error)
-            }
+    override suspend fun signInEmailPassword(email: String, password: String) {
+        try {
+            firebaseAuth.signInWithEmailAndPassword(email, password).await()
+        } catch (e: Exception) {
+            throw e.toAuthException()
+        }
+    }
+
+    override suspend fun signInGoogle(idToken: String) {
+        try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            firebaseAuth.signInWithCredential(credential).await()
+        } catch (e: Exception) {
+            throw e.toAuthException()
+        }
     }
 }

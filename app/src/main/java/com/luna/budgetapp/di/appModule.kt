@@ -74,6 +74,13 @@ import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignOutUseCase
+import com.luna.budgetapp.domain.usecase.auth.CompleteSignInUseCase
+import com.luna.budgetapp.domain.usecase.auth.IsSignedInUseCase
+import com.luna.budgetapp.domain.usecase.sync.MigrateLocalDataUseCase
+import com.luna.budgetapp.domain.usecase.SyncUseCases
+import com.luna.budgetapp.domain.repository.CloudSyncRepository
+import com.luna.budgetapp.domain.repository.LocalDataRepository
+import com.luna.budgetapp.data.local.repository.LocalDataRepositoryImpl
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
 import com.luna.budgetapp.domain.usecase.budget.DeleteBudgetUseCase
 import com.luna.budgetapp.domain.usecase.budget.GetAllBudgetUseCase
@@ -162,7 +169,8 @@ val appModule = module {
     singleOf(::AuthRemoteDataSource)
     singleOf(::AuthLocalDataSource)
     singleOf(::SettingsDataStore)
-    singleOf(::DataMigrationRepository)
+    singleOf(::DataMigrationRepository) { bind<CloudSyncRepository>() }
+    singleOf(::LocalDataRepositoryImpl) { bind<LocalDataRepository>() }
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
 
@@ -199,6 +207,9 @@ val appModule = module {
     factoryOf(::SignInEmailPasswordUseCase)
     factoryOf(::SignUpUseCase)
     factoryOf(::SignOutUseCase)
+    factoryOf(::IsSignedInUseCase)
+    factoryOf(::CompleteSignInUseCase)
+    factoryOf(::MigrateLocalDataUseCase)
     factoryOf(::GetBudgetByName)
     factoryOf(::SaveBudgetUseCase)
     factoryOf(::SaveBudgetFormUseCase)
@@ -208,6 +219,7 @@ val appModule = module {
     factoryOf(::DeleteBudgetUseCase)
 
     factoryOf(::AuthUseCases)
+    factoryOf(::SyncUseCases)
     factoryOf(::ExpenseUseCases)
     factoryOf(::ProfileUseCases)
     factoryOf(::PresetUseCases)

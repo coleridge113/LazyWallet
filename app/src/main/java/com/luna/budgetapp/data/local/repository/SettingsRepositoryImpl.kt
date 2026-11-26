@@ -16,6 +16,8 @@ class SettingsRepositoryImpl(
 
     override val isMigratedFlow: Flow<Boolean> = local.isMigratedFlow
 
+    override val isGuestFlow: Flow<Boolean> = local.isGuestFlow
+
     override suspend fun setActiveProfile(profileName: String) {
         local.setActiveProfile(profileName)
     }
@@ -26,5 +28,9 @@ class SettingsRepositoryImpl(
 
     override suspend fun setMigrationComplete() {
         local.setMigrationComplete()
+    }
+
+    override suspend fun setGuestMode(isGuest: Boolean) {
+        local.setGuestMode(isGuest)
     }
 }

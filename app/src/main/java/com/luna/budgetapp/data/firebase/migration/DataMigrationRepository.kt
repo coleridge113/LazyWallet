@@ -14,6 +14,7 @@ import com.luna.budgetapp.data.local.dao.BudgetDao
 import com.luna.budgetapp.data.local.dao.CategoryFilterDao
 import com.luna.budgetapp.data.local.dao.ExpenseDao
 import com.luna.budgetapp.data.local.dao.ExpensePresetDao
+import com.luna.budgetapp.domain.repository.CloudSyncRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -25,8 +26,8 @@ class DataMigrationRepository(
     private val budgetDao: BudgetDao,
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
-) {
-    suspend fun performMigration() = withContext(Dispatchers.IO) {
+) : CloudSyncRepository {
+    override suspend fun uploadLocalData() = withContext(Dispatchers.IO) {
         val user = auth.currentUser ?: return@withContext
         val userId = user.uid
 
@@ -80,7 +81,7 @@ class DataMigrationRepository(
         }
     }
 
-    suspend fun syncFromCloud() = withContext(Dispatchers.IO) {
+    override suspend fun downloadCloudData() = withContext(Dispatchers.IO) {
         val user = auth.currentUser ?: return@withContext
         val userId = user.uid
         val userRef = firestore.collection("users").document(userId)

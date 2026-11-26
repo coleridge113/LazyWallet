@@ -1,6 +1,5 @@
 package com.luna.budgetapp.presentation.screen.auth
 
-import android.util.Log
 import com.luna.budgetapp.R
 import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
@@ -10,21 +9,19 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.luna.budgetapp.domain.usecase.AuthUseCases
-import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.luna.budgetapp.data.datastore.SettingsDataStore
+import com.luna.budgetapp.domain.model.AuthException
 import kotlinx.coroutines.flow.update
 
 class AuthViewModel(
-    private val authUseCases: AuthUseCases,
-    private val migrationRepository: DataMigrationRepository,
-    private val settings: SettingsDataStore
+    private val authUseCases: AuthUseCases
 ) : ViewModel() {
+
+    val isUserSignedIn: Boolean = authUseCases.isSignedIn()
 
     private val _signedIn = MutableStateFlow(false)
     val signedIn: StateFlow<Boolean> = _signedIn.asStateFlow()
@@ -48,17 +45,12 @@ class AuthViewModel(
     }
 
     private fun handleSignInSuccess(isGuest: Boolean) {
-        viewModelScope.launch {
-            try {
-                migrationRepository.syncFromCloud()
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                Log.w("AuthViewModel", "syncFromCloud failed", e)
-            } finally {
-                settings.setGuestMode(isGuest)
-                _signedIn.value = true
-            }
-        }
+        viewModelScope.launch { completeSignIn(isGuest) }
+    }
+
+    private suspend fun completeSignIn(isGuest: Boolean) {
+        authUseCases.completeSignIn(isGuest)
+        _signedIn.value = true
     }
 
     private fun signInGoogle(
@@ -70,17 +62,8 @@ class AuthViewModel(
                     credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                 ) {
                     val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                    authUseCases.signInGoogle(
-                        idToken = googleIdTokenCredential.idToken,
-                        onSuccess = { task ->
-                            if (task.isSuccessful) {
-                                handleSignInSuccess(isGuest = false)
-                            }
-                        },
-                        onFailure = { error ->
-                            showError(error)
-                        }
-                    )
+                    authUseCases.signInGoogle(googleIdTokenCredential.idToken)
+                    completeSignIn(false)
                 }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
@@ -95,18 +78,8 @@ class AuthViewModel(
     ) {
         viewModelScope.launch {
             try {
-                authUseCases.signInEmailPassword(
-                    email = email,
-                    password = password,
-                    onSuccess = { task ->
-                        if (task.isSuccessful) {
-                            handleSignInSuccess(isGuest = false)
-                        }
-                    },
-                    onFailure = { error ->
-                        showError(error)
-                    }
-                )
+                authUseCases.signInEmailPassword(email, password)
+                completeSignIn(false)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 showError(e)
@@ -120,18 +93,8 @@ class AuthViewModel(
     ) {
         viewModelScope.launch {
             try {
-                authUseCases.signUp(
-                    email = email,
-                    password = password,
-                    onSuccess = { task ->
-                        if (task.isSuccessful) {
-                            handleSignInSuccess(isGuest = false)
-                        }
-                    },
-                    onFailure = { error ->
-                        showError(error)
-                    }
-                )
+                authUseCases.signUp(email, password)
+                completeSignIn(false)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
                 showError(e)
@@ -148,8 +111,14 @@ class AuthViewModel(
                 is IllegalArgumentException ->
                     R.string.auth_error_invalid_input
 
-                is FirebaseAuthInvalidCredentialsException ->
-                    resolveInvalidAuthMessage(error.errorCode)
+                is AuthException.InvalidEmail ->
+                    R.string.auth_error_invalid_email
+
+                is AuthException.UserNotFound ->
+                    R.string.auth_error_user_not_found
+
+                is AuthException.InvalidCredentials ->
+                    R.string.auth_error_invalid_credentials
 
                 else -> R.string.auth_error_generic
             }
@@ -161,13 +130,5 @@ class AuthViewModel(
 
     private fun dismissDialog() {
         _dialogState.update { null }
-    }
-
-    private fun resolveInvalidAuthMessage(errorCode: String): Int {
-        return when (errorCode) {
-            "ERROR_INVALID_EMAIL" -> R.string.auth_error_invalid_email
-            "ERROR_USER_NOT_FOUND" -> R.string.auth_error_user_not_found
-            else -> R.string.auth_error_invalid_credentials
-        }
     }
 }
