@@ -7,5 +7,6 @@ data class ExpensePreset(
     val amount: Long,
     val category: Category,
     val type: String,
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val position: Int = 0
 ) : TableItem

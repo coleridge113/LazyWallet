@@ -22,7 +22,8 @@ fun ExpensePresetEntity.toModel(): ExpensePreset {
         amount = this.amount,
         category = this.category,
         type = this.type,
-        createdAt = this.createdAt
+        createdAt = this.createdAt,
+        position = this.position
     )
 }
 
@@ -32,6 +33,7 @@ fun ExpensePreset.toEntity(): ExpensePresetEntity {
         amount = this.amount,
         category = this.category,
         type = this.type,
-        createdAt = this.createdAt
+        createdAt = this.createdAt,
+        position = this.position
     )
 }

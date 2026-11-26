@@ -47,6 +47,7 @@ import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUse
 import com.luna.budgetapp.domain.usecase.expensepreset.AddExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.DeleteExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.GetAllExpensePresetsUseCase
+import com.luna.budgetapp.domain.usecase.expensepreset.ReorderExpensePresetsUseCase
 import com.luna.budgetapp.domain.usecase.expensepreset.UpdateExpensePresetUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveCategoryProfileUseCase
 import com.luna.budgetapp.domain.usecase.settings.GetActiveDateFilterUseCase
@@ -69,6 +70,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.luna.budgetapp.data.local.migrations.MIGRATION_3_4
 import com.luna.budgetapp.data.local.migrations.MIGRATION_4_5
+import com.luna.budgetapp.data.local.migrations.MIGRATION_5_6
 import com.luna.budgetapp.data.local.repository.BudgetRepositoryImpl
 import com.luna.budgetapp.domain.repository.BudgetRepository
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
@@ -141,7 +143,7 @@ val databaseModule = module {
             AppDatabase::class.java, 
             "budget_db"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
         .build()
     }
     single { get<AppDatabase>().expenseDao() }
@@ -190,6 +192,7 @@ val appModule = module {
     factoryOf(::ObserveSpendingHistoryUseCase)
     factoryOf(::AddExpensePresetUseCase)
     factoryOf(::UpdateExpensePresetUseCase)
+    factoryOf(::ReorderExpensePresetsUseCase)
     factoryOf(::GetPagingExpensesByDateRangeUseCase)
     factoryOf(::DeleteExpensePresetUseCase)
     factoryOf(::GetCategoryProfileUseCase)

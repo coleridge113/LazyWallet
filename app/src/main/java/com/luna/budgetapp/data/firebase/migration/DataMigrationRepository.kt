@@ -8,6 +8,7 @@ import com.luna.budgetapp.data.firebase.models.Budget
 import com.luna.budgetapp.data.firebase.models.CategoryFilter
 import com.luna.budgetapp.data.firebase.models.Expense
 import com.luna.budgetapp.data.firebase.models.ExpensePreset
+import com.luna.budgetapp.data.mapper.normalizeCloudPresetOrder
 import com.luna.budgetapp.data.firebase.toEntity
 import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.BudgetDao
@@ -105,7 +106,7 @@ class DataMigrationRepository(
             budgetDao.deleteAll()
 
             expenseDao.addExpenses(expenses.map { it.toEntity() })
-            expensePresetDao.addExpensePresets(presets.map { it.toEntity() })
+            expensePresetDao.addExpensePresets(normalizeCloudPresetOrder(presets))
             categoryFilterDao.upsertAll(filters.map { it.toEntity() })
             budgetDao.insertBudgetsWithInteractors(budgets.map { it.toEntity() to it.interactors })
 

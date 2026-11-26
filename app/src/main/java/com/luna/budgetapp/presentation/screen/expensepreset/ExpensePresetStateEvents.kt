@@ -12,28 +12,31 @@ sealed interface UiState {
     data class Success(
         val dialogState: DialogState? = null,
         val dateState: DateState = DateState(),
-        val categoryProfileState: CategoryProfileState = CategoryProfileState(),
-        val expensesState: ExpensesState = ExpensesState()
+        val expensesState: ExpensesState = ExpensesState(),
+        val userMessage: UserMessage? = null
     ) : UiState
 }
 
 data class ExpensesState(
     val expensePresets: List<ExpensePreset> = emptyList(),
-    val expenses: List<Expense> = emptyList()
+    val expenses: List<Expense> = emptyList(),
+    val sparkline: List<Long> = List(7) { 0L },
+    val recent: List<Expense> = emptyList(),
+    val lastLogged: Expense? = null
 ) {
     val totalAmount = expenses.sumOf { it.amount }
+}
+
+sealed interface UserMessage {
+    /** The id makes two removals of identical expenses distinct, so the snackbar re-fires. */
+    data class Removed(val expenseId: Long, val type: String, val amount: Long) : UserMessage
 }
 
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily
 )
 
-data class CategoryProfileState(
-    val selectedCategoryMap: Map<Category, Boolean> = emptyMap()
-)
-
 sealed interface DialogState {
-    data object ConfirmDeleteExpense : DialogState
     data object ConfirmLogout : DialogState
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
@@ -46,9 +49,11 @@ sealed interface DialogState {
 sealed interface Event {
     data object Retry : Event
     data object DismissDialog : Event
-    data object ShowDeleteConfirmationDialog : Event
     data object ShowSignOutDialog : Event
-    data object DeleteLatestExpense : Event
+    data object UndoRemove : Event
+    data object UserMessageShown : Event
+    data object ClearUndo : Event
+    data class RemoveExpense(val expense: Expense) : Event
     data object SignOut : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
     data class ConfirmExpenseFormDialog(
@@ -58,6 +63,7 @@ sealed interface Event {
         val amount: String,
         val date: java.time.LocalDateTime? = null
     ) : Event
+    data class ReorderPresets(val orderedIds: List<Long>) : Event
     data class DeleteExpensePreset(val expensePresetId: Long) : Event
     data class AddExpense(val expensePreset: ExpensePreset, val customAmount: String? = null, val customType: String? = null, val customDate: java.time.LocalDateTime? = null) : Event
     data class AddCustomExpense(

@@ -3,41 +3,35 @@ package com.luna.budgetapp.presentation.screen.expensepreset
 import androidx.compose.material3.IconButton
 import com.luna.budgetapp.presentation.screen.components.LoadingContent
 import com.luna.budgetapp.presentation.screen.components.ErrorContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
@@ -49,16 +43,26 @@ import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
-import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseAmountDisplay
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetDialog
-import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetTable
+import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetHero
+import com.luna.budgetapp.presentation.screen.expensepreset.components.LastLoggedStrip
+import com.luna.budgetapp.presentation.screen.expensepreset.components.PresetTileGrid
+import com.luna.budgetapp.presentation.screen.expensepreset.components.RecentlyAddedSheet
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
+import androidx.compose.ui.platform.LocalAccessibilityManager
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ExpensePresetRoute(
     onSignedOut: () -> Unit,
+    onOpenExpenses: () -> Unit,
     viewModel: ExpensePresetViewModel = koinViewModel()
 ) {
 
@@ -82,6 +86,7 @@ fun ExpensePresetRoute(
             ExpensePresetContent(
                 uiState = state,
                 modifier = Modifier,
+                onOpenExpenses = onOpenExpenses,
                 onEvent = onEvent
             )
         }
@@ -93,11 +98,74 @@ fun ExpensePresetRoute(
 fun ExpensePresetContent(
     modifier: Modifier = Modifier,
     uiState: UiState.Success,
+    onOpenExpenses: () -> Unit = {},
     onEvent: (Event) -> Unit
 ) {
     val expensePresets = uiState.expensesState.expensePresets
-    val totalAmount = uiState.expensesState.totalAmount
-    var isMenuExpanded by remember { mutableStateOf(false) }
+    val expensesState = uiState.expensesState
+    var now by remember { mutableStateOf(LocalDateTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(30_000)
+            now = LocalDateTime.now()
+        }
+    }
+
+    var showRecent by rememberSaveable { mutableStateOf(false) }
+    val recent = expensesState.recent
+    LaunchedEffect(recent.isEmpty()) {
+        if (recent.isEmpty()) showRecent = false
+    }
+
+    val sheetShown = showRecent && recent.isNotEmpty()
+    val sheetShownState by rememberUpdatedState(sheetShown)
+    val snackbarHostState = remember { SnackbarHostState() }
+    // The snackbar is dismissed whenever the sheet opens or closes (not on first composition).
+    LaunchedEffect(snackbarHostState) {
+        snapshotFlow { sheetShownState }.drop(1).collect {
+            snackbarHostState.currentSnackbarData?.dismiss()
+        }
+    }
+    val userMessage = uiState.userMessage
+    val context = LocalContext.current
+    val undoLabel = stringResource(R.string.expense_preset_undo)
+    DisposableEffect(Unit) {
+        onDispose { onEvent(Event.ClearUndo) }
+    }
+    val accessibilityManager = LocalAccessibilityManager.current
+    LaunchedEffect(userMessage) {
+        if (userMessage is UserMessage.Removed) {
+            val timeoutMs = accessibilityManager?.calculateRecommendedTimeoutMillis(
+                4000L,
+                containsIcons = true,
+                containsText = true,
+                containsControls = true
+            ) ?: 4000L
+            val result = coroutineScope {
+                // The Route owns the timeout: the snackbar is dismissed when the
+                // sheet opens or closes, so it never moves between the two hosts.
+                val timer = launch {
+                    delay(timeoutMs)
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                }
+                val r = snackbarHostState.showSnackbar(
+                    message = context.getString(
+                        R.string.expense_preset_removed,
+                        userMessage.type,
+                        userMessage.amount.toPeso()
+                    ),
+                    actionLabel = undoLabel,
+                    duration = SnackbarDuration.Indefinite
+                )
+                timer.cancel()
+                r
+            }
+            // Only reached on normal return: a newer message cancels this effect,
+            // and the old one must not clear the new message.
+            if (result == SnackbarResult.ActionPerformed) onEvent(Event.UndoRemove)
+            onEvent(Event.UserMessageShown)
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -120,19 +188,29 @@ fun ExpensePresetContent(
                 }
             )
 
-            ExpenseAmountDisplay(
-                totalAmount = totalAmount,
-                modifier = Modifier.weight(1f)
-                    .fillMaxWidth()
+            ExpensePresetHero(
+                total = expensesState.totalAmount,
+                sparkline = expensesState.sparkline
             )
 
-            ExpensePresetTable(
-                expensePresets = expensePresets,
-                onClickIcon = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
-                onClickItem = { onEvent(Event.AddExpense(it)) },
+            expensesState.lastLogged?.let { last ->
+                LastLoggedStrip(
+                    expense = last,
+                    now = now,
+                    onOpen = { showRecent = true },
+                    onUndo = { onEvent(Event.RemoveExpense(last)) }
+                )
+            }
+
+            PresetTileGrid(
+                presets = expensePresets,
+                onLog = { onEvent(Event.AddExpense(it)) },
+                onCustom = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.CUSTOM)) },
                 onEdit = { onEvent(Event.AddExpensePreset(it, ExpenseFormAction.EDIT)) },
                 onDelete = { onEvent(Event.ShowConfirmationDialog(it)) },
-                modifier = Modifier.weight(3f)
+                onReorder = { onEvent(Event.ReorderPresets(it)) },
+                onNewPreset = { onEvent(Event.AddExpensePreset(null, ExpenseFormAction.ADD)) },
+                modifier = Modifier.weight(1f)
             )
 
             when (val dialog = uiState.dialogState) {
@@ -143,15 +221,6 @@ fun ExpensePresetContent(
                         isDestructive = true,
                         onDismiss = { onEvent(Event.DismissDialog) },
                         onConfirm = { onEvent(Event.SignOut) }
-                    )
-                }
-                DialogState.ConfirmDeleteExpense -> {
-                    ConfirmationDialog(
-                        message = stringResource(R.string.confirm_delete_last_expense),
-                        confirmText = stringResource(R.string.btn_delete),
-                        isDestructive = true,
-                        onDismiss = { onEvent(Event.DismissDialog) },
-                        onConfirm = { onEvent(Event.DeleteLatestExpense) }
                     )
                 }
                 is DialogState.ExpenseForm -> {
@@ -193,82 +262,26 @@ fun ExpensePresetContent(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 72.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            val iconSize = 24.dp
-            val fabSize = 56.dp
-            val offset = fabSize / 2 + 16.dp
-            val noElevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp,
-                focusedElevation = 0.dp,
-                hoveredElevation = 0.dp
+        if (!sheetShown) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
+        }
 
-            AnimatedVisibility(
-                visible = isMenuExpanded,
-                enter = slideInVertically(
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy
-                    )
-                ) { it },
-                exit = slideOutVertically { it } + shrinkVertically(),
-                modifier = Modifier.padding(bottom = offset)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.End,
-                    modifier = Modifier.padding(top = 18.dp, bottom = 28.dp)
-                ) {
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.AddExpensePreset(action = ExpenseFormAction.ADD))
-                            isMenuExpanded = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircleOutline,
-                            contentDescription = stringResource(R.string.cd_add),
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.ShowDeleteConfirmationDialog)
-                            isMenuExpanded = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = stringResource(R.string.cd_undo),
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                }
-            }
-
-            FloatingActionButton(
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.secondary,
-                elevation = noElevation,
-                onClick = { isMenuExpanded = !isMenuExpanded }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = stringResource(R.string.cd_menu),
-                    modifier = Modifier.size(iconSize)
-                )
-            }
+        if (sheetShown) {
+            RecentlyAddedSheet(
+                recent = recent,
+                total = expensesState.totalAmount,
+                now = now,
+                onRemove = { onEvent(Event.RemoveExpense(it)) },
+                onSeeAll = {
+                    showRecent = false
+                    onOpenExpenses()
+                },
+                onDismiss = { showRecent = false },
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+            )
         }
     }
 }
@@ -289,7 +302,9 @@ fun ExpenseRoutePreviewLight() {
             Expense(id = 1, amount = 5000, category = Category.FOOD, type = "Lunch"),
             Expense(id = 2, amount = 1500, category = Category.BEVERAGE, type = "Coffee"),
             Expense(id = 3, amount = 20000, category = Category.LEISURE, type = "Groceries")
-        )
+        ),
+        sparkline = listOf(21000, 3000, 51000, 23000, 17000, 20000, 26500),
+        lastLogged = Expense(id = 3, amount = 20000, category = Category.LEISURE, type = "Groceries")
     )
 
     val uiState = UiState.Success(

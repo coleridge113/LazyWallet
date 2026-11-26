@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
+import com.luna.budgetapp.domain.model.Granularity
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
@@ -13,7 +15,11 @@ import com.luna.budgetapp.domain.usecase.ProfileUseCases
 import com.luna.budgetapp.domain.utils.parseAmountExpression
 import com.luna.budgetapp.domain.utils.todayFlow
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpenseFormAction
+import com.luna.budgetapp.presentation.screen.expensepreset.model.lastLogged
+import com.luna.budgetapp.presentation.screen.expensepreset.model.lastSevenDays
+import com.luna.budgetapp.presentation.screen.expensepreset.model.recentFirst
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +38,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 private const val TAG = "ExpensePresetVM"
+private const val REMOVE_LOCK_MS = 500L
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExpensePresetViewModel(
@@ -46,54 +53,55 @@ class ExpensePresetViewModel(
     private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())
-    private val _categoryProfileState =
-        profileUseCases.observeCategoryProfileState(includeProfileList = false)
-            .map { snapshot ->
-                CategoryProfileState(selectedCategoryMap = snapshot.categoryMap)
-            }
+    private val _userMessage = MutableStateFlow<UserMessage?>(null)
+    private var lastRemoved: Expense? = null
+    /** True while a removal is in flight and for [REMOVE_LOCK_MS] after it completes. */
+    private var removeLocked = false
+    private val allCategoryNames = Category.entries.map { it.name }
 
     private val _expensesState = combine(
         _dateState,
         presetUseCases.getAllExpensePresets(),
-        _categoryProfileState,
+        expenseUseCases.observeSpendingHistory(allCategoryNames, Granularity.DAY)
+            .map { lastSevenDays(it.periods) },
         todayFlow(clock)
-    ) { dateState, expensePresets, categoryProfileState, today ->
-        listOf(dateState, expensePresets, categoryProfileState, today)
+    ) { dateState, expensePresets, sparkline, today ->
+        listOf(dateState, expensePresets, sparkline, today)
     }
         .flatMapLatest { values ->
             val dateState = values[0] as DateState
             @Suppress("UNCHECKED_CAST")
             val expensePresets = values[1] as List<ExpensePreset>
-            val categoryProfileState = values[2] as CategoryProfileState
+            @Suppress("UNCHECKED_CAST")
+            val sparkline = values[2] as List<Long>
             val today = values[3] as LocalDate
             val (start, end) = dateState.dateFilter.resolve(today)
+            // The ExpensePreset screen ignores the category filter: null = every category.
             expenseUseCases.getExpensesByDateRange(
                 start = start,
                 end = end,
-                categories = categoryProfileState.selectedCategoryMap
-                    .filter { it.value }
-                    .keys
-                    .map { it.name }
-                    .toList()
+                categories = null
             ).map { expenses ->
                 ExpensesState(
                     expensePresets = expensePresets,
-                    expenses = expenses
+                    expenses = expenses,
+                    sparkline = sparkline,
+                    recent = recentFirst(expenses),
+                    lastLogged = lastLogged(expenses)
                 )
             }
         }
 
     private val _successState = combine(
         _dateState,
-        _dialogState,
-        _categoryProfileState,
+        combine(_dialogState, _userMessage) { dialog, message -> dialog to message },
         _expensesState
-    ) { dateState, dialogState, categoryProfileState, expensesState ->
+    ) { dateState, (dialogState, userMessage), expensesState ->
         UiState.Success(
             dialogState = dialogState,
             dateState = dateState,
-            categoryProfileState = categoryProfileState,
-            expensesState = expensesState
+            expensesState = expensesState,
+            userMessage = userMessage
         )
     }
 
@@ -125,14 +133,20 @@ class ExpensePresetViewModel(
             Event.ShowSignOutDialog -> showSignOutDialog()
             Event.DismissDialog -> dismissDialog()
             Event.Retry -> _retryTrigger.update { it + 1 }
-            Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
-            Event.DeleteLatestExpense -> deleteLatestExpense()
+            Event.UndoRemove -> undoRemove()
+            Event.UserMessageShown -> _userMessage.value = null
+            Event.ClearUndo -> {
+                lastRemoved = null
+                _userMessage.value = null
+            }
+            is Event.RemoveExpense -> removeExpense(event.expense)
             Event.SignOut -> signOutUser()
             is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType, event.customDate)
             is Event.AddExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.AddCustomExpense -> showExpenseForm(event.selectedPreset, event.action)
             is Event.EditExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
             is Event.ShowConfirmationDialog -> showPresetDeleteConfirmationDialog(event.expensePresetId)
+            is Event.ReorderPresets -> reorderPresets(event.orderedIds)
             is Event.DeleteExpensePreset -> deleteExpensePreset(event.expensePresetId)
             is Event.ConfirmExpenseFormDialog -> saveExpensePreset(
                 event.id, event.category, event.type, event.amount, event.date
@@ -194,12 +208,17 @@ class ExpensePresetViewModel(
     ) {
         val amount = customAmount?.let { parseAmountExpression(it) } ?: expensePreset.amount
         viewModelScope.launch {
-            expenseUseCases.addExpense(
-                category = expensePreset.category.name,
-                type = customType ?: expensePreset.type,
-                amount = amount,
-                date = customDate ?: LocalDateTime.now(clock)
-            )
+            try {
+                expenseUseCases.addExpense(
+                    category = expensePreset.category.name,
+                    type = customType ?: expensePreset.type,
+                    amount = amount,
+                    date = customDate ?: LocalDateTime.now(clock)
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to add expense", e)
+            }
 
             if (_dialogState.value != null) {
                 dismissDialog()
@@ -207,10 +226,43 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun deleteLatestExpense() {
-        dismissDialog()
+    private fun removeExpense(expense: Expense) {
+        val id = expense.id ?: return
+        if (removeLocked) return
+        removeLocked = true
         viewModelScope.launch {
-            expenseUseCases.deleteLatestExpense()
+            try {
+                try {
+                    expenseUseCases.deleteExpense(id)
+                    lastRemoved = expense
+                    _userMessage.value = UserMessage.Removed(id, expense.type, expense.amount)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    Log.e(TAG, "Failed to remove expense", e)
+                }
+                delay(REMOVE_LOCK_MS)
+            } finally {
+                removeLocked = false
+            }
+        }
+    }
+
+    private fun undoRemove() {
+        val expense = lastRemoved ?: return
+        lastRemoved = null
+        _userMessage.value = null
+        viewModelScope.launch {
+            try {
+                expenseUseCases.addExpense(
+                    category = expense.category.name,
+                    type = expense.type,
+                    amount = expense.amount,
+                    date = expense.date
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to undo expense removal", e)
+            }
         }
     }
 
@@ -227,15 +279,20 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun showPresetDeleteConfirmationDialog(expensePresetId: Long) {
-        _dialogState.update {
-            DialogState.ConfirmDeleteExpensePreset(expensePresetId)
+    private fun reorderPresets(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            try {
+                presetUseCases.reorderExpensePresets(orderedIds)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Failed to reorder expense presets", e)
+            }
         }
     }
 
-    private fun showExpenseDeleteConfirmationDialog() {
+    private fun showPresetDeleteConfirmationDialog(expensePresetId: Long) {
         _dialogState.update {
-            DialogState.ConfirmDeleteExpense
+            DialogState.ConfirmDeleteExpensePreset(expensePresetId)
         }
     }
 

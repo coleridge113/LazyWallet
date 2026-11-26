@@ -3,9 +3,11 @@ package com.luna.budgetapp.data.local.repository
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.luna.budgetapp.data.datastore.SettingsDataStore
 import com.luna.budgetapp.data.firebase.toFirestoreModel
 import com.luna.budgetapp.data.local.dao.ExpensePresetDao
+import com.luna.budgetapp.data.mapper.reorderedPositions
 import com.luna.budgetapp.data.mapper.toEntity
 import com.luna.budgetapp.data.mapper.toModel
 import com.luna.budgetapp.domain.model.ExpensePreset
@@ -42,7 +44,8 @@ class ExpensePresetRepositoryImpl(
         val userId = auth.currentUser?.uid
         val remoteId = UUID.randomUUID().toString()
 
-        val entity = expensePreset.toEntity().copy(remoteId = remoteId)
+        val position = (dao.getMaxPosition() ?: -1) + 1
+        val entity = expensePreset.toEntity().copy(remoteId = remoteId, position = position)
         dao.addExpensePreset(entity)
 
         if (userId != null) {
@@ -61,7 +64,10 @@ class ExpensePresetRepositoryImpl(
         val userId = auth.currentUser?.uid
         val existingEntity = expensePreset.id?. let { dao.getExpensePresetByIdOnce(it) }
         val remoteId = existingEntity?.remoteId
-        val entity = expensePreset.toEntity().copy(remoteId = remoteId)
+        val entity = expensePreset.toEntity().copy(
+            remoteId = remoteId,
+            position = existingEntity?.position ?: expensePreset.position
+        )
         dao.addExpensePreset(entity)
 
         if (userId != null && remoteId != null) {
@@ -91,6 +97,30 @@ class ExpensePresetRepositoryImpl(
             } catch (e: Exception) {
                 Log.e("Sync", "Failed to sync deleted expense preset", e)
             }
+        }
+    }
+
+    override suspend fun reorderExpensePresets(orderedIds: List<Long>) {
+        val presets = dao.getAllExpensePresetsOnce()
+        val changes = reorderedPositions(orderedIds, presets.associate { it.id to it.position })
+        if (changes.isEmpty()) return
+        dao.updatePositions(changes)
+
+        val userId = auth.currentUser?.uid ?: return
+        try {
+            val batch = firestore.batch()
+            presets.forEach { preset ->
+                val newPosition = changes[preset.id]
+                val remoteId = preset.remoteId
+                if (newPosition != null && remoteId != null) {
+                    val ref = firestore.collection("users").document(userId)
+                        .collection("expense_presets").document(remoteId)
+                    batch.set(ref, mapOf("position" to newPosition), SetOptions.merge())
+                }
+            }
+            batch.commit()
+        } catch (e: Exception) {
+            Log.e("Sync", "Failed to sync preset order", e)
         }
     }
 }
