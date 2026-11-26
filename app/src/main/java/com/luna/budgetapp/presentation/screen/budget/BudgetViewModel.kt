@@ -9,8 +9,7 @@ import com.luna.budgetapp.domain.model.DateFilter
 import com.luna.budgetapp.domain.model.projectAmountToMonth
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
-import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
-import com.luna.budgetapp.presentation.screen.budget.model.paceFraction
+import com.luna.budgetapp.presentation.screen.budget.model.MonthOutlook
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.CancellationException
@@ -26,7 +25,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
-import java.time.LocalTime
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -56,36 +54,28 @@ class BudgetViewModel(
             }
         }
 
-    private val _totalAmount = _today.flatMapLatest { today ->
-        expenseUseCases.getTotalAmountByDateRange(
-            start = today.withDayOfMonth(1).atStartOfDay(),
-            end = today.atTime(LocalTime.MAX)
-        )
-    }
-
-    private val _monthlyOutlook = combine(
+    private val _outlook = combine(
         _budgets,
-        _totalAmount,
+        expenseUseCases.observeAllDailyTotals(),
         _today
-    ) { budgets, totalAmount, today ->
-        OutlookDetails(
-            income = 0L,
-            projectedSpend = budgets.sumOf { it.frequency.projectAmountToMonth(it.limit) },
-            actualSpend = totalAmount,
-            paceFraction = paceFraction(today)
+    ) { budgets, dailyTotals, today ->
+        MonthOutlook.from(
+            today = today,
+            budgetTotal = budgets.sumOf { it.frequency.projectAmountToMonth(it.limit) },
+            dailyTotals = dailyTotals
         )
     }
 
     private val _successState = combine(
         _budgets,
         _expenses,
-        _monthlyOutlook,
+        _outlook,
         _dialogState
-    ) { budgets, expenses, monthlyOutlook, dialog ->
+    ) { budgets, expenses, outlook, dialog ->
         UiState.Success(
             budgets = budgets,
             expenses = expenses,
-            monthlyOutlook = monthlyOutlook,
+            outlook = outlook,
             dialog = dialog
         )
     }

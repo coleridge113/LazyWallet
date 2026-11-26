@@ -22,6 +22,7 @@ import com.luna.budgetapp.domain.repository.CategoryRepository
 import com.luna.budgetapp.domain.repository.SettingsRepository
 import com.luna.budgetapp.domain.usecase.AuthUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
+import com.luna.budgetapp.domain.usecase.expense.ObserveAllDailyTotalsUseCase
 import com.luna.budgetapp.domain.usecase.expense.ObserveSpendingHistoryUseCase
 import com.luna.budgetapp.domain.usecase.PresetUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
@@ -190,6 +191,7 @@ val appModule = module {
     factoryOf(::GetAllExpensePresetsUseCase)
     factoryOf(::GetCategoryTotalsByDateRange)
     factoryOf(::ObserveSpendingHistoryUseCase)
+    factoryOf(::ObserveAllDailyTotalsUseCase)
     factoryOf(::AddExpensePresetUseCase)
     factoryOf(::UpdateExpensePresetUseCase)
     factoryOf(::ReorderExpensePresetsUseCase)

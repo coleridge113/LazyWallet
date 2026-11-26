@@ -107,3 +107,9 @@ fun <STATE, T> Flow<STATE>.filterDataByState(
 
             useCase(activeCategories, range.start, range.end)
         }
+
+/** Cents to whole pesos, half-up, e.g. 1_570_000 -> "₱15,700". Sign is dropped; callers word "over". */
+fun Long.toWholePeso(): String {
+    val pesos = (abs(this) + 50) / 100
+    return "₱" + java.text.NumberFormat.getIntegerInstance(Locale.US).format(pesos)
+}

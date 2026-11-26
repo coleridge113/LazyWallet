@@ -17,7 +17,15 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import java.time.LocalDate
+import com.luna.budgetapp.presentation.screen.budget.components.BudgetHeatGridCard
+import com.luna.budgetapp.presentation.screen.budget.components.OutlookSheet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,7 +34,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
-import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -60,7 +67,16 @@ fun BudgetContent(
     onOpenBudgetDetails: (BudgetId) -> Unit,
     onEvent: (Event) -> Unit
 ) {
-    val (budgets, expenses, monthlyOutlook, dialog) = uiState
+    val (budgets, expenses, outlook, dialog) = uiState
+    // Plain remember: the tab back stack restores saved state, so expanded day details would reappear.
+    var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
+    var showOutlookSheet by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(outlook.today.year, outlook.today.month) { selectedDay = null }
+
+    if (showOutlookSheet) {
+        OutlookSheet(outlook = outlook, onDismiss = { showOutlookSheet = false })
+    }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -95,26 +111,30 @@ fun BudgetContent(
             else -> {}
         }
 
-        Column(
-            modifier = Modifier
-        ) {
-            BudgetOutlookCard(
-                modifier = Modifier.padding(4.dp),
-                details = monthlyOutlook
-            )
-
-            LazyColumn(modifier = modifier) {
-                items(budgets) { budget ->
-                    val spent = expenses[budget.id]?.sumOf { it.amount }
-                    BudgetCard(
-                        modifier = Modifier.padding(4.dp),
-                        budget = budget,
-                        spent = spent ?: 0L,
-                        onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
-                        onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
-                        onClick = { onOpenBudgetDetails(budget.id) }
-                    )
-                }
+        LazyColumn(modifier = modifier) {
+            item(key = "outlook") {
+                BudgetHeatGridCard(
+                    modifier = Modifier.padding(4.dp),
+                    outlook = outlook,
+                    selectedDay = selectedDay,
+                    onDayClick = { selectedDay = if (selectedDay == it) null else it },
+                    onCollapse = { selectedDay = null },
+                    onOpenOutlook = {
+                        selectedDay = null
+                        showOutlookSheet = true
+                    }
+                )
+            }
+            items(budgets, key = { it.id }) { budget ->
+                val spent = expenses[budget.id]?.sumOf { it.amount }
+                BudgetCard(
+                    modifier = Modifier.padding(4.dp),
+                    budget = budget,
+                    spent = spent ?: 0L,
+                    onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
+                    onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
+                    onClick = { onOpenBudgetDetails(budget.id) }
+                )
             }
         }
 

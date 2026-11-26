@@ -11,6 +11,7 @@ import com.luna.budgetapp.domain.usecase.expense.GetExpensesByTypeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetPagingExpensesByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.GetTotalAmountByDateRangeUseCase
 import com.luna.budgetapp.domain.usecase.expense.EditExpenseUseCase
+import com.luna.budgetapp.domain.usecase.expense.ObserveAllDailyTotalsUseCase
 import com.luna.budgetapp.domain.usecase.expense.ObserveSpendingHistoryUseCase
 
 data class ExpenseUseCases(
@@ -26,4 +27,5 @@ data class ExpenseUseCases(
     val getPagingExpensesByDateRange: GetPagingExpensesByDateRangeUseCase,
     val getExpensesByType: GetExpensesByTypeUseCase,
     val observeSpendingHistory: ObserveSpendingHistoryUseCase,
+    val observeAllDailyTotals: ObserveAllDailyTotalsUseCase,
 )
