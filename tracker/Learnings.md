@@ -37,3 +37,5 @@ Gotchas not yet in the project instructions; delete them here once folded in.
 - M3 1.4 `TooltipBox` can make its popup focusable (touch-modal): a tap outside only dismisses it and never reaches what's underneath (switching between tooltip anchors takes two taps). Pass `focusable = false` for pass-through taps; M3 still forces focus when TalkBack is on.
 - M3 `RichTooltip`'s text slot already adds 16dp horizontal padding (plus a small vertical one); don't add the mockup's full padding again inside it.
 - A `role` set on a non-clickable child doesn't merge into a clickable parent; put `role = Role.Button` on the `clickable` itself.
+- A `LaunchedEffect` that clears stale UI state (e.g. a selected day at month rollover) runs after the composition that already sees the new data; look the selection up with `firstOrNull` so that frame can't throw.
+- F14: per-cell M3 tooltips over a dense grid were buggy on device (tap pass-through, close/reopen races); expanding the card inline was the fix. Prefer inline expansion to anchored popups for grid details.
