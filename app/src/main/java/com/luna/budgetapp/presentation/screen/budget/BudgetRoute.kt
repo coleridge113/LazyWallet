@@ -21,7 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import java.time.LocalDate
@@ -69,12 +69,8 @@ fun BudgetContent(
 ) {
     val (budgets, expenses, outlook, dialog) = uiState
     val listState = rememberLazyListState()
-    var selectedDay by rememberSaveable(
-        stateSaver = Saver<LocalDate?, Long>(
-            save = { it?.toEpochDay() ?: -1L },
-            restore = { if (it < 0) null else LocalDate.ofEpochDay(it) }
-        )
-    ) { mutableStateOf<LocalDate?>(null) }
+    // Plain remember: the tab back stack restores saved state, so an open popover would reappear.
+    var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
     // Consumed by the outlook sheet (F14 Task 5).
     @Suppress("UNUSED_VARIABLE")
     var showOutlookSheet by rememberSaveable { mutableStateOf(false) }
@@ -125,7 +121,7 @@ fun BudgetContent(
                 outlook = outlook,
                 selectedDay = selectedDay,
                 onDayClick = { selectedDay = if (selectedDay == it) null else it },
-                onDismissDay = { selectedDay = null },
+                onDismissDay = { date -> if (selectedDay == date) selectedDay = null },
                 onClick = {
                     selectedDay = null
                     showOutlookSheet = true

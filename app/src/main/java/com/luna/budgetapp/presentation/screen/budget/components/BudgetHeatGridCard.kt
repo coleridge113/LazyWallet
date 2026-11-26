@@ -28,7 +28,14 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,7 +80,7 @@ fun BudgetHeatGridCard(
     outlook: MonthOutlook,
     selectedDay: LocalDate?,
     onDayClick: (LocalDate) -> Unit,
-    onDismissDay: () -> Unit,
+    onDismissDay: (LocalDate) -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,17 +103,14 @@ fun BudgetHeatGridCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clearAndSetSemantics {
-                    contentDescription = heroCd
-                    role = Role.Button
-                },
+                .semantics { contentDescription = heroCd },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom,
         ) {
@@ -118,14 +122,14 @@ fun BudgetHeatGridCard(
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     color = if (over) budgetProgressColor(1.5f) else MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier.alignByBaseline().clearAndSetSemantics { },
                 )
                 Text(
                     text = suffix,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier.alignByBaseline().clearAndSetSemantics { },
                 )
             } else {
                 Text(
@@ -133,6 +137,7 @@ fun BudgetHeatGridCard(
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.clearAndSetSemantics { },
                 )
             }
         }
@@ -154,7 +159,7 @@ private fun HeatGrid(
     outlook: MonthOutlook,
     selectedDay: LocalDate?,
     onDayClick: (LocalDate) -> Unit,
-    onDismissDay: () -> Unit,
+    onDismissDay: (LocalDate) -> Unit,
     locale: Locale,
 ) {
     val cells: List<OutlookDay?> = List(outlook.leadingBlanks) { null } + outlook.days
@@ -207,7 +212,7 @@ private fun DayCell(
     outlook: MonthOutlook,
     selected: Boolean,
     onClick: () -> Unit,
-    onDismiss: () -> Unit,
+    onDismiss: (LocalDate) -> Unit,
     locale: Locale,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -246,11 +251,12 @@ private fun DayCell(
             if (visible) sawVisible = true
             else if (sawVisible) {
                 sawVisible = false
-                if (currentSelected) onDismiss()
+                if (currentSelected) onDismiss(day.date)
             }
         }
     }
 
+    var openedOnDown by remember { mutableStateOf(false) }
     val hasSpend = day.spent > 0
     val isToday = day.kind == DayKind.Today
     val cd = run {
@@ -293,11 +299,23 @@ private fun DayCell(
                     else Modifier
                 )
                 .then(borderModifier)
+                .pointerInput(state) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        openedOnDown = state.isVisible
+                    }
+                }
                 .clearAndSetSemantics {
                     contentDescription = cd
                     role = Role.Button
                 }
-                .clickable(onClick = onClick)
+                .clickable(role = Role.Button) {
+                    // A tap that began while this popover was open only closes it.
+                    if (openedOnDown) {
+                        openedOnDown = false
+                        if (currentSelected) onDismiss(day.date)
+                    } else onClick()
+                }
         )
     }
 }
@@ -305,7 +323,8 @@ private fun DayCell(
 @Composable
 private fun DayPopoverContent(day: OutlookDay, outlook: MonthOutlook, locale: Locale) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    Column(modifier = Modifier.padding(vertical = 14.dp, horizontal = 16.dp)) {
+    // RichTooltip text slot already adds 16dp horizontal and 4dp vertical padding.
+    Column(modifier = Modifier.padding(vertical = 10.dp)) {
         Text(
             text = day.date.format(DateTimeFormatter.ofPattern("EEE, d MMM", locale)),
             fontSize = 14.sp,
