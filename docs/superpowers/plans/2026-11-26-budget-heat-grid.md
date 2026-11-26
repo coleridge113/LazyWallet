@@ -27,7 +27,7 @@
 1. **Month boundary at midnight** (today = last day → 1st): grid, hero and sheet switch month together; previous-month spend leaves "spent so far". Test in Task 3.
 2. **Expenses dated in the future or in last month** in the raw daily totals: ignored by `spentSoFar`, grid and chart. Test in Task 2.
 3. **Expense with a category string not in `Category.entries`** still counts. Pinned by the Task 1 DAO query having no `WHERE` (reviewer checks; the domain `Expense` can't carry an unknown category, so no unit test).
-4. **Popover near the screen edge** (Saturday / Sunday columns) and after the list scrolls: stays on screen; closes on list scroll. Device check in Task 4.
+4. **Day details for a Sunday- or Saturday-column day** (revised by Task 6; was the floating popover): the notch sits under that column and the expanded card stays scrollable with the list. Previews + device check in Task 6.
 5. **Overspent month with a high pace**: chart Y scale grows to fit `projected`/`spentSoFar`, budget label stays readable, hero shows "over". Test in Task 2 (`chartMax`), preview in Task 5.
 
 ---

@@ -111,33 +111,30 @@ fun BudgetContent(
             else -> {}
         }
 
-        Column(
-            modifier = Modifier
-        ) {
-            BudgetHeatGridCard(
-                modifier = Modifier.padding(4.dp),
-                outlook = outlook,
-                selectedDay = selectedDay,
-                onDayClick = { selectedDay = if (selectedDay == it) null else it },
-                onCollapse = { selectedDay = null },
-                onOpenOutlook = {
-                    selectedDay = null
-                    showOutlookSheet = true
-                }
-            )
-
-            LazyColumn(modifier = modifier) {
-                items(budgets) { budget ->
-                    val spent = expenses[budget.id]?.sumOf { it.amount }
-                    BudgetCard(
-                        modifier = Modifier.padding(4.dp),
-                        budget = budget,
-                        spent = spent ?: 0L,
-                        onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
-                        onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
-                        onClick = { onOpenBudgetDetails(budget.id) }
-                    )
-                }
+        LazyColumn(modifier = modifier) {
+            item(key = "outlook") {
+                BudgetHeatGridCard(
+                    modifier = Modifier.padding(4.dp),
+                    outlook = outlook,
+                    selectedDay = selectedDay,
+                    onDayClick = { selectedDay = if (selectedDay == it) null else it },
+                    onCollapse = { selectedDay = null },
+                    onOpenOutlook = {
+                        selectedDay = null
+                        showOutlookSheet = true
+                    }
+                )
+            }
+            items(budgets, key = { it.id }) { budget ->
+                val spent = expenses[budget.id]?.sumOf { it.amount }
+                BudgetCard(
+                    modifier = Modifier.padding(4.dp),
+                    budget = budget,
+                    spent = spent ?: 0L,
+                    onEdit = { onEvent(Event.ShowBudgetFormDialog(it)) },
+                    onDelete = { onEvent(Event.ShowDeleteDialog(it)) },
+                    onClick = { onOpenBudgetDetails(budget.id) }
+                )
             }
         }
 
