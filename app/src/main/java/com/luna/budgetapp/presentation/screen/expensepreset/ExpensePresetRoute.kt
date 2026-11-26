@@ -13,6 +13,10 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -20,8 +24,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.AndroidUiModes
 import androidx.compose.ui.tooling.preview.Devices
@@ -38,6 +45,8 @@ import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePr
 import com.luna.budgetapp.presentation.screen.expensepreset.components.ExpensePresetHero
 import com.luna.budgetapp.presentation.screen.expensepreset.components.LastLoggedStrip
 import com.luna.budgetapp.presentation.screen.expensepreset.components.PresetTileGrid
+import com.luna.budgetapp.presentation.screen.expensepreset.components.RecentlyAddedSheet
+import com.luna.budgetapp.presentation.screen.utils.toPeso
 import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
@@ -46,6 +55,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ExpensePresetRoute(
     onSignedOut: () -> Unit,
+    onOpenExpenses: () -> Unit,
     viewModel: ExpensePresetViewModel = koinViewModel()
 ) {
 
@@ -69,6 +79,7 @@ fun ExpensePresetRoute(
             ExpensePresetContent(
                 uiState = state,
                 modifier = Modifier,
+                onOpenExpenses = onOpenExpenses,
                 onEvent = onEvent
             )
         }
@@ -80,6 +91,7 @@ fun ExpensePresetRoute(
 fun ExpensePresetContent(
     modifier: Modifier = Modifier,
     uiState: UiState.Success,
+    onOpenExpenses: () -> Unit = {},
     onEvent: (Event) -> Unit
 ) {
     val expensePresets = uiState.expensesState.expensePresets
@@ -89,6 +101,34 @@ fun ExpensePresetContent(
         while (true) {
             delay(30_000)
             now = LocalDateTime.now()
+        }
+    }
+
+    var showRecent by rememberSaveable { mutableStateOf(false) }
+    val recent = expensesState.recent
+    LaunchedEffect(recent.isEmpty()) {
+        if (recent.isEmpty()) showRecent = false
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val userMessage = uiState.userMessage
+    val context = LocalContext.current
+    val undoLabel = stringResource(R.string.expense_preset_undo)
+    LaunchedEffect(userMessage) {
+        if (userMessage is UserMessage.Removed) {
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(
+                    R.string.expense_preset_removed,
+                    userMessage.type,
+                    userMessage.amount.toPeso()
+                ),
+                actionLabel = undoLabel,
+                duration = SnackbarDuration.Short
+            )
+            // Only reached on normal return: a newer message cancels this effect,
+            // and the old one must not clear the new message.
+            if (result == SnackbarResult.ActionPerformed) onEvent(Event.UndoRemove)
+            onEvent(Event.UserMessageShown)
         }
     }
 
@@ -122,7 +162,7 @@ fun ExpensePresetContent(
                 LastLoggedStrip(
                     expense = last,
                     now = now,
-                    onOpen = { /* Task 4 opens the recently added sheet */ },
+                    onOpen = { showRecent = true },
                     onUndo = { onEvent(Event.RemoveExpense(last)) }
                 )
             }
@@ -184,6 +224,25 @@ fun ExpensePresetContent(
                 }
                 else -> {}
             }
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+
+        if (showRecent && recent.isNotEmpty()) {
+            RecentlyAddedSheet(
+                recent = recent,
+                total = expensesState.totalAmount,
+                now = now,
+                onRemove = { onEvent(Event.RemoveExpense(it)) },
+                onSeeAll = {
+                    showRecent = false
+                    onOpenExpenses()
+                },
+                onDismiss = { showRecent = false }
+            )
         }
     }
 }

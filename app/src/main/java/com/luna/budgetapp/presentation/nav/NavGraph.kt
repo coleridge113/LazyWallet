@@ -56,6 +56,16 @@ fun NavGraphSetup(
         else -> null
     }
 
+    val navigateToTab: (Any) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo<Routes.ExpensePresetRoute> {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     SharedTransitionLayout {
         Scaffold(
             bottomBar = {
@@ -69,13 +79,7 @@ fun NavGraphSetup(
                             NavOptions.ANALYSIS -> Routes.AnalysisRoute
                             NavOptions.BUDGET -> Routes.BudgetRoute
                         }
-                        navController.navigate(route) {
-                            popUpTo<Routes.ExpensePresetRoute> {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navigateToTab(route)
                     }
                 }
             }
@@ -133,6 +137,7 @@ fun NavGraphSetup(
                     val viewModel: ExpensePresetViewModel = koinViewModel()
                     ExpensePresetRoute(
                         viewModel = viewModel,
+                        onOpenExpenses = { navigateToTab(Routes.ExpensesRoute) },
                         onSignedOut = {
                             navController.navigate(Routes.AuthRoute) {
                                 popUpTo(navController.graph.id) {

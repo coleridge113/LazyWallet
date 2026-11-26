@@ -126,6 +126,11 @@
     <string name="expense_preset_today">Today</string>
     <string name="expense_preset_new_preset">New preset</string>
     <string name="expense_preset_undo">Undo</string>
+    <string name="expense_preset_recently_added">Recently added</string>
+    <string name="expense_preset_today_total">Today · %1$s</string>
+    <string name="expense_preset_see_all_expenses">See all expenses</string>
+    <string name="expense_preset_removed">Removed %1$s %2$s</string>
+    <string name="cd_remove_expense">Remove %1$s %2$s</string>
     <string name="expense_preset_just_now">just now</string>
     <string name="expense_preset_minutes_ago">%1$d min ago</string>
     <string name="expense_preset_hours_ago">%1$d h ago</string>
