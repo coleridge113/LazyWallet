@@ -11,8 +11,9 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | F07 | Adaptive layouts | Later | – | – | Only if tablets/landscape matter |
 | F09 | Guest to account upgrade (Cloud Sync page) | Idea | – | – | Brainstorm spec (direction agreed 2026-11-25) |
 | F11 | Write-failure feedback | Idea | – | – | Your call: snackbar vs dialog for failed saves/deletes (ties to P18/F05); then brainstorm |
-| F13 | UI rebuild: Home (ExpensePreset) screen | Building | [design](../docs/superpowers/specs/2026-11-26-expensepreset-redesign-design.md) | [plan](../docs/superpowers/plans/2026-11-26-expensepreset-redesign.md) | Built on `feat/home-redesign` 2026-11-26 (4 tasks + final-review fixes, 129 tests). Your call: device check, then push/PR |
+| F13 | UI rebuild: Home (ExpensePreset) screen | Building | [design](../docs/superpowers/specs/2026-11-26-expensepreset-redesign-design.md) | [plan](../docs/superpowers/plans/2026-11-26-expensepreset-redesign.md) | Built + device-test fixes on `feat/home-redesign` (not pushed, 129 tests). Your call: finish the device check (⋮ tile button), then merge / PR / keep |
 | F14 | UI rebuild: Budget outlook heat grid + outlook sheet + day popover | Idea | – | – | Brainstorm from the handoff note in `docs/screens/redesign/` (Budget "Alt B · Month heat grid", "Dialog 2" sheet, "Dialog 3" popover; accepted 2026-11-26). Replaces the F12 gauge; makes P31 moot |
+| F15 | Reorder presets by long-press drag (ExpensePreset screen) | Planned | [design](../docs/superpowers/specs/2026-11-26-preset-reorder-design.md) | [plan](../docs/superpowers/plans/2026-11-26-preset-reorder.md) | Build via subagent-driven development on `feat/home-redesign` (3 tasks) |
 
 New features get the next F ID. Seed notes are folded into the spec by brainstorming, then deleted here. Done rows move to Features-done.md.
 
