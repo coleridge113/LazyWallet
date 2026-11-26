@@ -17,7 +17,15 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import java.time.LocalDate
+import com.luna.budgetapp.presentation.screen.budget.components.BudgetHeatGridCard
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -60,6 +68,21 @@ fun BudgetContent(
     onEvent: (Event) -> Unit
 ) {
     val (budgets, expenses, outlook, dialog) = uiState
+    val listState = rememberLazyListState()
+    var selectedDay by rememberSaveable(
+        stateSaver = Saver<LocalDate?, Long>(
+            save = { it?.toEpochDay() ?: -1L },
+            restore = { if (it < 0) null else LocalDate.ofEpochDay(it) }
+        )
+    ) { mutableStateOf<LocalDate?>(null) }
+    // Consumed by the outlook sheet (F14 Task 5).
+    @Suppress("UNUSED_VARIABLE")
+    var showOutlookSheet by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) selectedDay = null
+    }
+    LaunchedEffect(outlook.today.year, outlook.today.month) { selectedDay = null }
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -97,9 +120,19 @@ fun BudgetContent(
         Column(
             modifier = Modifier
         ) {
-            // F14 Task 4: hero card
+            BudgetHeatGridCard(
+                modifier = Modifier.padding(4.dp),
+                outlook = outlook,
+                selectedDay = selectedDay,
+                onDayClick = { selectedDay = if (selectedDay == it) null else it },
+                onDismissDay = { selectedDay = null },
+                onClick = {
+                    selectedDay = null
+                    showOutlookSheet = true
+                }
+            )
 
-            LazyColumn(modifier = modifier) {
+            LazyColumn(state = listState, modifier = modifier) {
                 items(budgets) { budget ->
                     val spent = expenses[budget.id]?.sumOf { it.amount }
                     BudgetCard(
