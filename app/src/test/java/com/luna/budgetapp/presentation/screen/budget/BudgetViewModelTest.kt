@@ -113,4 +113,17 @@ class BudgetViewModelTest {
         assertThat((vm.uiState.value as UiState.Success).monthlyOutlook.actualSpend).isEqualTo(0L)
         job.cancel()
     }
+
+    @Test
+    fun `pace rolls over at midnight`() = runTest {
+        val vm = viewModel()
+        val job = launch { vm.uiState.collect {} }
+        advanceTimeBy(1)
+        assertThat((vm.uiState.value as UiState.Success).monthlyOutlook.paceFraction).isEqualTo(1f)
+
+        clock.current = Instant.parse("2026-04-01T00:00:30Z")
+        advanceTimeBy(61_000)
+        assertThat((vm.uiState.value as UiState.Success).monthlyOutlook.paceFraction).isEqualTo(1f / 30)
+        job.cancel()
+    }
 }

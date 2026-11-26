@@ -1,46 +1,56 @@
-# Handover — 2026-11-25 23:01 (Opus)
+# Handover — 2026-11-26 (Opus 5.5)
 
 ## Where things stand
-- PR #3 (polish P04–P13, paging bump, feature-based tracker F08) and PR #4 (P15 budget card, P19 shape tokens, P21 strings) are merged into `master`.
-- Branch `feat/navigation-events` (from master after PR #4) holds the approved **F02** spec and plan, committed as `ebe30c3`. No code is written yet.
-- F09 (guest to account upgrade) and F10 (Analysis history and timelines) are shaped as Ideas with detailed seed notes in `tracker/Features.md`.
-- This handover note and two new Learnings lines are uncommitted.
+- Merged to `master` this session: F02 (PR #5), P24/P30 (#6), P25/P27/P29 (#7), P23/P28 (#8), F03 Firebase out of presentation/domain (#9), P26 Auth uiState (#10), F10 Analysis history (#11, `f13afb1`). `master` = `15c0bfa` (F10 tracker + `.gitignore` `docs/learning/*`).
+- **F12 Budget outlook arc**: built on `feat/outlook-arc` (6 commits beyond master, head `31de712`), **pushed, no PR yet**. 109 tests green, `assembleDebug` OK. Not device-tested; the arc has never been looked at visually (previews unrendered).
+- The screen-by-screen UI rebuild is the current direction. F12 (Budget) is first; F13 (Home) brainstorm was started and paused.
+- The tracker updates for this handover are **uncommitted** on `feat/outlook-arc` (Features, Polish, Progress, Learnings, HANDOVER).
 
 ## Next step
-F02: run `docs/superpowers/plans/2026-11-25-navigation-events.md` with `superpowers:subagent-driven-development` on `feat/navigation-events`, working in place with no worktree. Dispatch each task to `subagent_type: task-runner, model: sonnet`. Override the brief's commit step with "leave changes uncommitted; list files changed". The controller commits after each task review. There are 5 tasks, and the expected test counts go 27 → 29 → 31 → 34 → 34.
-Recommended model: Opus orchestrates in the main session; implementation runs on Sonnet via task-runner.
+F12: wait for the user's device check, then open the PR from `feat/outlook-arc` (or apply requested changes on that branch). The PR body should list the spec's "Done when" device checks. After merge: move F12 to Features-done and decide P31.
+Then F13: resume the Home-screen brainstorm from its seed notes in Features.md. The open question is "what bothers you about Home / what should it feel like".
+Recommended model: Opus for brainstorming, planning and orchestration; Sonnet via task-runner for implementation.
 
 ## Waiting on the user
-- F05: bottom-bar labels, an Analysis tab (P17), and a snackbar undo in place of the Undo FAB (P18).
-- F04: does the app need a tuned light theme?
-- F07: do tablets and landscape matter?
-- P01: should Android's automatic backup include app data?
-- P23: which pattern ViewModels should use for strings (`@StringRes` ids suggested). It needs a small Opus plan.
-- P22 (AGP 9.2 + compileSdk 37 so navigation and lifecycle can be bumped): the user said "later".
+- F12 device check: colours match a BudgetCard at a similar %, overspent = full red + "overspent", no budgets = "No budgets yet", largest font size (amount auto-shrinks), TalkBack reads one sentence, light and dark.
+- P31: pull "₱X of ₱Y" up into the arc gap? Decide after seeing it.
+- F13: answer to the opening brainstorm question.
+- Still open from before: F11 (snackbar vs dialog), P01 (backup rules), F04/F05/F07 decisions, P06/P22 (build tools, "later"), F09 (guest upgrade, ready to brainstorm).
 
 ## Context the next chat would otherwise rediscover
-- In F02, result navigation is deliberately not wrapped in `dropUnlessResumed`, because it would drop the navigation instead of deferring it. Only the click lambdas get the `ifResumed` guard. See the spec's "Builder's calls" section.
-- F02 removes dead navigation on purpose: the Analysis/Expenses events, the bar-graph event and the home-total tap. F10 adds Analysis entry back later. The user confirmed those paths were disabled intentionally.
-- Migration screen: F02 gives it an `isDone` flag and an `onMigrationDone` parameter but does not register it in `NavGraph`. F09 does that.
-- Data-loss bug, F09: `DataMigrationRepository.syncFromCloud()` wipes every local table on each sign-in, and on every launch for signed-in users. A guest who signs in loses their data. `performMigration()` is never called.
-- The UI-research audit's Analysis/BudgetDetails/Migration/dialog screens were never audited. A narrower `@ui-researcher` run would cover them.
+- F12 rulings (in the spec and the PR-to-be):
+  - Task 2 has no unit tests (all logic is in `OutlookDetails`).
+  - "₱X of ₱Y" sits below the gauge (→ P31).
+  - Exactly-at-target reads "left" in both BudgetOutlookCard and BudgetCard (`remaining >= 0`).
+  - With no budgets, the month's spend is hidden.
+  - There is no pace phrase in TalkBack.
+- `feat/improved-outlook-card` (the user's earlier two-arc attempt, 62 commits behind) is kept as reference. Do not build on it or delete it.
+- `feat/analysis-history` is merged; its stray `.gitignore` commit was cherry-picked to master. The user may delete it locally (`git branch -D`).
+- Teaching write-up of F10: `docs/learning/2026-11-26-F10-analysis-history-walkthrough.md` (git-ignored on purpose, per the user).
+- SDD routine that worked:
+  - The controller commits each task-runner result (`git add -A app/`), then `review-package` and a sonnet task reviewer per task.
+  - Opus does the final whole-branch review, then one task-runner fix wave and a sonnet re-review.
+  - Reviewer and re-review instructions are saved as files in the plan workspace, and dispatches point at them.
+- User preferences seen this session:
+  - They want push/PR only on explicit ask.
+  - They're happy with direct-to-master for tracker-only fixes (chose option C once).
+  - They like concise option lists with a recommendation.
 
 ## Don't
-- Don't rewrite Material3 `Typography` roles as plain `TextStyle`s (see Learnings).
-- Don't bump navigation-compose to 2.10.x before P22: it pulls lifecycle 2.11, which needs compileSdk 37.
-- Don't create worktrees in this project.
+- Don't push or open PRs without an explicit ask; the user said "push first" for F12, i.e. no PR yet.
+- Don't build new work on merged or stale branches; branch fresh from `master`.
+- Don't use `advanceUntilIdle()` while `todayFlow` is collected (see Learnings).
 
-## Files touched this session
-- `tracker/*`: migrated to the feature layout. F02 is Planned; F09 and F10 were added; P15, P19 and P21 are archived; P22 and P23 were added.
-- `docs/superpowers/specs/2026-11-25-{feature-based-tracker,navigation-events}-design.md` and the matching `docs/superpowers/plans/`.
-- Global (outside git):
-  - `~/.claude-personal/agents/{task-runner,ui-researcher,android-researcher}.md`;
-  - `~/.claude-personal/hooks/task-runner-guard.sh`;
-  - `~/.claude-personal/scripts/check_tracker.py` (with tests);
-  - the `handover` and `project-tracker` skills;
-  - `~/.claude-personal/research/{android,ui}/`.
-- `../CLAUDE.md`: added the Project tracking section and the worktree rule.
-- `.gitignore`: now ignores `.superpowers/`.
+## Files touched this session (latest work)
+- `docs/superpowers/specs/2026-11-26-budget-outlook-arc-design.md`, `docs/superpowers/plans/2026-11-26-budget-outlook-arc.md`: F12 spec and plan.
+- `presentation/screen/budget/model/OutlookDetails.kt`: `usedFraction`, `paceFraction(today)`.
+- `presentation/screen/budget/BudgetViewModel.kt`: the outlook combines `_today`.
+- `presentation/screen/budget/components/BudgetCard.kt`: shared `budgetProgressColor()`, `remaining >= 0`.
+- `presentation/screen/budget/components/BudgetOutlookCard.kt`: gauge arc rewrite.
+- `presentation/screen/budget/BudgetRoute.kt`: card `padding(4.dp)`.
+- `res/values/strings.xml`: `outlook_spent_of`, `outlook_no_budgets`, `outlook_cd`; old `outlook_*` removed.
+- Tests: `OutlookDetailsTest.kt` (new), `BudgetViewModelTest.kt` (pace rollover).
+- `tracker/*`: F12 Building, F13 + seed notes, P31, Learnings (+4), Progress rows.
 
 ## Start the next chat with
-`resume` (it picks up F02). Or say `run the F02 plan` directly.
+`resume`

@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.AndroidUiModes
@@ -158,7 +159,7 @@ fun BudgetCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val suffix = stringResource(
-                    if (remaining > 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
+                    if (remaining >= 0) R.string.budget_suffix_left else R.string.budget_suffix_overspent
                 )
                 Text(
                     text = "${remaining.toPeso()} $suffix",
@@ -204,6 +205,13 @@ fun BudgetCard(
 }
 
 @Composable
+fun budgetProgressColor(progress: Float): Color = when {
+    progress < 0.75f -> MaterialTheme.colorScheme.primary
+    progress < 0.90f -> MaterialTheme.colorScheme.tertiary
+    else -> MaterialTheme.colorScheme.error
+}
+
+@Composable
 fun BudgetProgressBar(
     spent: Long,
     limit: Long,
@@ -216,11 +224,7 @@ fun BudgetProgressBar(
         label = "progress_animation"
     )
 
-    val progressColor = when {
-        progress < 0.75f -> MaterialTheme.colorScheme.primary
-        progress < 0.90f -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.error
-    }
+    val progressColor = budgetProgressColor(progress)
 
     LinearProgressIndicator(
         progress = { animatedProgress },
