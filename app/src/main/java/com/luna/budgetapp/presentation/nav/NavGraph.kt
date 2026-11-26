@@ -52,7 +52,6 @@ fun NavGraphSetup(
     val selectedOption = when {
         currentRoute?.contains("ExpensePresetRoute") == true -> NavOptions.HOME
         currentRoute?.contains("ExpensesRoute") == true -> NavOptions.LIST
-        currentRoute?.contains("AnalysisRoute") == true -> NavOptions.ANALYSIS
         currentRoute?.contains("BudgetRoute") == true -> NavOptions.BUDGET
         else -> null
     }
@@ -144,16 +143,20 @@ fun NavGraphSetup(
                         }
                     )
                 }
-                composable<Routes.ExpensesRoute> {
+                composable<Routes.ExpensesRoute> { backStackEntry ->
                     val viewModel: ExpenseListViewModel = koinViewModel()
                     ExpenseListRoute(
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onOpenAnalysis = {
+                            backStackEntry.ifResumed { navController.navigate(Routes.AnalysisRoute) }
+                        }
                     )
                 }
-                composable<Routes.AnalysisRoute> {
+                composable<Routes.AnalysisRoute> { backStackEntry ->
                     val viewModel: AnalysisViewModel = koinViewModel()
                     AnalysisRoute(
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onBack = { backStackEntry.ifResumed { navController.navigateUp() } }
                     )
                 }
                 composable<Routes.BudgetRoute>(

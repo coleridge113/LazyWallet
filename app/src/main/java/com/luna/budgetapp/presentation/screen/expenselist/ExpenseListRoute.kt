@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -64,7 +65,8 @@ import com.luna.budgetapp.ui.theme.LazyWalletTheme
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExpenseListRoute(
-    viewModel: ExpenseListViewModel
+    viewModel: ExpenseListViewModel,
+    onOpenAnalysis: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -130,6 +132,12 @@ fun ExpenseListRoute(
                                 }
                             }
                         )
+                        IconButton(onClick = onOpenAnalysis) {
+                            Icon(
+                                imageVector = Icons.Filled.BarChart,
+                                contentDescription = stringResource(R.string.cd_open_analysis)
+                            )
+                        }
                     }
                 )
 
