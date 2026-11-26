@@ -137,7 +137,9 @@ class ExpensePresetViewModelTest {
                 signInGoogle = mockk(),
                 signInEmailPassword = mockk(),
                 signUp = mockk(),
-                signOut = signOut
+                signOut = signOut,
+                isSignedIn = mockk(),
+                completeSignIn = mockk()
             ),
             clock
         )

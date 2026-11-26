@@ -6,15 +6,15 @@ import com.luna.budgetapp.R
 import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
+import com.luna.budgetapp.domain.usecase.SyncUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MigrationViewModel(
-    private val migrationRepository: DataMigrationRepository,
+    private val syncUseCases: SyncUseCases,
     private val settingsUseCases: SettingsUseCases
 ) : ViewModel() {
 
@@ -32,9 +32,7 @@ class MigrationViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                migrationRepository.performMigration()
-                migrationRepository.syncFromCloud()
-                settingsUseCases.setMigrationComplete()
+                syncUseCases.migrateLocalData()
                 _uiState.update { it.copy(isLoading = false, isDone = true) }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e

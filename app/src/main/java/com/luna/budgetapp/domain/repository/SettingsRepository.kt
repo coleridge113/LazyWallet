@@ -11,10 +11,14 @@ interface SettingsRepository {
 
     val isMigratedFlow: Flow<Boolean>
 
+    val isGuestFlow: Flow<Boolean>
+
     suspend fun setActiveProfile(profileName: String)
 
     suspend fun setActiveDateFilter(dateFilter: DateFilter)
 
     suspend fun setMigrationComplete()
+
+    suspend fun setGuestMode(isGuest: Boolean)
 
 }

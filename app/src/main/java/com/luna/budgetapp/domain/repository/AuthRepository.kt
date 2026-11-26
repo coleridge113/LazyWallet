@@ -28,4 +28,6 @@ interface AuthRepository {
         onSuccess: (Task<AuthResult>) -> Unit,
         onFailure: (Exception) -> Unit
     )
+
+    fun isSignedIn(): Boolean
 }
