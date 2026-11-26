@@ -48,6 +48,7 @@ import com.luna.budgetapp.ui.theme.LazyWalletTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 private fun sheetContainerColor(): Color {
@@ -83,7 +84,7 @@ private fun DragHandle() {
 
 @Composable
 private fun OutlookSheetContent(outlook: MonthOutlook) {
-    val locale = Locale.getDefault()
+    val locale = LocalLocale.current.platformLocale
     val monthName = outlook.today.format(DateTimeFormatter.ofPattern("MMMM", locale))
     val dayFmt = DateTimeFormatter.ofPattern("d MMM", locale)
     val dash = "—"

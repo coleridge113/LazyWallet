@@ -29,7 +29,7 @@ import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.budget.model.MonthOutlook
 import com.luna.budgetapp.presentation.screen.utils.toWholePeso
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import androidx.compose.ui.platform.LocalLocale
 
 @Composable
 fun OutlookChart(outlook: MonthOutlook, modifier: Modifier = Modifier) {
@@ -40,7 +40,7 @@ fun OutlookChart(outlook: MonthOutlook, modifier: Modifier = Modifier) {
     val measurer = rememberTextMeasurer()
     val labelStyle = TextStyle(fontSize = 11.sp, lineHeight = 16.sp, color = muted)
     val budgetLabel = stringResource(R.string.outlook_budget_label, outlook.budgetTotal.toWholePeso())
-    val fmt = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())
+    val fmt = DateTimeFormatter.ofPattern("d MMM", LocalLocale.current.platformLocale)
     val first = outlook.today.withDayOfMonth(1).format(fmt)
     val last = outlook.today.withDayOfMonth(outlook.daysInMonth).format(fmt)
 
