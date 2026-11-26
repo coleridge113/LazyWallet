@@ -51,7 +51,10 @@ fun OutlookChart(outlook: MonthOutlook, modifier: Modifier = Modifier) {
             val n = outlook.daysInMonth
             fun x(d: Int) = d.toFloat() / n * w
             val max = outlook.chartMax
-            fun y(a: Long) = if (max <= 0L) h else h - a.toFloat() / max * h
+            val layout = measurer.measure(budgetLabel, labelStyle)
+            // Headroom so the budget line's end always sits below its label.
+            val top = if (outlook.hasBudgets) layout.size.height + 4.dp.toPx() else 0f
+            fun y(a: Long) = if (max <= 0L) h else h - a.toFloat() / max * (h - top)
 
             drawLine(
                 color = onSurface.copy(alpha = 0.3f),
@@ -66,7 +69,6 @@ fun OutlookChart(outlook: MonthOutlook, modifier: Modifier = Modifier) {
                     strokeWidth = 1.5.dp.toPx(),
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx())),
                 )
-                val layout = measurer.measure(budgetLabel, labelStyle)
                 val lx = (w - layout.size.width).coerceAtLeast(0f)
                 val ly = (y(outlook.budgetTotal) - layout.size.height - 2.dp.toPx())
                     .coerceIn(0f, (h - layout.size.height).coerceAtLeast(0f))
