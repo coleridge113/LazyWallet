@@ -45,6 +45,7 @@ import com.luna.budgetapp.domain.usecase.auth.SignOutUseCase
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -299,19 +300,111 @@ class ExpensePresetViewModelTest {
         job.cancel()
     }
 
+    private val todayAt = LocalDateTime.of(2026, 11, 26, 18, 5)
+
+    private suspend fun seedToday(type: String, amount: Long, category: Category = Category.FOOD): Expense {
+        fakeExpenseRepo.addExpense(Expense(amount = amount, category = category, type = type, date = todayAt))
+        return fakeExpenseRepo.getExpensesByDateRange(todayAt.minusHours(1), todayAt.plusHours(1))
+            .first().first { it.type == type }
+    }
+
+    private val todayExpenses get() = success.expensesState.expenses
+
     @Test
-    fun `invoking the undo button deletes the latest expense`() = runTest {
-        val job = launch {
-            viewModel.uiState.collect {}
-        }
-        viewModel.onEvent(Event.AddExpense(dummyPreset))
-        runCurrent()
-        assertEquals(totalAmount, dummyPreset.amount)
-
-        viewModel.onEvent(Event.DeleteLatestExpense)
+    fun `removing an expense deletes exactly that id and posts a Removed message`() = runTest {
+        val lunch = seedToday("Lunch", 25000L)
+        val jeepney = seedToday("Jeepney", 6000L, Category.COMMUTE)
+        val job = launch { viewModel.uiState.collect {} }
         runCurrent()
 
-        assertEquals(0L, totalAmount)
+        viewModel.onEvent(Event.RemoveExpense(lunch))
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.id }).containsExactly(jeepney.id)
+        assertThat(success.userMessage).isEqualTo(UserMessage.Removed(lunch.id!!, "Lunch", 25000L))
+        job.cancel()
+    }
+
+    @Test
+    fun `undo re-adds the removed expense with the same fields`() = runTest {
+        seedToday("Lunch", 25000L)
+        val jeepney = seedToday("Jeepney", 6000L, Category.COMMUTE)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.RemoveExpense(jeepney))
+        runCurrent()
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        val back = todayExpenses.single { it.type == "Jeepney" }
+        assertThat(back.category).isEqualTo(Category.COMMUTE)
+        assertThat(back.amount).isEqualTo(6000L)
+        assertThat(back.date).isEqualTo(todayAt)
+        assertThat(success.userMessage).isNull()
+        job.cancel()
+    }
+
+    @Test
+    fun `undo after two removals restores only the second`() = runTest {
+        val a = seedToday("A", 100L)
+        val b = seedToday("B", 200L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        runCurrent()
+        viewModel.onEvent(Event.RemoveExpense(b))
+        runCurrent()
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.type }).containsExactly("B")
+        job.cancel()
+    }
+
+    @Test
+    fun `undo after the message was shown still restores`() = runTest {
+        val a = seedToday("A", 100L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        runCurrent()
+        viewModel.onEvent(Event.UserMessageShown)
+        runCurrent()
+        assertThat(success.userMessage).isNull()
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.type }).containsExactly("A")
+        job.cancel()
+    }
+
+    @Test
+    fun `undo with nothing removed does nothing`() = runTest {
+        seedToday("A", 100L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+
+        viewModel.onEvent(Event.UndoRemove)
+        runCurrent()
+
+        assertThat(todayExpenses.map { it.type }).containsExactly("A")
+        job.cancel()
+    }
+
+    @Test
+    fun `removing the only expense of today clears lastLogged`() = runTest {
+        val a = seedToday("A", 100L)
+        val job = launch { viewModel.uiState.collect {} }
+        runCurrent()
+        assertThat(lastLogged).isNotNull()
+
+        viewModel.onEvent(Event.RemoveExpense(a))
+        runCurrent()
+
+        assertThat(lastLogged).isNull()
         job.cancel()
     }
 

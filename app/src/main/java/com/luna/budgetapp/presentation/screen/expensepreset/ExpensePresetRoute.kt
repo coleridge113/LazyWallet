@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -145,15 +144,6 @@ fun ExpensePresetContent(
                         onConfirm = { onEvent(Event.SignOut) }
                     )
                 }
-                DialogState.ConfirmDeleteExpense -> {
-                    ConfirmationDialog(
-                        message = stringResource(R.string.confirm_delete_last_expense),
-                        confirmText = stringResource(R.string.btn_delete),
-                        isDestructive = true,
-                        onDismiss = { onEvent(Event.DismissDialog) },
-                        onConfirm = { onEvent(Event.DeleteLatestExpense) }
-                    )
-                }
                 is DialogState.ExpenseForm -> {
                     ExpensePresetDialog(
                         selectedPreset = dialog.selectedPreset,
@@ -236,21 +226,6 @@ fun ExpensePresetContent(
                         Icon(
                             imageVector = Icons.Default.AddCircleOutline,
                             contentDescription = stringResource(R.string.cd_add),
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                    FloatingActionButton(
-                        shape = CircleShape,
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        elevation = noElevation,
-                        onClick = {
-                            onEvent(Event.ShowDeleteConfirmationDialog)
-                            isMenuExpanded = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Undo,
-                            contentDescription = stringResource(R.string.cd_undo),
                             modifier = Modifier.size(iconSize)
                         )
                     }

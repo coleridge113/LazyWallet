@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Category
+import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.model.ExpensePreset
 import com.luna.budgetapp.domain.model.Granularity
 import com.luna.budgetapp.domain.usecase.AuthUseCases
@@ -50,6 +51,8 @@ class ExpensePresetViewModel(
     private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _dateState = MutableStateFlow(DateState())
+    private val _userMessage = MutableStateFlow<UserMessage?>(null)
+    private var lastRemoved: Expense? = null
     private val allCategoryNames = Category.entries.map { it.name }
 
     private val _expensesState = combine(
@@ -87,13 +90,14 @@ class ExpensePresetViewModel(
 
     private val _successState = combine(
         _dateState,
-        _dialogState,
+        combine(_dialogState, _userMessage) { dialog, message -> dialog to message },
         _expensesState
-    ) { dateState, dialogState, expensesState ->
+    ) { dateState, (dialogState, userMessage), expensesState ->
         UiState.Success(
             dialogState = dialogState,
             dateState = dateState,
-            expensesState = expensesState
+            expensesState = expensesState,
+            userMessage = userMessage
         )
     }
 
@@ -125,8 +129,9 @@ class ExpensePresetViewModel(
             Event.ShowSignOutDialog -> showSignOutDialog()
             Event.DismissDialog -> dismissDialog()
             Event.Retry -> _retryTrigger.update { it + 1 }
-            Event.ShowDeleteConfirmationDialog -> showExpenseDeleteConfirmationDialog()
-            Event.DeleteLatestExpense -> deleteLatestExpense()
+            Event.UndoRemove -> undoRemove()
+            Event.UserMessageShown -> _userMessage.value = null
+            is Event.RemoveExpense -> removeExpense(event.expense)
             Event.SignOut -> signOutUser()
             is Event.AddExpense -> addExpense(event.expensePreset, event.customAmount, event.customType, event.customDate)
             is Event.AddExpensePreset -> showExpenseForm(event.selectedPreset, event.action)
@@ -207,10 +212,26 @@ class ExpensePresetViewModel(
         }
     }
 
-    private fun deleteLatestExpense() {
-        dismissDialog()
+    private fun removeExpense(expense: Expense) {
+        val id = expense.id ?: return
+        lastRemoved = expense
         viewModelScope.launch {
-            expenseUseCases.deleteLatestExpense()
+            expenseUseCases.deleteExpense(id)
+            _userMessage.value = UserMessage.Removed(id, expense.type, expense.amount)
+        }
+    }
+
+    private fun undoRemove() {
+        val expense = lastRemoved ?: return
+        lastRemoved = null
+        _userMessage.value = null
+        viewModelScope.launch {
+            expenseUseCases.addExpense(
+                category = expense.category.name,
+                type = expense.type,
+                amount = expense.amount,
+                date = expense.date
+            )
         }
     }
 
@@ -230,12 +251,6 @@ class ExpensePresetViewModel(
     private fun showPresetDeleteConfirmationDialog(expensePresetId: Long) {
         _dialogState.update {
             DialogState.ConfirmDeleteExpensePreset(expensePresetId)
-        }
-    }
-
-    private fun showExpenseDeleteConfirmationDialog() {
-        _dialogState.update {
-            DialogState.ConfirmDeleteExpense
         }
     }
 

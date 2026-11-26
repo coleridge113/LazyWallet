@@ -12,7 +12,8 @@ sealed interface UiState {
     data class Success(
         val dialogState: DialogState? = null,
         val dateState: DateState = DateState(),
-        val expensesState: ExpensesState = ExpensesState()
+        val expensesState: ExpensesState = ExpensesState(),
+        val userMessage: UserMessage? = null
     ) : UiState
 }
 
@@ -26,12 +27,16 @@ data class ExpensesState(
     val totalAmount = expenses.sumOf { it.amount }
 }
 
+sealed interface UserMessage {
+    /** The id makes two removals of identical expenses distinct, so the snackbar re-fires. */
+    data class Removed(val expenseId: Long, val type: String, val amount: Long) : UserMessage
+}
+
 data class DateState(
     val dateFilter: DateFilter = DateFilter.Daily
 )
 
 sealed interface DialogState {
-    data object ConfirmDeleteExpense : DialogState
     data object ConfirmLogout : DialogState
     data class ConfirmDeleteExpensePreset(val expensePresetId: Long) : DialogState
     data class ExpenseForm(
@@ -44,9 +49,10 @@ sealed interface DialogState {
 sealed interface Event {
     data object Retry : Event
     data object DismissDialog : Event
-    data object ShowDeleteConfirmationDialog : Event
     data object ShowSignOutDialog : Event
-    data object DeleteLatestExpense : Event
+    data object UndoRemove : Event
+    data object UserMessageShown : Event
+    data class RemoveExpense(val expense: Expense) : Event
     data object SignOut : Event
     data class ShowConfirmationDialog(val expensePresetId: Long) : Event
     data class ConfirmExpenseFormDialog(
