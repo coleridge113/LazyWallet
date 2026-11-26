@@ -10,6 +10,7 @@ import com.luna.budgetapp.domain.model.projectAmountToMonth
 import com.luna.budgetapp.domain.usecase.BudgetUseCases
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.presentation.screen.budget.model.OutlookDetails
+import com.luna.budgetapp.presentation.screen.budget.model.paceFraction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.CancellationException
@@ -63,13 +64,15 @@ class BudgetViewModel(
     }
 
     private val _monthlyOutlook = combine(
-        _budgets, 
-        _totalAmount
-    ) { budgets, totalAmount ->
+        _budgets,
+        _totalAmount,
+        _today
+    ) { budgets, totalAmount, today ->
         OutlookDetails(
             income = 0L,
             projectedSpend = budgets.sumOf { it.frequency.projectAmountToMonth(it.limit) },
-            actualSpend = totalAmount
+            actualSpend = totalAmount,
+            paceFraction = paceFraction(today)
         )
     }
 
