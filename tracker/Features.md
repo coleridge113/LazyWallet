@@ -5,7 +5,7 @@ Open features, one row each. Design lives in the linked spec, the build steps in
 | ID | Feature | Status | Spec | Plan | Next step |
 |---|---|---|---|---|---|
 | F01 | Figma design file | Blocked | – | – | Figma MCP rate limit; resume T02 when it resets |
-| F03 | Firebase out of presentation | Idea | – | – | Brainstorm when wanted |
+| F03 | Firebase out of presentation | Designing | [design](../docs/superpowers/specs/2026-11-26-firebase-out-of-presentation-design.md) | – | Spec approved 2026-11-26; write plan |
 | F04 | Theme, contrast & light theme | Idea | – | – | Your call: does the app need a tuned light theme? |
 | F05 | Screen chrome: top bars, nav labels, undo | Idea | – | – | Your call: P17 labels/Analysis tab, P18 snackbar undo; then brainstorm |
 | F06 | Test coverage | Idea | – | – | Brainstorm when wanted |
@@ -30,11 +30,6 @@ New features get the next F ID. Seed notes are folded into the spec by brainstor
 | Spec §5.1 verified | Verified by screenshot: Home (presets, add dialog), Expenses list, Category filter, Analysis x2, Budget list, Budget details. NOT verified: Auth, Migration, Expenses search/date menu, Budget create/delete dialogs. |
 | Spec §5.1 tracking | Tracking: T02-T05 in Plan.md. T02 and T03 are Blocked: the Figma Starter plan's MCP call limit was hit on 2026-11-25. Resume when it resets or the plan is upgraded. |
 
-### F03 seed notes (from P03)
-
-| ID | Source text |
-|---|---|
-| P03 | Firebase leaks into presentation: `Event.SignOut(auth: FirebaseAuth)`, `FirebaseAuth` param on ExpensePreset `MainContent`, `FirebaseAuth.getInstance()` in `AuthRoute`; `AuthViewModel` injects `DataMigrationRepository` and `SettingsDataStore` directly **Area:** `screen/auth/*`, `screen/expensepreset/*`, `AuthUseCases`, `di/appModule.kt`, fakes. **Status was:** Open. **Found:** 2026-11-25, MVVM research. **Notes:** Done when no `com.google.firebase` import remains under `presentation/` |
 
 ### F04 seed notes (from P14; see also T05 in F01)
 
