@@ -26,7 +26,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetCard
 import com.luna.budgetapp.presentation.screen.budget.components.BudgetDialog
-import com.luna.budgetapp.presentation.screen.budget.components.BudgetOutlookCard
 import com.luna.budgetapp.presentation.screen.components.ConfirmationDialog
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -60,7 +59,7 @@ fun BudgetContent(
     onOpenBudgetDetails: (BudgetId) -> Unit,
     onEvent: (Event) -> Unit
 ) {
-    val (budgets, expenses, monthlyOutlook, dialog) = uiState
+    val (budgets, expenses, outlook, dialog) = uiState
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -98,10 +97,7 @@ fun BudgetContent(
         Column(
             modifier = Modifier
         ) {
-            BudgetOutlookCard(
-                modifier = Modifier.padding(4.dp),
-                details = monthlyOutlook
-            )
+            // F14 Task 4: hero card
 
             LazyColumn(modifier = modifier) {
                 items(budgets) { budget ->
