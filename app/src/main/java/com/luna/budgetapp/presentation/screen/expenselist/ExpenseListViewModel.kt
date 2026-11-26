@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.expenselist
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -8,6 +9,8 @@ import com.luna.budgetapp.common.Constants.CUSTOM
 import com.luna.budgetapp.domain.model.Category
 import com.luna.budgetapp.domain.model.CategoryFilter
 import com.luna.budgetapp.domain.model.DateFilter
+import com.luna.budgetapp.domain.model.toDateFilterFromSaved
+import com.luna.budgetapp.domain.model.toSavedString
 import com.luna.budgetapp.domain.model.Expense
 import com.luna.budgetapp.domain.usecase.ExpenseUseCases
 import com.luna.budgetapp.domain.usecase.ProfileUseCases
@@ -33,8 +36,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
+private const val KEY_SEARCH_QUERY = "search_query"
+private const val KEY_DATE_FILTER = "date_filter"
+
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class ExpenseListViewModel(
+    private val savedStateHandle: SavedStateHandle,
     private val expenseUseCases: ExpenseUseCases,
     private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
@@ -43,8 +50,13 @@ class ExpenseListViewModel(
     private val _retryTrigger = MutableStateFlow(0)
     private val _dialogState = MutableStateFlow<DialogState?>(null)
     private val _categoryPreview = MutableStateFlow<CategoryProfilePreview?>(null)
-    private val _dateState = MutableStateFlow(DateState())
-    private val _searchQuery = MutableStateFlow("")
+    private val _dateState = MutableStateFlow(
+        DateState(
+            dateFilter = savedStateHandle.get<String>(KEY_DATE_FILTER)?.toDateFilterFromSaved()
+                ?: DateFilter.Daily
+        )
+    )
+    private val _searchQuery: StateFlow<String> = savedStateHandle.getStateFlow(KEY_SEARCH_QUERY, "")
     val searchQuery: StateFlow<String> = _searchQuery
     // Cold: collected inside the uiState pipeline so a failure reaches UiState.Error and Retry restarts it.
     private val _categoryProfileFlow = profileUseCases.observeCategoryProfileState()
@@ -158,7 +170,7 @@ class ExpenseListViewModel(
             is Event.ShowExpenseForm -> showExpenseForm(event.selectedExpense)
             is Event.EditExpense -> editExpense(event.expenseId, event.type, event.amount, event.date)
             is Event.DeleteExpense -> deleteExpense(event.expenseId)
-            is Event.SearchQueryChanged -> _searchQuery.value = event.query
+            is Event.SearchQueryChanged -> savedStateHandle[KEY_SEARCH_QUERY] = event.query
             is Event.SelectDateRange -> selectDateRange(event.selectedRange)
             is Event.ShowDeleteConfirmationDialog -> showDeleteConfirmationDialog(event.expenseId)
             is Event.ApplyCategoryFilters -> applyCategoryFilters(event.profileName, event.selectedCategoryMap)
@@ -205,6 +217,7 @@ class ExpenseListViewModel(
     }
 
     private fun selectDateRange(selectedFilter: DateFilter) {
+        savedStateHandle[KEY_DATE_FILTER] = selectedFilter.toSavedString()
         _dateState.update {
             it.copy(
                 dateFilter = selectedFilter

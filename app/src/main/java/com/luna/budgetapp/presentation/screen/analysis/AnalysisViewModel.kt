@@ -1,5 +1,6 @@
 package com.luna.budgetapp.presentation.screen.analysis
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.luna.budgetapp.domain.model.Category
@@ -20,13 +21,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+private const val KEY_SELECTED_DATE = "selected_date"
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class AnalysisViewModel (
+    private val savedStateHandle: SavedStateHandle,
     private val expenseUseCases: ExpenseUseCases,
     private val profileUseCases: ProfileUseCases
 ) : ViewModel() {
 
-    private val _dateState = MutableStateFlow(DateState())
+    private val _dateState = MutableStateFlow(
+        DateState(
+            selectedDate = savedStateHandle.get<Long>(KEY_SELECTED_DATE)?.let(LocalDate::ofEpochDay)
+        )
+    )
     /** Bumped by [Event.Retry]; each bump restarts the load pipeline. */
     private val _retryTrigger = MutableStateFlow(0)
 
@@ -99,6 +107,7 @@ class AnalysisViewModel (
     }
 
     private fun setSelectedDate(date: LocalDate?) {
+        savedStateHandle[KEY_SELECTED_DATE] = date?.toEpochDay()
         _dateState.update {
             it.copy(
                 selectedDate = date

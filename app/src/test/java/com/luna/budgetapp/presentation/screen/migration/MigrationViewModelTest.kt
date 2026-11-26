@@ -2,6 +2,7 @@ package com.luna.budgetapp.presentation.screen.migration
 
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
+import com.luna.budgetapp.R
 import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
 import com.luna.budgetapp.domain.usecase.SettingsUseCases
 import com.luna.budgetapp.domain.usecase.settings.SetMigrationCompleteUseCase
@@ -63,7 +64,7 @@ class MigrationViewModelTest {
         vm.onEvent(MigrationEvent.StartMigration)
 
         assertThat(vm.uiState.value.isDone).isFalse()
-        assertThat(vm.uiState.value.error).isEqualTo("offline")
+        assertThat(vm.uiState.value.error).isEqualTo(R.string.migration_error)
         assertThat(vm.uiState.value.isLoading).isFalse()
     }
 }

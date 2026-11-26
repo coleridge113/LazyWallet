@@ -1,5 +1,8 @@
 package com.luna.budgetapp.presentation.screen.migration
 
+import android.util.Log
+import androidx.annotation.StringRes
+import com.luna.budgetapp.R
 import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,7 +38,8 @@ class MigrationViewModel(
                 _uiState.update { it.copy(isLoading = false, isDone = true) }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
-                _uiState.update { it.copy(isLoading = false, error = e.message ?: "Migration failed") }
+                Log.e("MigrationViewModel", "Migration failed", e)
+                _uiState.update { it.copy(isLoading = false, error = R.string.migration_error) }
             }
         }
     }
@@ -54,7 +58,7 @@ class MigrationViewModel(
 
 data class MigrationUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    @StringRes val error: Int? = null,
     val isDone: Boolean = false
 )
 

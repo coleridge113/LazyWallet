@@ -1,5 +1,6 @@
 package com.luna.budgetapp.expenselist
 
+import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
 import com.luna.budgetapp.domain.model.Category
@@ -48,6 +49,8 @@ class ExpenseListViewModelTest {
     private lateinit var fakeSettingsRepo: FakeSettingsRepository
     private lateinit var fakeCategoryRepo: FakeCategoryRepository
     private lateinit var viewModel: ExpenseListViewModel
+    private lateinit var expenseUseCases: ExpenseUseCases
+    private lateinit var profileUseCases: ProfileUseCases
 
     val dummyExpense = Expense(
         id = 1L,
@@ -62,7 +65,7 @@ class ExpenseListViewModelTest {
         fakeSettingsRepo = FakeSettingsRepository()
         fakeCategoryRepo = FakeCategoryRepository()
 
-        val expenseUseCases = ExpenseUseCases(
+        expenseUseCases = ExpenseUseCases(
             addExpense = AddExpenseUseCase(fakeExpenseRepo),
             deleteExpense = DeleteExpenseUseCase(fakeExpenseRepo),
             deleteLatestExpense = DeleteLatestExpenseUseCase(fakeExpenseRepo),
@@ -77,7 +80,7 @@ class ExpenseListViewModelTest {
             getExpensesByType = mockk(),
             editExpense = EditExpenseUseCase(fakeExpenseRepo),
         )
-        val profileUseCases = ProfileUseCases(
+        profileUseCases = ProfileUseCases(
             getCategoryProfile = GetCategoryProfileUseCase(fakeCategoryRepo),
             getCategoryProfiles = GetCategoryProfilesUseCase(fakeCategoryRepo),
             saveCategoryProfile = SaveCategoryProfileUseCase(fakeCategoryRepo),
@@ -95,6 +98,7 @@ class ExpenseListViewModelTest {
         fakeCategoryRepo.initializeIfNeeded()
         fakeSettingsRepo.setActiveProfile("All")
         viewModel = ExpenseListViewModel(
+            SavedStateHandle(),
             expenseUseCases,
             profileUseCases
         )
@@ -300,6 +304,20 @@ class ExpenseListViewModelTest {
         val state = viewModel.uiState.value as UiState.Success
         assertThat(state.dateState.dateFilter).isEqualTo(custom)
 
+        job.cancel()
+    }
+
+    @Test
+    fun `search query and date filter are restored from saved state`() = runTest {
+        val vm = ExpenseListViewModel(
+            SavedStateHandle(mapOf("search_query" to "coffee", "date_filter" to "Monthly")),
+            expenseUseCases,
+            profileUseCases
+        )
+        assertThat(vm.searchQuery.value).isEqualTo("coffee")
+        val job = launch { vm.uiState.collect {} }
+        runCurrent()
+        assertThat((vm.uiState.value as UiState.Success).dateState.dateFilter).isEqualTo(DateFilter.Monthly)
         job.cancel()
     }
 }

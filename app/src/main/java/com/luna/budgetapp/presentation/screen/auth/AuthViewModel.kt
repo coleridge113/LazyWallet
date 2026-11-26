@@ -1,6 +1,7 @@
 package com.luna.budgetapp.presentation.screen.auth
 
 import android.util.Log
+import com.luna.budgetapp.R
 import kotlinx.coroutines.CancellationException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -142,15 +143,15 @@ class AuthViewModel(
         val message =
             when (error) {
                 is NoCredentialException ->
-                    "Your device is not logged in to a Google account."
+                    R.string.auth_error_no_google_account
 
                 is IllegalArgumentException ->
-                    "Please enter a valid email or password."
+                    R.string.auth_error_invalid_input
 
                 is FirebaseAuthInvalidCredentialsException ->
                     resolveInvalidAuthMessage(error.errorCode)
 
-                else -> "Something went wrong."
+                else -> R.string.auth_error_generic
             }
 
         _dialogState.update {
@@ -162,11 +163,11 @@ class AuthViewModel(
         _dialogState.update { null }
     }
 
-    private fun resolveInvalidAuthMessage(errorCode: String): String {
+    private fun resolveInvalidAuthMessage(errorCode: String): Int {
         return when (errorCode) {
-            "ERROR_INVALID_EMAIL" -> "Invalid email format."
-            "ERROR_USER_NOT_FUND" -> "User not found."
-            else -> "Invalid credentials"
+            "ERROR_INVALID_EMAIL" -> R.string.auth_error_invalid_email
+            "ERROR_USER_NOT_FOUND" -> R.string.auth_error_user_not_found
+            else -> R.string.auth_error_invalid_credentials
         }
     }
 }

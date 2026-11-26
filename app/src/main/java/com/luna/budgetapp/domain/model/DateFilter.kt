@@ -221,3 +221,17 @@ fun DateFilter.projectAmountToMonth(amount: Long): Long {
         else -> { 0L }
     }
 }
+
+/** Bundle-safe encoding for SavedStateHandle: the friendly name, or "Custom|start|end" (end empty when null). */
+fun DateFilter.toSavedString(): String = when (this) {
+    is DateFilter.Custom -> "Custom|$start|${end ?: ""}"
+    else -> getFriendlyName()
+}
+
+fun String.toDateFilterFromSaved(): DateFilter {
+    if (!startsWith("Custom|")) return getDateFilter()
+    val parts = split("|")
+    val start = parts.getOrNull(1)?.toLongOrNull() ?: 0L
+    val end = parts.getOrNull(2)?.toLongOrNull()
+    return DateFilter.Custom(start, end)
+}

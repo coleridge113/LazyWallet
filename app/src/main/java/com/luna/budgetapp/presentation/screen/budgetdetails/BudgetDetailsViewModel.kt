@@ -28,15 +28,24 @@ import java.time.LocalTime
 import java.time.YearMonth
 import kotlin.time.Duration.Companion.milliseconds
 
+private const val KEY_RANGE_START = "range_start"
+private const val KEY_RANGE_END = "range_end"
+
+private fun restoreDateRange(handle: SavedStateHandle): DateRange? {
+    val start = handle.get<String>(KEY_RANGE_START) ?: return null
+    val end = handle.get<String>(KEY_RANGE_END) ?: return null
+    return DateRange(LocalDateTime.parse(start), LocalDateTime.parse(end))
+}
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class BudgetDetailsViewModel(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val budgetUseCases: BudgetUseCases,
     private val expenseUseCases: ExpenseUseCases
 ): ViewModel() {
     private val budgetId: Long = checkNotNull(savedStateHandle["budgetId"])
     private val _dialogState = MutableStateFlow<DialogState?>(null)
-    private val _dateFlow = MutableStateFlow<DateRange?>(null)
+    private val _dateFlow = MutableStateFlow(restoreDateRange(savedStateHandle))
     private val _budget = budgetUseCases.getBudgetById(budgetId)
     private val _expenses = combine(
         _budget, 
@@ -100,23 +109,29 @@ class BudgetDetailsViewModel(
         }
     }
 
+    private fun setDateRange(range: DateRange) {
+        savedStateHandle[KEY_RANGE_START] = range.start.toString()
+        savedStateHandle[KEY_RANGE_END] = range.end.toString()
+        _dateFlow.value = range
+    }
+
     private fun updateDateRange(date: LocalDate) {
-        _dateFlow.update {
+        setDateRange(
             DateRange(
                 start = date.atStartOfDay(),
                 end = date.atTime(LocalTime.MAX)
             )
-        }
+        )
         dismissDialog()
     }
 
     private fun updateDateRange(yearMonth: YearMonth) {
-        _dateFlow.update {
+        setDateRange(
             DateRange(
                 start = yearMonth.atDay(1).atStartOfDay(),
                 end = yearMonth.atEndOfMonth().atTime(LocalTime.MAX)
             )
-        }
+        )
         dismissDialog()
     }
 
