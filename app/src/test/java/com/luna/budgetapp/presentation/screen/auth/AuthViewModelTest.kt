@@ -2,14 +2,22 @@ package com.luna.budgetapp.presentation.screen.auth
 
 import com.google.common.truth.Truth.assertThat
 import com.luna.budgetapp.MainDispatcherRule
-import com.luna.budgetapp.data.datastore.SettingsDataStore
-import com.luna.budgetapp.data.firebase.migration.DataMigrationRepository
-import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
-import io.mockk.mockk
+import com.luna.budgetapp.R
+import com.luna.budgetapp.domain.model.AuthException
+import com.luna.budgetapp.domain.repository.FakeAuthRepository
+import com.luna.budgetapp.domain.repository.FakeCloudSyncRepository
+import com.luna.budgetapp.domain.repository.FakeLocalDataRepository
+import com.luna.budgetapp.domain.repository.FakeSettingsRepository
+import com.luna.budgetapp.domain.usecase.AuthUseCases
+import com.luna.budgetapp.domain.usecase.auth.CompleteSignInUseCase
+import com.luna.budgetapp.domain.usecase.auth.GetTokenUseCase
+import com.luna.budgetapp.domain.usecase.auth.IsSignedInUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignOutUseCase
+import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -21,19 +29,26 @@ class AuthViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val migrationRepository = mockk<DataMigrationRepository>()
-    private val settings = mockk<SettingsDataStore>()
+    private val authRepo = FakeAuthRepository()
+    private val cloudSync = FakeCloudSyncRepository()
+    private val settings = FakeSettingsRepository(initialGuest = true)
 
     private fun createViewModel() = AuthViewModel(
-        authUseCases = mockk(relaxed = true),
-        migrationRepository = migrationRepository,
-        settings = settings
+        AuthUseCases(
+            getToken = GetTokenUseCase(authRepo),
+            signInGoogle = SignInGoogleUseCase(authRepo),
+            signInEmailPassword = SignInEmailPasswordUseCase(authRepo),
+            signUp = SignUpUseCase(authRepo),
+            signOut = SignOutUseCase(authRepo, settings, FakeLocalDataRepository()),
+            isSignedIn = IsSignedInUseCase(authRepo),
+            completeSignIn = CompleteSignInUseCase(cloudSync, settings)
+        )
     )
+
+    private fun errorDialog(res: Int) = DialogState.ErrorMessage(res)
 
     @Test
     fun signInSuccess_setsSignedIn_andSavesGuestMode() = runTest {
-        coEvery { migrationRepository.syncFromCloud() } just Runs
-        coEvery { settings.setGuestMode(true) } just Runs
         val vm = createViewModel()
         assertThat(vm.signedIn.value).isFalse()
 
@@ -41,7 +56,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertThat(vm.signedIn.value).isTrue()
-        coVerify { settings.setGuestMode(true) }
+        assertThat(settings.isGuestFlow.first()).isTrue()
 
         vm.onSignedInHandled()
         assertThat(vm.signedIn.value).isFalse()
@@ -49,14 +64,100 @@ class AuthViewModelTest {
 
     @Test
     fun signInSuccess_whenSyncThrows_stillSetsSignedIn() = runTest {
-        coEvery { migrationRepository.syncFromCloud() } throws RuntimeException("boom")
-        coEvery { settings.setGuestMode(any()) } just Runs
+        cloudSync.downloadError = RuntimeException("boom")
         val vm = createViewModel()
 
         vm.onEvent(Event.HandleSignInSuccess(isGuest = false))
         advanceUntilIdle()
 
         assertThat(vm.signedIn.value).isTrue()
-        coVerify { settings.setGuestMode(false) }
+        assertThat(settings.isGuestFlow.first()).isFalse()
+    }
+
+    @Test
+    fun emailSignIn_success_setsSignedIn() = runTest {
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+
+        assertThat(authRepo.calls).containsExactly("signInEmail")
+        assertThat(vm.signedIn.value).isTrue()
+        assertThat(settings.isGuestFlow.first()).isFalse()
+    }
+
+    @Test
+    fun emailSignIn_invalidCredentials_showsInvalidCredentialsDialog() = runTest {
+        authRepo.error = AuthException.InvalidCredentials
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+
+        assertThat(vm.dialogState.value)
+            .isEqualTo(errorDialog(R.string.auth_error_invalid_credentials))
+        assertThat(vm.signedIn.value).isFalse()
+    }
+
+    @Test
+    fun emailSignIn_userNotFound_showsUserNotFound() = runTest {
+        authRepo.error = AuthException.UserNotFound
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+
+        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_user_not_found))
+    }
+
+    @Test
+    fun emailSignIn_invalidEmail_showsInvalidEmail() = runTest {
+        authRepo.error = AuthException.InvalidEmail
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("bad", "pw"))
+        advanceUntilIdle()
+
+        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_invalid_email))
+    }
+
+    @Test
+    fun signUp_unknownError_showsGeneric() = runTest {
+        authRepo.error = AuthException.Unknown(null)
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignUp("a@b.c", "pw"))
+        advanceUntilIdle()
+
+        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_generic))
+    }
+
+    @Test
+    fun emailSignIn_illegalArgument_showsInvalidInput() = runTest {
+        authRepo.error = IllegalArgumentException("empty")
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("", ""))
+        advanceUntilIdle()
+
+        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_invalid_input))
+    }
+
+    @Test
+    fun isUserSignedIn_readOnceAtConstruction() {
+        val repo = FakeAuthRepository(signedIn = true)
+        val useCases = AuthUseCases(
+            getToken = GetTokenUseCase(repo),
+            signInGoogle = SignInGoogleUseCase(repo),
+            signInEmailPassword = SignInEmailPasswordUseCase(repo),
+            signUp = SignUpUseCase(repo),
+            signOut = SignOutUseCase(repo, settings, FakeLocalDataRepository()),
+            isSignedIn = IsSignedInUseCase(repo),
+            completeSignIn = CompleteSignInUseCase(cloudSync, settings)
+        )
+        val vm = AuthViewModel(useCases)
+        repo.signedIn = false
+
+        assertThat(vm.isUserSignedIn).isTrue()
     }
 }

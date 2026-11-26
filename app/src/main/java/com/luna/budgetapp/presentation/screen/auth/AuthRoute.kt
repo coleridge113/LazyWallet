@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.auth.FirebaseAuth
 import com.luna.budgetapp.R
 import com.luna.budgetapp.presentation.screen.components.ErrorDialog
 import com.luna.budgetapp.presentation.screen.components.PrimaryButton
@@ -64,8 +63,7 @@ fun AuthRoute(
 ) {
     val lifecycleOwner = rememberLifecycleOwner()
     val currentContext = LocalContext.current
-    val auth = FirebaseAuth.getInstance()
-    val isUserSignedIn = remember { auth.currentUser != null }
+    val isUserSignedIn = viewModel.isUserSignedIn
     val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
 
