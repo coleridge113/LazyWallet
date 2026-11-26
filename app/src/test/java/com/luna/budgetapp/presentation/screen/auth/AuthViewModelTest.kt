@@ -16,6 +16,7 @@ import com.luna.budgetapp.domain.usecase.auth.SignInEmailPasswordUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignInGoogleUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignOutUseCase
 import com.luna.budgetapp.domain.usecase.auth.SignUpUseCase
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -50,16 +51,16 @@ class AuthViewModelTest {
     @Test
     fun signInSuccess_setsSignedIn_andSavesGuestMode() = runTest {
         val vm = createViewModel()
-        assertThat(vm.signedIn.value).isFalse()
+        assertThat(vm.uiState.value.signedIn).isFalse()
 
         vm.onEvent(Event.HandleSignInSuccess(isGuest = true))
         advanceUntilIdle()
 
-        assertThat(vm.signedIn.value).isTrue()
+        assertThat(vm.uiState.value.signedIn).isTrue()
         assertThat(settings.isGuestFlow.first()).isTrue()
 
         vm.onSignedInHandled()
-        assertThat(vm.signedIn.value).isFalse()
+        assertThat(vm.uiState.value.signedIn).isFalse()
     }
 
     @Test
@@ -70,7 +71,7 @@ class AuthViewModelTest {
         vm.onEvent(Event.HandleSignInSuccess(isGuest = false))
         advanceUntilIdle()
 
-        assertThat(vm.signedIn.value).isTrue()
+        assertThat(vm.uiState.value.signedIn).isTrue()
         assertThat(settings.isGuestFlow.first()).isFalse()
     }
 
@@ -82,7 +83,7 @@ class AuthViewModelTest {
         advanceUntilIdle()
 
         assertThat(authRepo.calls).containsExactly("signInEmail")
-        assertThat(vm.signedIn.value).isTrue()
+        assertThat(vm.uiState.value.signedIn).isTrue()
         assertThat(settings.isGuestFlow.first()).isFalse()
     }
 
@@ -94,9 +95,9 @@ class AuthViewModelTest {
         vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
         advanceUntilIdle()
 
-        assertThat(vm.dialogState.value)
+        assertThat(vm.uiState.value.dialog)
             .isEqualTo(errorDialog(R.string.auth_error_invalid_credentials))
-        assertThat(vm.signedIn.value).isFalse()
+        assertThat(vm.uiState.value.signedIn).isFalse()
     }
 
     @Test
@@ -107,7 +108,7 @@ class AuthViewModelTest {
         vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
         advanceUntilIdle()
 
-        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_user_not_found))
+        assertThat(vm.uiState.value.dialog).isEqualTo(errorDialog(R.string.auth_error_user_not_found))
     }
 
     @Test
@@ -118,7 +119,7 @@ class AuthViewModelTest {
         vm.onEvent(Event.SignInEmailPassword("bad", "pw"))
         advanceUntilIdle()
 
-        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_invalid_email))
+        assertThat(vm.uiState.value.dialog).isEqualTo(errorDialog(R.string.auth_error_invalid_email))
     }
 
     @Test
@@ -129,7 +130,7 @@ class AuthViewModelTest {
         vm.onEvent(Event.SignUp("a@b.c", "pw"))
         advanceUntilIdle()
 
-        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_generic))
+        assertThat(vm.uiState.value.dialog).isEqualTo(errorDialog(R.string.auth_error_generic))
     }
 
     @Test
@@ -140,7 +141,7 @@ class AuthViewModelTest {
         vm.onEvent(Event.SignInEmailPassword("", ""))
         advanceUntilIdle()
 
-        assertThat(vm.dialogState.value).isEqualTo(errorDialog(R.string.auth_error_invalid_input))
+        assertThat(vm.uiState.value.dialog).isEqualTo(errorDialog(R.string.auth_error_invalid_input))
     }
 
     @Test
@@ -158,6 +159,63 @@ class AuthViewModelTest {
         val vm = AuthViewModel(useCases)
         repo.signedIn = false
 
-        assertThat(vm.isUserSignedIn).isTrue()
+        assertThat(vm.uiState.value.isUserSignedIn).isTrue()
+    }
+
+    @Test
+    fun signIn_isLoadingWhileInFlight() = runTest {
+        authRepo.gate = CompletableDeferred()
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+        assertThat(vm.uiState.value.isLoading).isTrue()
+        assertThat(vm.uiState.value.signedIn).isFalse()
+
+        authRepo.gate!!.complete(Unit)
+        advanceUntilIdle()
+        assertThat(vm.uiState.value.isLoading).isTrue()
+        assertThat(vm.uiState.value.signedIn).isTrue()
+    }
+
+    @Test
+    fun signIn_error_clearsLoading_andShowsDialog() = runTest {
+        authRepo.error = AuthException.InvalidCredentials
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+
+        assertThat(vm.uiState.value.isLoading).isFalse()
+        assertThat(vm.uiState.value.dialog)
+            .isEqualTo(errorDialog(R.string.auth_error_invalid_credentials))
+    }
+
+    @Test
+    fun secondSignIn_whileLoading_makesNoSecondCall() = runTest {
+        authRepo.gate = CompletableDeferred()
+        val vm = createViewModel()
+
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        vm.onEvent(Event.SignUp("a@b.c", "pw"))
+        vm.onEvent(Event.HandleSignInSuccess(isGuest = true))
+        advanceUntilIdle()
+
+        assertThat(authRepo.calls).containsExactly("signInEmail")
+    }
+
+    @Test
+    fun onSignedInHandled_clearsSignedInAndLoading() = runTest {
+        val vm = createViewModel()
+        vm.onEvent(Event.SignInEmailPassword("a@b.c", "pw"))
+        advanceUntilIdle()
+        assertThat(vm.uiState.value.isLoading).isTrue()
+
+        vm.onSignedInHandled()
+
+        assertThat(vm.uiState.value.signedIn).isFalse()
+        assertThat(vm.uiState.value.isLoading).isFalse()
     }
 }

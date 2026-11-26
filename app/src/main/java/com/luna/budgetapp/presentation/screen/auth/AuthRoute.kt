@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +40,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -63,14 +67,11 @@ fun AuthRoute(
 ) {
     val lifecycleOwner = rememberLifecycleOwner()
     val currentContext = LocalContext.current
-    val isUserSignedIn = viewModel.isUserSignedIn
-    val dialog by viewModel.dialogState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
 
-    val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
-
-    LaunchedEffect(signedIn) {
-        if (signedIn) {
+    LaunchedEffect(uiState.signedIn) {
+        if (uiState.signedIn) {
             onSignedIn()
             viewModel.onSignedInHandled()
         }
@@ -78,10 +79,11 @@ fun AuthRoute(
 
     Scaffold { innerPadding ->
         AuthContent(
-            isUserSignedIn = isUserSignedIn,
+            isUserSignedIn = uiState.isUserSignedIn,
+            isLoading = uiState.isLoading,
             onEvent = onEvent,
             modifier = Modifier.padding(innerPadding),
-            dialog = dialog,
+            dialog = uiState.dialog,
             handleGoogleSignIn = {
                 launchCredentialManager(
                     context = currentContext,
@@ -106,6 +108,7 @@ fun AuthRoute(
 @Composable
 fun AuthContent(
     isUserSignedIn: Boolean,
+    isLoading: Boolean,
     onEvent: (Event) -> Unit,
     dialog: DialogState?,
     handleGoogleSignIn: () -> Unit,
@@ -140,10 +143,12 @@ fun AuthContent(
             OutlinedTextField(
                 state = emailState,
                 label = { Text(stringResource(R.string.auth_email)) },
+                enabled = !isLoading,
             )
             OutlinedTextField(
                 value = passwordString,
                 onValueChange = { passwordString = it },
+                enabled = !isLoading,
                 label = { Text(stringResource(R.string.auth_password)) },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -178,6 +183,7 @@ fun AuthContent(
                         )
                     },
                     text = stringResource(R.string.btn_sign_up),
+                    enabled = !isLoading,
                     modifier = Modifier.padding(16.dp)
                 )
                 PrimaryButton(
@@ -190,6 +196,7 @@ fun AuthContent(
                         )
                     },
                     text = stringResource(R.string.btn_sign_in),
+                    enabled = !isLoading,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -221,7 +228,8 @@ fun AuthContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
-                    onClick = handleGoogleSignIn
+                    onClick = handleGoogleSignIn,
+                    enabled = !isLoading
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(R.drawable.google_logo),
@@ -235,7 +243,8 @@ fun AuthContent(
                 }
 
                 Button(
-                    onClick = handleGuestSignIn
+                    onClick = handleGuestSignIn,
+                    enabled = !isLoading
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
@@ -249,10 +258,19 @@ fun AuthContent(
                 }
             }
 
-            Spacer(
-                modifier = Modifier
-                    .height(200.dp)
-            )
+            Box(
+                modifier = Modifier.height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isLoading) {
+                    val description = stringResource(R.string.state_loading_description)
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .semantics { contentDescription = description }
+                    )
+                }
+            }
         }
     }
 }
@@ -271,6 +289,7 @@ fun LoginScreenPreviewLight() {
         ) {
             AuthContent(
                 isUserSignedIn = false,
+                isLoading = false,
                 onEvent = {},
                 modifier = Modifier,
                 dialog = null,
@@ -295,6 +314,7 @@ fun LoginScreenPreviewDark() {
         ) {
             AuthContent(
                 isUserSignedIn = false,
+                isLoading = false,
                 onEvent = {},
                 modifier = Modifier,
                 dialog = null,
@@ -320,6 +340,7 @@ fun LoginScreenPreviewDialog() {
             val dialog = DialogState.ErrorMessage(R.string.auth_error_generic)
             AuthContent(
                 isUserSignedIn = false,
+                isLoading = false,
                 onEvent = {},
                 modifier = Modifier,
                 dialog = dialog,

@@ -15,3 +15,10 @@ sealed interface Event {
 sealed interface DialogState {
     data class ErrorMessage(@StringRes val messageRes: Int) : DialogState
 }
+
+data class AuthUiState(
+    val isLoading: Boolean = false,
+    val dialog: DialogState? = null,
+    val isUserSignedIn: Boolean = false,
+    val signedIn: Boolean = false
+)
