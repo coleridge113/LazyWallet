@@ -36,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
@@ -117,27 +119,6 @@ fun PresetTile(
                 .clearAndSetSemantics { contentDescription = logDescription }
                 .padding(12.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.35f))
-                    .clickable(onClick = onCustom)
-                    .clearAndSetSemantics {
-                        contentDescription = customDescription
-                        role = Role.Button
-                        onClick(label = null) { onCustom(); true }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = getIconForCategory(preset.category),
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 Text(
                     text = preset.type,
@@ -153,6 +134,28 @@ fun PresetTile(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(12.dp)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.35f))
+                .clickable(onClick = onCustom)
+                .clearAndSetSemantics {
+                    contentDescription = customDescription
+                    role = Role.Button
+                    onClick(label = null) { onCustom(); true }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = getIconForCategory(preset.category),
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(20.dp)
+            )
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             DropdownMenuItem(
@@ -180,8 +183,8 @@ fun NewPresetTile(onClick: () -> Unit, modifier: Modifier = Modifier) {
                 val stroke = 1.5.dp.toPx()
                 drawRoundRect(
                     color = color,
-                    topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2),
-                    size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke),
+                    topLeft = Offset(stroke / 2, stroke / 2),
+                    size = Size(size.width - stroke, size.height - stroke),
                     cornerRadius = CornerRadius(20.dp.toPx() - stroke / 2),
                     style = Stroke(
                         width = stroke,
